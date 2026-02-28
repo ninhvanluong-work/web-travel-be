@@ -4,10 +4,10 @@ import { Product } from 'src/modules/product/entities/product.entity';
 
 @Entity('video')
 export class Video extends BaseEntity {
-  @Column({ nullable: false })
+  @Column({ nullable: false, length: 500 })
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, length: 500 })
   url?: string;
 
   @Column({ nullable: true })
@@ -19,10 +19,13 @@ export class Video extends BaseEntity {
   @Column({ nullable: true, length: 255 })
   tag?: string;
 
-  @Column({ type: 'string', nullable: true })
+  @Column({ nullable: true })
   embedding?: string;
 
   @ManyToOne(() => Product, (product) => product.videos)
-  @JoinColumn({ name: 'product_id' })
+  @JoinColumn({
+    name: 'product_id',
+    foreignKeyConstraintName: 'Fk_Video_Product',
+  })
   product: Product;
 }

@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
+console.log('1');
 import { getCACertificate } from 'src/common/utils/security';
 
 dotenv.config({

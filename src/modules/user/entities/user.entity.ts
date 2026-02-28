@@ -8,7 +8,7 @@ export class User extends BaseEntity {
   @Column({ name: 'ip_address', length: 255, nullable: true })
   ipAddress: string;
 
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true, nullable: true, length: 255 })
   email?: string;
 
   @OneToMany(() => Booking, (booking) => booking.user)

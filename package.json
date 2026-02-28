@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "migration:generate": "cross-env NODE_OPTIONS='--max-old-space-size=4096' yarn typeorm -- migration:generate -d sr/database/data-source.ts --pretty",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "migration:generate": "cross-env NODE_OPTIONS='--max-old-space-size=4096' yarn typeorm -- migration:generate -d src/database/data-source.ts --pretty",
     "migration:run": "cross-env NODE_OPTIONS='--max-old-space-size=4096' yarn typeorm migration:run -d src/database/data-source.ts",
     "migration:revert": "cross-env NODE_OPTIONS='--max-old-space-size=4096' yarn typeorm migration:revert -d src/database/data-source.ts",
     "migration:create": "cross-env NODE_OPTIONS='--max-old-space-size=4096' yarn typeorm migration:create"

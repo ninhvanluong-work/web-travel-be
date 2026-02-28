@@ -10,38 +10,47 @@ export enum BookingStatus {
   CANCEL = 'cancel',
 }
 
-@Entity('bookings')
+@Entity('booking')
 export class Booking extends BaseEntity {
-  @Column({ name: 'booking_date', type: 'timestamptz' })
+  @Column({ name: 'booking_date', type: 'timestamptz', nullable: true })
   bookingDate: Date;
 
-  @Column({ name: 'travel_date', type: 'timestamptz' })
+  @Column({ name: 'travel_date', type: 'timestamptz', nullable: true })
   travelDate: Date;
 
   @Column({ type: 'int', default: 1 })
   quantity: number;
 
-  @Column({ name: 'total_price', type: 'decimal', precision: 12, scale: 2 })
+  @Column({
+    name: 'total_price',
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    default: 0,
+  })
   totalPrice: number;
 
   @Column({
-    type: 'enum',
-    enum: BookingStatus,
+    type: 'varchar',
     default: BookingStatus.PENDING,
+    length: 50,
   })
   status: BookingStatus;
 
-  @Column()
-  email: string;
+  @Column({ nullable: true, length: 255 })
+  email?: string;
 
-  @Column()
-  phone: string;
+  @Column({ nullable: true, length: 255 })
+  phone?: string;
 
   @ManyToOne(() => User, (user) => user.bookings)
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'Fk_Booking_User' })
   user: User;
 
   @ManyToOne(() => Product, (product) => product.bookings)
-  @JoinColumn({ name: 'product_id' })
+  @JoinColumn({
+    name: 'product_id',
+    foreignKeyConstraintName: 'Fk_Booking_Product',
+  })
   product: Product;
 }

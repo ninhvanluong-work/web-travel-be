@@ -7,18 +7,24 @@ import { Booking } from 'src/modules/booking/entities/booking.entity';
 
 @Entity('product')
 export class Product extends BaseEntity {
-  @Column()
+  @Column({ length: 500 })
   name: string;
 
   @Column({ type: 'text', nullable: true })
   description: string;
 
   @ManyToOne(() => Destination, (dest: Destination) => dest.products)
-  @JoinColumn({ name: 'destination_id' })
+  @JoinColumn({
+    name: 'destination_id',
+    foreignKeyConstraintName: 'FK_Product_Destination',
+  })
   destination: Destination;
 
   @ManyToOne(() => Supplier, (sup: Supplier) => sup.products)
-  @JoinColumn({ name: 'supplier_id' })
+  @JoinColumn({
+    name: 'supplier_id',
+    foreignKeyConstraintName: 'FK_Product_Supplier',
+  })
   supplier: Supplier;
 
   @OneToMany(() => Video, (video) => video.product)
