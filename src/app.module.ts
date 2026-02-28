@@ -5,12 +5,18 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './modules/user/user.module';
 import { DatabaseModule } from 'src/database/database.module';
+import { VideoModule } from './modules/video/video.module';
 
 @Module({
-  imports: [UserModule,ConfigModule.forRoot({
-    isGlobal: true,
-    envFilePath: '.env'
-  }), DatabaseModule],
+  imports: [
+    UserModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    DatabaseModule,
+    VideoModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

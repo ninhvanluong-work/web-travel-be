@@ -9,14 +9,15 @@ import { getCACertificate } from 'src/common/utils/security';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const sslConfig = configService.get<string>('USE_CERT') === 'true'
-          ? {
-              ssl: {
-                rejectUnauthorized: true,
-                ca: getCACertificate(),
-              },
-            }
-          : {};
+        const sslConfig =
+          configService.get<string>('USE_CERT') === 'true'
+            ? {
+                ssl: {
+                  rejectUnauthorized: true,
+                  ca: getCACertificate(),
+                },
+              }
+            : {};
 
         return {
           type: 'postgres',
