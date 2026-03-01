@@ -22,6 +22,9 @@ export class Video extends BaseEntity {
   @Column({ nullable: true })
   embedding?: string;
 
+  @Column({ type: 'integer', default: 0 })
+  like: string;
+
   @ManyToOne(() => Product, (product) => product.videos)
   @JoinColumn({
     name: 'product_id',
