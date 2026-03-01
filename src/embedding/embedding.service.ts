@@ -16,9 +16,14 @@ export class EmbeddingService {
   ) {}
 
   async generateVideoEmbedding(video: Video): Promise<string> {
-    const embeddingContent = `${video.name} ${video.description} \n
-      ${video?.product?.name} ${video?.product?.description} \n
-      ${video?.product?.destination?.name} ${video?.product?.destination?.description}`;
+    const embeddingContent =
+      `${video.name} ${video.description}` +
+      `\n${video?.product?.name} ${video?.product?.description}` +
+      `\n${video?.product?.destination?.name} ${video?.product?.destination?.description}`;
+
+    this.logger.debug(
+      `[generateVideoEmbedding] video: ${video.id} ${embeddingContent}`,
+    );
 
     const embedding = await this.getEmbedding(embeddingContent);
     const pgVectorEmbedding = pgvector.toSql(embedding) as string;
