@@ -27,11 +27,13 @@ import { getCACertificate } from 'src/common/utils/security';
           retryAttempts: 10,
           retryDelay: 3000,
           synchronize: false,
+          entities: [__dirname + '/../**/*.entity{.ts,.js}'],
           logging: configService.get<string>('LOGGING') === 'true',
           ...sslConfig,
         };
       },
     }),
   ],
+  exports: [TypeOrmModule],
 })
 export class DatabaseModule {}
