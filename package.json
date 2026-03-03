@@ -34,6 +34,7 @@
     "@nestjs/schedule": "^6.1.1",
     "@nestjs/swagger": "^11.2.6",
     "@nestjs/typeorm": "^11.0.0",
+    "axios": "^1.13.6",
     "class-validator": "^0.14.4",
     "pg": "^8.18.0",
     "pgvector": "^0.2.1",
