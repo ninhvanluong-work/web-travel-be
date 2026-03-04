@@ -1,9 +1,33 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ListItemsResponse, PaginationDto } from 'src/types/pagination.dto';
+import { IsNumber, IsOptional, Max, Min } from 'class-validator';
 
-export class GetVideoDto extends PaginationDto {
-  @ApiProperty({ description: 'query', nullable: true, example: 'Hà Nội' })
+export class GetVideoDto {
+  @ApiProperty({ description: 'query', nullable: true, example: 'Miền Bắc' })
   query?: string;
+
+  @ApiProperty({
+    description: 'query',
+    required: false,
+    nullable: true,
+    example: '0',
+  })
+  @Min(0)
+  @IsNumber()
+  @IsOptional()
+  distanceScore?: number;
+
+  @ApiProperty({
+    required: false,
+    example: 10,
+    default: 10,
+    minimum: 1,
+    maximum: 50,
+  })
+  @IsNumber()
+  @Min(1)
+  @Max(50)
+  @IsOptional()
+  pageSize?: number;
 }
 
 export class VideoDto {
@@ -13,7 +37,7 @@ export class VideoDto {
   })
   id: string;
 
-  @ApiProperty({ description: 'name', example: 'Hà Nội' })
+  @ApiProperty({ description: 'name', example: 'Miền Bắc' })
   name: string;
 
   @ApiProperty({
@@ -21,6 +45,12 @@ export class VideoDto {
     example: 'https://video.abc.com/video',
   })
   url: string;
+
+  @ApiProperty({
+    description: 'shortUrl',
+    example: 'https://video.abc.com/video',
+  })
+  shortUrl: string;
 
   @ApiProperty({
     description: 'query',
@@ -38,7 +68,15 @@ export class VideoDto {
   like: string;
 }
 
-export class GetVideoResponseDto extends ListItemsResponse<VideoDto> {
+export class GetVideoResponseStatsDto {
+  @ApiProperty({ type: 'number', example: '0' })
+  distanceScore: number;
+}
+
+export class GetVideoResponseDto {
   @ApiProperty({ type: [VideoDto] })
   items: VideoDto[] = [];
+
+  @ApiProperty({})
+  stats: GetVideoResponseStatsDto;
 }

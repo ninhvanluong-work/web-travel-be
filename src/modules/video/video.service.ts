@@ -8,8 +8,11 @@ import { Video } from 'src/modules/video/entities/video.entity';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { EmbeddingService } from 'src/embedding/embedding.service';
-import { ListItemsResponse } from 'src/types/pagination.dto';
-import { GetVideoDto, VideoDto } from 'src/modules/video/dto/get-video.dto';
+import {
+  GetVideoDto,
+  GetVideoResponseDto,
+  VideoDto,
+} from 'src/modules/video/dto/get-video.dto';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -26,59 +29,30 @@ export class VideoService {
     return 'This action adds a new video';
   }
 
-  async findAll(
-    queryPayload: GetVideoDto,
-  ): Promise<ListItemsResponse<VideoDto>> {
-    const { page = 1, pageSize = 10, query = '' } = queryPayload;
-    const pageNum = Number(page);
+  async findAll(queryPayload: GetVideoDto): Promise<GetVideoResponseDto> {
+    const { pageSize = 10, query = '', distanceScore } = queryPayload;
+
     const pageSizeNum = Number(pageSize);
 
-    const offset = (pageNum - 1) * pageSizeNum;
-    const a = await this.getRecommendationVideo(query, pageSize);
-    //const [videos, total] = await this.videoRepository.findAndCount({
-    //  select: {
-    //    id: true,
-    //    name: true,
-    //    url: true,
-    //    thumbnail: true,
-    //    description: true,
-    //    tag: true,
-    //    like: true,
-    //  },
-    //  take: pageSizeNum,
-    //  skip: offset,
-    //  where: {},
-    //  order: {
-    //    createdAt: 1,
-    //  },
-    //});
+    const videos = await this.getRecommendationVideo(
+      query,
+      pageSizeNum,
+      distanceScore,
+    );
 
-    //pagination
-    //const totalPages = Math.ceil(total / pageSizeNum);
-    //const pagination = {
-    //  page: pageNum,
-    //  pageSize: pageSizeNum,
-    //  total,
-    //  totalPages,
-    //};
-    const pagination = {
-      page: 1,
-      pageSize: 10,
-      total: 10,
-      totalPages: 10,
+    const maxDistanceScore = (videos[videos.length - 1]?.score as number) || 0;
+    console.log(maxDistanceScore);
+
+    const result: GetVideoResponseDto = {
+      items: videos as VideoDto[],
+
+      stats: {
+        distanceScore: maxDistanceScore,
+      },
     };
 
-    //if (videos.length === 0) {
-    //  return {
-    //    items: [],
-    //    pagination,
-    //  };
-    //}
+    console.log(result);
 
-    const result: ListItemsResponse<VideoDto> = {
-      items: a as VideoDto[],
-      pagination,
-    };
     return result;
   }
 
@@ -114,7 +88,11 @@ export class VideoService {
     await this.update(video.id, { embedding: newEmbedding });
   }
 
-  async getRecommendationVideo(query: string, limit: number) {
+  async getRecommendationVideo(
+    query: string,
+    limit: number,
+    distanceScore?: number,
+  ) {
     const embedding = await this.embeddingService.getEmbedding(query);
     const pgVectorEmbedding = pgvector.toSql(embedding) as string;
 
@@ -123,26 +101,30 @@ export class VideoService {
       `SET search_path TO public, ${postgresSchema}`,
     );
 
-    const videos = await this.videoRepository
+    const videosQb = this.videoRepository
       .createQueryBuilder('v')
       .select([
         'v.id as id',
         'v.url as url',
-        'v.short_url as shortUrl',
+        `v.short_url as "shortUrl"`,
         'v.thumbnail as thumbnail',
         'v.name as name',
         'v.description as description',
         'v.tag as tag',
+        'v.like as like',
       ])
-      //.addSelect(`v.embedding <=> :queryEmbedding`, 'abc')
+      .addSelect(`v.embedding <=> :queryEmbedding`, 'score')
       .where('v.embedding is not null')
-      //.andWhere('v.embedding <=> :queryEmbedding >  0.27460503578186035')
       .orderBy('v.embedding <=> :queryEmbedding')
       .setParameters({
         queryEmbedding: pgVectorEmbedding,
       })
-      .limit(limit)
-      .getRawMany();
+      .limit(limit);
+
+    if (distanceScore) {
+      videosQb.andWhere(`v.embedding <=> :queryEmbedding >  ${distanceScore}`);
+    }
+    const videos = await videosQb.getRawMany();
 
     return videos;
   }
