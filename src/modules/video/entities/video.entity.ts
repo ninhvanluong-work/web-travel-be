@@ -10,6 +10,9 @@ export class Video extends BaseEntity {
   @Column({ nullable: true, length: 500 })
   url?: string;
 
+  @Column({ name: 'short_url', nullable: true, length: 500 })
+  shortUrl?: string;
+
   @Column({ nullable: true })
   thumbnail?: string;
 

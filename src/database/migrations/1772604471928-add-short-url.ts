@@ -4,19 +4,19 @@ dotenv.config({ path: '.env' });
 
 const schema = process.env.POSTGRES_SCHEMA || 'public';
 
-export class VideoLike1772336977824 implements MigrationInterface {
-  name = 'VideoLike1772336977824';
+export class AddShortUrl1772604471928 implements MigrationInterface {
+  name = 'AddShortUrl1772604471928';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
             ALTER TABLE "${schema}"."video"
-            ADD "like" integer NOT NULL DEFAULT '0'
+            ADD "short_url" character varying(500)
         `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            ALTER TABLE "${schema}"."video" DROP COLUMN "like"
+            ALTER TABLE "${schema}"."video" DROP COLUMN "short_url"
         `);
   }
 }

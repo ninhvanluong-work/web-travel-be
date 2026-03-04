@@ -128,6 +128,7 @@ export class VideoService {
       .select([
         'v.id as id',
         'v.url as url',
+        'v.short_url as shortUrl',
         'v.thumbnail as thumbnail',
         'v.name as name',
         'v.description as description',
