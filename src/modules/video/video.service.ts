@@ -34,15 +34,16 @@ export class VideoService {
 
     const pageSizeNum = Number(pageSize);
 
-    const videos = await this.getRecommendationVideo(
+    let videos = await this.getRecommendationVideo(
       query,
       pageSizeNum,
       distanceScore,
     );
 
     const maxDistanceScore = (videos[videos.length - 1]?.score as number) || 0;
-    console.log(maxDistanceScore);
 
+    //remove score
+    videos = videos.map(({ score, ...rest }) => ({ ...rest }));
     const result: GetVideoResponseDto = {
       items: videos as VideoDto[],
 
@@ -50,8 +51,6 @@ export class VideoService {
         distanceScore: maxDistanceScore,
       },
     };
-
-    console.log(result);
 
     return result;
   }
