@@ -4,39 +4,68 @@ import { ConfigService } from '@nestjs/config';
 import pgvector from 'pgvector';
 
 import { EmbeddingResponseDto } from 'src/embedding/dto/embedding.dto';
+import { Destination } from 'src/modules/destination/entities/destination.entity';
+import { Product } from 'src/modules/product/entities/product.entity';
 import { Video } from 'src/modules/video/entities/video.entity';
 
 @Injectable()
 export class EmbeddingService {
   private readonly logger = new Logger(EmbeddingService.name);
-
+  private readonly embeddingApiUrl: string;
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.embeddingApiUrl = this.configService.get<string>(
+      'EMBEDDING_API_URL',
+    ) as string;
+  }
 
   async generateVideoEmbedding(video: Video): Promise<string> {
-    const embeddingContent =
-      `${video.name} ${video.description}` +
-      `\n${video?.product?.name} ${video?.product?.description}` +
-      `\n${video?.product?.destination?.name} ${video?.product?.destination?.description}`;
-
-    this.logger.debug(
-      `[generateVideoEmbedding] video: ${video.id} ${embeddingContent}`,
+    const embedding = await this.getVideoEmbedding(
+      video,
+      video.product,
+      video.product.destination,
     );
-
-    const embedding = await this.getEmbedding(embeddingContent);
     const pgVectorEmbedding = pgvector.toSql(embedding) as string;
     return pgVectorEmbedding;
   }
 
   async getEmbedding(text: string): Promise<number[]> {
-    const embeddingApiUrl = this.configService.get<string>('EMBEDDING_API_URL');
     const response = await this.httpService.axiosRef.post<EmbeddingResponseDto>(
-      `${embeddingApiUrl}/embed`,
+      `${this.embeddingApiUrl}/embedding`,
       {
         text,
       },
+    );
+
+    const embedding = response.data?.embedding;
+    return embedding;
+  }
+
+  async getVideoEmbedding(
+    video: Video,
+    product: Product,
+    destination: Destination,
+  ): Promise<number[]> {
+    const payload = {
+      video: {
+        name: video.name,
+        description: video.description,
+      },
+      product: {
+        name: product.name,
+        description: product.description,
+      },
+      destination: {
+        name: destination.name,
+        description: destination.description,
+      },
+    };
+
+    const response = await this.httpService.axiosRef.post<EmbeddingResponseDto>(
+      `${this.embeddingApiUrl}/embedding/video`,
+      payload,
     );
 
     const embedding = response.data?.embedding;
