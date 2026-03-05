@@ -104,6 +104,7 @@ export class VideoService {
       .createQueryBuilder('v')
       .select([
         'v.id as id',
+        'v.slug as slug',
         'v.url as url',
         `v.short_url as "shortUrl"`,
         'v.thumbnail as thumbnail',
