@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { VideoService } from './video.service';
 import { VideoController } from './video.controller';
-import { EmbeddingModule } from 'src/embedding/embedding.module';
+import { EmbeddingModule } from 'src/modules/embedding/embedding.module';
 
 import { Video } from 'src/modules/video/entities/video.entity';
 import { ConfigModule } from '@nestjs/config';

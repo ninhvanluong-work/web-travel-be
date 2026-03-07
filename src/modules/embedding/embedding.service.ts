@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import pgvector from 'pgvector';
 
-import { EmbeddingResponseDto } from 'src/embedding/dto/embedding.dto';
+import { EmbeddingResponseDto } from 'src/modules/embedding/dto/embedding.dto';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Video } from 'src/modules/video/entities/video.entity';

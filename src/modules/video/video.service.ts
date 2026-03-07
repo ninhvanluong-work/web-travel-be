@@ -7,7 +7,7 @@ import { Video } from 'src/modules/video/entities/video.entity';
 
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
-import { EmbeddingService } from 'src/embedding/embedding.service';
+import { EmbeddingService } from 'src/modules/embedding/embedding.service';
 import {
   GetVideoDto,
   GetVideoResponseDto,

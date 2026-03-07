@@ -9,7 +9,7 @@ import { DatabaseModule } from 'src/database/database.module';
 import { VideoModule } from './modules/video/video.module';
 import { TaskModule } from './modules/task/task.module';
 import { ProductModule } from 'src/modules/product/product.module';
-import { EmbeddingModule } from './embedding/embedding.module';
+import { EmbeddingModule } from './modules/embedding/embedding.module';
 
 @Module({
   imports: [
