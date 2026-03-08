@@ -48,6 +48,26 @@ export class VideoController {
     return formatApiResponse(result, HttpStatus.OK, 'ok');
   }
 
+  @Get(':slug')
+  @ApiResponse({
+    status: 200,
+    description: 'get video detail by slug',
+    schema: {
+      properties: {
+        data: {
+          $ref: getSchemaRefPath('GetVideoResponseDto'),
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async getBySlug(@Param('slug') slug: string) {
+    const result = await this.videosService.findBySlug(slug);
+    return formatApiResponse(result, HttpStatus.OK, 'ok');
+  }
+
   //@Post()
   create(@Body() createVideoDto: CreateVideoDto) {
     return this.videosService.create(createVideoDto);

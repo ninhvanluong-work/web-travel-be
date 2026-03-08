@@ -59,6 +59,28 @@ export class VideoService {
     return `This action returns a #${id} video`;
   }
 
+  async findBySlug(slug: string): Promise<Video | null> {
+    console.log(slug);
+    const result = await this.videoRepository.findOne({
+      select: {
+        id: true,
+        slug: true,
+        url: true,
+        shortUrl: true,
+        thumbnail: true,
+        name: true,
+        description: true,
+        tag: true,
+        like: true,
+      },
+      where: {
+        slug,
+      },
+    });
+
+    return result;
+  }
+
   async update(id: string, updateVideoDto: UpdateVideoDto) {
     await this.videoRepository.update(id, updateVideoDto);
   }
