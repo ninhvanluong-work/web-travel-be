@@ -150,4 +150,12 @@ export class VideoService {
 
     return videos;
   }
+
+  async handleLikeVideo(id: string) {
+    await this.videoRepository.increment({ id }, 'like', 1);
+  }
+
+  async handleDislikeVideo(id: string) {
+    await this.videoRepository.decrement({ id }, 'like', 1);
+  }
 }

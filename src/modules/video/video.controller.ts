@@ -68,9 +68,16 @@ export class VideoController {
     return formatApiResponse(result, HttpStatus.OK, 'ok');
   }
 
-  //@Post()
-  create(@Body() createVideoDto: CreateVideoDto) {
-    return this.videosService.create(createVideoDto);
+  @Post(':id/like')
+  async likeVideo(@Param('id') id: string) {
+    await this.videosService.handleLikeVideo(id);
+    return formatApiResponse(null, HttpStatus.OK, 'ok');
+  }
+
+  @Post(':id/dislike')
+  async dislikeVideo(@Param('id') id: string) {
+    await this.videosService.handleDislikeVideo(id);
+    return formatApiResponse(null, HttpStatus.OK, 'ok');
   }
 
   //@Get(':id')
