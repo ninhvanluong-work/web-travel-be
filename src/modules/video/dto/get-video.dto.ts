@@ -1,8 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, Max, Min } from 'class-validator';
+import { Transform } from 'class-transformer';
+
+import {
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsUUID,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class GetVideoDto {
-  @ApiProperty({ description: 'query', nullable: true, example: 'Miền Bắc' })
+  @ApiProperty({
+    description: 'query',
+    nullable: true,
+    example: 'Miền Bắc',
+    required: false,
+  })
   query?: string;
 
   @ApiProperty({
@@ -28,6 +42,33 @@ export class GetVideoDto {
   @Max(50)
   @IsOptional()
   pageSize?: number;
+
+  @ApiProperty({
+    description: 'rootId',
+    nullable: true,
+    required: false,
+    example: '37418d9b-cae4-42ab-ba36-65a0893e6d33',
+  })
+  @IsUUID()
+  @IsOptional()
+  rootId?: string;
+
+  @ApiProperty({
+    description: 'excludeIds',
+    nullable: true,
+    required: false,
+    example: ['37418d9b-cae4-42ab-ba36-65a0893e6d33'],
+  })
+  @IsOptional()
+  @Transform((data) => {
+    const value = data.value as string;
+    if (!value) return undefined;
+    if (Array.isArray(value)) return value;
+    return value.split(',').filter(Boolean);
+  })
+  @IsArray()
+  @IsUUID('all', { each: true })
+  excludeIds?: string[];
 }
 
 export class VideoDto {

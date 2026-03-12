@@ -30,15 +30,7 @@ export class VideoService {
   }
 
   async findAll(queryPayload: GetVideoDto): Promise<GetVideoResponseDto> {
-    const { pageSize = 10, query = '', distanceScore } = queryPayload;
-
-    const pageSizeNum = Number(pageSize);
-
-    let videos = await this.getRecommendationVideo(
-      query,
-      pageSizeNum,
-      distanceScore,
-    );
+    let videos = await this.getRecommendationVideo(queryPayload);
 
     const maxDistanceScore = (videos[videos.length - 1]?.score as number) || 0;
 
@@ -55,12 +47,11 @@ export class VideoService {
     return result;
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} video`;
+  async findOne(id: string): Promise<Video | null> {
+    return await this.videoRepository.findOneBy({ id });
   }
 
   async findBySlug(slug: string): Promise<Video | null> {
-    console.log(slug);
     const result = await this.videoRepository.findOne({
       select: {
         id: true,
@@ -109,18 +100,29 @@ export class VideoService {
     await this.update(video.id, { embedding: newEmbedding });
   }
 
-  async getRecommendationVideo(
-    query: string,
-    limit: number,
-    distanceScore?: number,
-  ) {
+  async getRecommendationVideo(payload: GetVideoDto) {
+    const {
+      rootId,
+      excludeIds = [],
+      query = '',
+      pageSize = 6,
+      distanceScore,
+    } = payload;
     const embedding = await this.embeddingService.getEmbedding(query);
-    const pgVectorEmbedding = pgvector.toSql(embedding) as string;
+    let pgVectorEmbedding = pgvector.toSql(embedding) as string;
 
     const postgresSchema = this.configService.get<string>('POSTGRES_SCHEMA');
     await this.videoRepository.query(
       `SET search_path TO public, ${postgresSchema}`,
     );
+
+    if (rootId) {
+      const rootVideo = await this.findOne(rootId);
+      if (rootVideo) {
+        pgVectorEmbedding = rootVideo.embedding as string;
+        excludeIds.push(rootId);
+      }
+    }
 
     const videosQb = this.videoRepository
       .createQueryBuilder('v')
@@ -141,10 +143,14 @@ export class VideoService {
       .setParameters({
         queryEmbedding: pgVectorEmbedding,
       })
-      .limit(limit);
+      .limit(pageSize);
 
     if (distanceScore) {
       videosQb.andWhere(`v.embedding <=> :queryEmbedding >  ${distanceScore}`);
+    }
+
+    if (excludeIds && excludeIds.length > 0) {
+      videosQb.andWhere(`v.id NOT IN (:...excludeIds)`, { excludeIds });
     }
     const videos = await videosQb.getRawMany();
 
