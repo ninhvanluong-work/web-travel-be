@@ -4,13 +4,16 @@ import { Destination } from 'src/modules/destination/entities/destination.entity
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 import { Video } from 'src/modules/video/entities/video.entity';
 import { Booking } from 'src/modules/booking/entities/booking.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('product')
 export class Product extends BaseEntity {
   @Column({ length: 500 })
+  @ApiProperty({ example: 'product title' })
   name: string;
 
   @Column({ type: 'text', nullable: true })
+  @ApiProperty({ example: 'product description' })
   description: string;
 
   @ManyToOne(() => Destination, (dest: Destination) => dest.products)
