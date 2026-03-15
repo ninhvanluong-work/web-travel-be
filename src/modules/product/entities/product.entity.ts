@@ -1,10 +1,12 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+
 import { BaseEntity } from 'src/database/base.entity';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 import { Video } from 'src/modules/video/entities/video.entity';
 import { Booking } from 'src/modules/booking/entities/booking.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Option } from 'src/modules/option/entities/option.entity';
 
 @Entity('product')
 export class Product extends BaseEntity {
@@ -35,4 +37,7 @@ export class Product extends BaseEntity {
 
   @OneToMany(() => Booking, (booking: Booking) => booking.product)
   bookings: Booking[];
+
+  @OneToMany(() => Option, (option: Option) => option.product)
+  options: Option[];
 }

@@ -10,6 +10,7 @@ import { VideoModule } from './modules/video/video.module';
 import { TaskModule } from './modules/task/task.module';
 import { ProductModule } from 'src/modules/product/product.module';
 import { EmbeddingModule } from './modules/embedding/embedding.module';
+import { OptionModule } from './modules/option/option.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { EmbeddingModule } from './modules/embedding/embedding.module';
     VideoModule,
     TaskModule,
     EmbeddingModule,
+    OptionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
