@@ -58,6 +58,7 @@ export class VideoService {
         slug: true,
         url: true,
         shortUrl: true,
+        embedUrl: true,
         thumbnail: true,
         name: true,
         description: true,

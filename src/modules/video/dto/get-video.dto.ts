@@ -94,6 +94,12 @@ export class VideoDto {
   shortUrl: string;
 
   @ApiProperty({
+    description: 'embedUrl',
+    example: 'https://video.abc.com/video',
+  })
+  embedUrl: string;
+
+  @ApiProperty({
     description: 'query',
     example: 'https://video.abc.com/video/123/thumbnail',
   })
