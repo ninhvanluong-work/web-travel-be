@@ -132,6 +132,7 @@ export class VideoService {
         'v.slug as slug',
         'v.url as url',
         `v.short_url as "shortUrl"`,
+        `v.embed_url as "embedUrl"`,
         'v.thumbnail as thumbnail',
         'v.name as name',
         'v.description as description',
