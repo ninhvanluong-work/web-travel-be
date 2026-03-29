@@ -12,6 +12,8 @@ import { ProductModule } from 'src/modules/product/product.module';
 import { EmbeddingModule } from './modules/embedding/embedding.module';
 import { OptionModule } from './modules/option/option.module';
 import { ElementModule } from './modules/element/element.module';
+import { ReviewModule } from './modules/review/review.module';
+import { ItineraryModule } from 'src/modules/Itinerary/itinerary.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { ElementModule } from './modules/element/element.module';
     EmbeddingModule,
     OptionModule,
     ElementModule,
+    ReviewModule,
+    ItineraryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

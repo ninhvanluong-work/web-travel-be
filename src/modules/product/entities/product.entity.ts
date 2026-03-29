@@ -7,6 +7,8 @@ import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 import { Video } from 'src/modules/video/entities/video.entity';
 import { Booking } from 'src/modules/booking/entities/booking.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
+import { Review } from 'src/modules/review/entities/review.entity';
+import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 
 export enum ProductStatus {
   DRAFT = 'draft',
@@ -110,4 +112,10 @@ export class Product extends BaseEntity {
 
   @OneToMany(() => Option, (option: Option) => option.product)
   options: Option[];
+
+  @OneToMany(() => Review, (review: Review) => review.product)
+  reviews: Review[];
+
+  @OneToMany(() => Itinerary, (itinerary: Itinerary) => itinerary.product)
+  itineraries: Itinerary[];
 }
