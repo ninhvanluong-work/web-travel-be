@@ -11,6 +11,7 @@ import { TaskModule } from './modules/task/task.module';
 import { ProductModule } from 'src/modules/product/product.module';
 import { EmbeddingModule } from './modules/embedding/embedding.module';
 import { OptionModule } from './modules/option/option.module';
+import { ElementModule } from './modules/element/element.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { OptionModule } from './modules/option/option.module';
     TaskModule,
     EmbeddingModule,
     OptionModule,
+    ElementModule,
   ],
   controllers: [AppController],
   providers: [AppService],
