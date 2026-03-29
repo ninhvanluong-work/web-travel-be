@@ -1,6 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from 'src/database/base.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
+import { VideoType } from 'src/modules/video/video.type';
 
 @Entity('video')
 export class Video extends BaseEntity {
@@ -33,6 +34,9 @@ export class Video extends BaseEntity {
 
   @Column({ type: 'integer', default: 0 })
   like: string;
+
+  @Column({ default: VideoType.NORMAL, length: 50 })
+  type: VideoType;
 
   @ManyToOne(() => Product, (product) => product.videos)
   @JoinColumn({
