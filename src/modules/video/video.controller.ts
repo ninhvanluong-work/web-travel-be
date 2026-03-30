@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   HttpStatus,
+  Put,
 } from '@nestjs/common';
 
 import { VideoService } from './video.service';
@@ -124,9 +125,31 @@ export class VideoController {
     );
   }
 
-  //@Patch(':id')
-  update(@Param('id') id: string, @Body() updateVideoDto: UpdateVideoDto) {
-    return this.videosService.update(id, updateVideoDto);
+  @Put(':id')
+  @ApiResponse({
+    status: 200,
+    description: 'update video',
+    schema: {
+      properties: {
+        data: {
+          $ref: getSchemaRefPath('Video'),
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() updateVideoDto: UpdateVideoDto,
+  ) {
+    const result = await this.videosService.update(id, updateVideoDto);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'video updated successfully!!',
+    );
   }
 
   //@Delete(':id')

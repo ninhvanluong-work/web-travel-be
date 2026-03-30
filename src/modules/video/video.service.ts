@@ -106,6 +106,8 @@ export class VideoService {
 
   async update(id: string, updateVideoDto: UpdateVideoDto) {
     await this.videoRepository.update(id, updateVideoDto);
+    const updatedVideo = await this.findOne(id);
+    return updatedVideo;
   }
 
   remove(id: string) {

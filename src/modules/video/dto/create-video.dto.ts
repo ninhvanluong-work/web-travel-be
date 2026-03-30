@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { IsEnum, IsUUID } from 'class-validator';
+import { VideoType } from 'src/modules/video/video.type';
 export class CreateVideoDto {
   @ApiProperty()
   name: string;
@@ -12,6 +13,10 @@ export class CreateVideoDto {
 
   @ApiProperty({ nullable: true })
   description?: string;
+
+  @ApiProperty({ nullable: true, enum: VideoType })
+  @IsEnum(VideoType)
+  type: VideoType;
 
   @ApiProperty({ nullable: true })
   tag?: string;
