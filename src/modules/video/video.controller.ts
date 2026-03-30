@@ -19,9 +19,10 @@ import {
   GetVideoResponseDto,
 } from 'src/modules/video/dto/get-video.dto';
 import { formatApiResponse, getSchemaRefPath } from 'src/common/utils/format';
+import { Video } from 'src/modules/video/entities/video.entity';
 
 @Controller('video')
-@ApiExtraModels(GetVideoDto, GetVideoResponseDto)
+@ApiExtraModels(GetVideoDto, GetVideoResponseDto, Video)
 export class VideoController {
   constructor(private readonly videosService: VideoService) {}
 
@@ -80,7 +81,21 @@ export class VideoController {
     return formatApiResponse(null, HttpStatus.OK, 'ok');
   }
 
-  //@Get(':id')
+  @Get('id/:id')
+  @ApiResponse({
+    status: 200,
+    description: 'get video detail by id',
+    schema: {
+      properties: {
+        data: {
+          $ref: getSchemaRefPath('Video'),
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
   findOne(@Param('id') id: string) {
     return this.videosService.findOne(id);
   }

@@ -48,7 +48,26 @@ export class VideoService {
   }
 
   async findOne(id: string): Promise<Video | null> {
-    return await this.videoRepository.findOneBy({ id });
+    return await this.videoRepository.findOne({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        name: true,
+        slug: true,
+        url: true,
+        embedUrl: true,
+        shortUrl: true,
+        thumbnail: true,
+        description: true,
+        tag: true,
+        type: true,
+        like: true,
+      },
+    });
   }
 
   async findBySlug(slug: string): Promise<Video | null> {
