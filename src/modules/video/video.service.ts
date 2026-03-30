@@ -1,5 +1,5 @@
 import { IsNull, Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import pgvector from 'pgvector';
 
@@ -14,6 +14,7 @@ import {
   VideoDto,
 } from 'src/modules/video/dto/get-video.dto';
 import { ConfigService } from '@nestjs/config';
+import { ProductService } from 'src/modules/product/product.service';
 
 @Injectable()
 export class VideoService {
@@ -21,12 +22,23 @@ export class VideoService {
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
 
+    private readonly productService: ProductService,
     private readonly embeddingService: EmbeddingService,
     private readonly configService: ConfigService,
   ) {}
 
-  create(createVideoDto: CreateVideoDto) {
-    return 'This action adds a new video';
+  async create(payload: CreateVideoDto) {
+    const { productId } = payload;
+    if (productId) {
+      const product = await this.productService.findOne(productId);
+      if (!product) {
+        throw new NotFoundException('Product not found');
+      }
+    }
+
+    const newVideo = this.videoRepository.create(payload);
+    const result = await this.videoRepository.save(newVideo);
+    return result;
   }
 
   async findAll(queryPayload: GetVideoDto): Promise<GetVideoResponseDto> {

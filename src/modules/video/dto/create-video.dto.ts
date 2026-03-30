@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsUUID } from 'class-validator';
 export class CreateVideoDto {
   @ApiProperty()
   name: string;
@@ -16,8 +17,6 @@ export class CreateVideoDto {
   tag?: string;
 
   @ApiProperty({ nullable: true })
-  embedding?: string;
-
-  @ApiProperty({ nullable: true })
+  @IsUUID()
   productId?: string;
 }

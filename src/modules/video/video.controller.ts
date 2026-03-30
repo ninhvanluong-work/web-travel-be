@@ -100,6 +100,30 @@ export class VideoController {
     return this.videosService.findOne(id);
   }
 
+  @Post('')
+  @ApiResponse({
+    status: 200,
+    description: 'create video',
+    schema: {
+      properties: {
+        data: {
+          $ref: getSchemaRefPath('Video'),
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async create(@Body() body: CreateVideoDto) {
+    const result = await this.videosService.create(body);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'video created successfully!!',
+    );
+  }
+
   //@Patch(':id')
   update(@Param('id') id: string, @Body() updateVideoDto: UpdateVideoDto) {
     return this.videosService.update(id, updateVideoDto);
