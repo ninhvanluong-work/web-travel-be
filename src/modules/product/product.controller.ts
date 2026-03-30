@@ -1,11 +1,19 @@
-import { Controller, Get, Body, Param, HttpStatus, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Param,
+  HttpStatus,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiExtraModels, ApiResponse } from '@nestjs/swagger';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { formatApiResponse, getSchemaRefPath } from 'src/common/utils/format';
-import { GetProductDetailDto } from 'src/modules/product/dto/product.dto';
+import { IdDto } from 'src/types/get-id.dto';
 
 @Controller('product')
 @ApiExtraModels(Product)
@@ -44,7 +52,7 @@ export class ProductController {
   @Get(':id')
   @ApiResponse({
     status: 200,
-    description: 'get list video',
+    description: 'get product detail',
     schema: {
       properties: {
         data: {
@@ -56,15 +64,38 @@ export class ProductController {
       },
     },
   })
-  async findOne(@Param() param: GetProductDetailDto) {
+  async findOne(@Param() param: IdDto) {
     const { id } = param;
     const result = await this.productService.findOne(id);
     return formatApiResponse(result, HttpStatus.OK, 'ok');
   }
 
-  //@Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  @Put(':id')
+  @ApiResponse({
+    status: 200,
+    description: 'update product',
+    schema: {
+      properties: {
+        data: {
+          $ref: getSchemaRefPath('Product'),
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async update(
+    @Param() param: IdDto,
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
+    const { id } = param;
+    const result = await this.productService.update(id, updateProductDto);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'updated product successfully!',
+    );
   }
 
   //@Delete(':id')

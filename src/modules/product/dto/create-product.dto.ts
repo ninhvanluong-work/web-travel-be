@@ -33,11 +33,6 @@ export class CreateProductDto {
   @IsUrl()
   thumbnail?: string;
 
-  @ApiPropertyOptional({ example: 'PROD-001' })
-  @IsOptional()
-  @IsString()
-  code?: string;
-
   @ApiPropertyOptional({
     example: ['img1.jpg', 'img2.jpg'],
     description: 'Array of image URLs',
