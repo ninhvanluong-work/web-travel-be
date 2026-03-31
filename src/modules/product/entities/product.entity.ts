@@ -90,6 +90,12 @@ export class Product extends BaseEntity {
   @Column({ type: 'float', name: 'review_point', default: 0 })
   reviewPoint: number;
 
+  @Column({ type: 'uuid', name: 'destination_id' })
+  destinationId: string;
+
+  @Column({ type: 'uuid', name: 'supplier_id' })
+  supplierId: string;
+
   @ManyToOne(() => Destination, (dest: Destination) => dest.products)
   @JoinColumn({
     name: 'destination_id',

@@ -6,17 +6,26 @@ import {
   HttpStatus,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
+import { ApiExtraModels, ApiResponse } from '@nestjs/swagger';
+
+import { Product } from 'src/modules/product/entities/product.entity';
 import { ProductService } from './product.service';
+
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ApiExtraModels, ApiResponse } from '@nestjs/swagger';
-import { Product } from 'src/modules/product/entities/product.entity';
+import { IdDto } from 'src/types/common.dto';
+import {
+  GetProductDto,
+  GetProductsResponseDto,
+  ProductShortResponseDto,
+} from 'src/modules/product/dto/get-product.dto';
+
 import { formatApiResponse, getSchemaRefPath } from 'src/common/utils/format';
-import { IdDto } from 'src/types/get-id.dto';
 
 @Controller('product')
-@ApiExtraModels(Product)
+@ApiExtraModels(Product, GetProductsResponseDto, ProductShortResponseDto)
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
@@ -44,9 +53,31 @@ export class ProductController {
     );
   }
 
-  //@Get()
-  findAll() {
-    return this.productService.findAll();
+  @Get()
+  @ApiResponse({
+    status: 200,
+    description: 'get product list',
+    schema: {
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            $ref: getSchemaRefPath('GetProductsResponseDto'),
+          },
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async findAll(@Query() query: GetProductDto) {
+    const result = await this.productService.findAll(query);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'Get products successfully!',
+    );
   }
 
   @Get(':id')

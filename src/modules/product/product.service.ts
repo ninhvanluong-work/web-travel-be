@@ -1,4 +1,15 @@
-import { Repository } from 'typeorm';
+import {
+  ListItemsResponse,
+  PaginationResponse,
+} from 'src/types/pagination.dto';
+import {
+  Between,
+  FindOptionsWhere,
+  ILike,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -6,6 +17,7 @@ import { Product } from 'src/modules/product/entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { generateRandomCode, generateSlug } from 'src/common/utils/gen-code';
+import { GetProductDto } from 'src/modules/product/dto/get-product.dto';
 
 @Injectable()
 export class ProductService {
@@ -30,8 +42,89 @@ export class ProductService {
     return result;
   }
 
-  findAll() {
-    return `This action returns all product`;
+  buildQueryCondition(query: GetProductDto): FindOptionsWhere<Product> {
+    const condition: FindOptionsWhere<Product> = {};
+
+    if (query.keyword) {
+      condition.name = ILike(`%${query.keyword}%`);
+    }
+
+    if (query.supplierId) {
+      condition.supplierId = query.supplierId;
+    }
+
+    if (query.destinationId) {
+      condition.destinationId = query.destinationId;
+    }
+
+    if (query.status) {
+      condition.status = query.status;
+    }
+
+    if (query.fromDate && query.toDate) {
+      condition.createdAt = Between(
+        new Date(query.fromDate),
+        new Date(query.toDate),
+      );
+    } else if (query.fromDate) {
+      condition.createdAt = MoreThanOrEqual(new Date(query.fromDate));
+    } else if (query.toDate) {
+      condition.createdAt = LessThanOrEqual(new Date(query.toDate));
+    }
+
+    return condition;
+  }
+
+  async findAll(query: GetProductDto): Promise<ListItemsResponse<Product>> {
+    const { page = 1, pageSize = 10 } = query;
+    console.log([page, pageSize]);
+    const condition = this.buildQueryCondition(query);
+    const skip = (page - 1) * pageSize;
+
+    const [products, total] = await this.productRepository.findAndCount({
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        name: true,
+        slug: true,
+        code: true,
+        thumbnail: true,
+        minPrice: true,
+        status: true,
+        reviewPoint: true,
+        destination: {
+          id: true,
+          name: true,
+        },
+        supplier: {
+          id: true,
+          name: true,
+        },
+      },
+      where: condition,
+      take: pageSize,
+      skip,
+      relations: {
+        supplier: true,
+        destination: true,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    const pagination: PaginationResponse = {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    };
+
+    return {
+      items: products,
+      pagination,
+    };
   }
 
   async findOne(id: string) {
