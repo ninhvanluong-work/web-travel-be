@@ -59,12 +59,10 @@ export class VideoService {
     return result;
   }
 
-  async findOne(id: string): Promise<Video | null> {
-    return await this.videoRepository.findOne({
-      where: {
-        id,
-      },
-      select: {
+  async findOne(id: string, short = true): Promise<Video | null> {
+    let select = {};
+    if (short) {
+      select = {
         id: true,
         createdAt: true,
         updatedAt: true,
@@ -78,7 +76,13 @@ export class VideoService {
         tag: true,
         type: true,
         like: true,
+      };
+    }
+    return await this.videoRepository.findOne({
+      where: {
+        id,
       },
+      select,
     });
   }
 
@@ -151,7 +155,7 @@ export class VideoService {
     );
 
     if (rootId) {
-      const rootVideo = await this.findOne(rootId);
+      const rootVideo = await this.findOne(rootId, false);
       if (rootVideo) {
         pgVectorEmbedding = rootVideo.embedding as string;
         excludeIds.push(rootId);
