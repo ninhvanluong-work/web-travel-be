@@ -15,6 +15,7 @@ import {
 } from 'src/modules/video/dto/get-video.dto';
 import { ConfigService } from '@nestjs/config';
 import { ProductService } from 'src/modules/product/product.service';
+import { BunnyVideoStatus } from 'src/modules/webhook/types/bunny-webhook.type';
 
 @Injectable()
 export class VideoService {
@@ -202,5 +203,9 @@ export class VideoService {
 
   async handleDislikeVideo(id: string) {
     await this.videoRepository.decrement({ id }, 'like', 1);
+  }
+
+  async updateUploadingStatus(guid: string, uploadingStatus: BunnyVideoStatus) {
+    await this.videoRepository.update({ guid }, { uploadingStatus });
   }
 }

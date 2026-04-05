@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import * as bodyParser from 'body-parser';
 
 import { AppModule } from './app.module';
 import { setupSwagger } from 'src/config/swagger.config';
@@ -17,6 +18,14 @@ async function bootstrap() {
       transform: true,
       transformOptions: {
         enableImplicitConversion: true,
+      },
+    }),
+  );
+
+  app.use(
+    bodyParser.json({
+      verify: (req: any, res, buf) => {
+        req.rawBody = buf.toString();
       },
     }),
   );

@@ -15,6 +15,7 @@ import { ElementModule } from './modules/element/element.module';
 import { ReviewModule } from './modules/review/review.module';
 import { ItineraryModule } from 'src/modules/Itinerary/itinerary.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { WebhookModule } from './modules/webhook/webhook.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { UploadModule } from './modules/upload/upload.module';
     ReviewModule,
     ItineraryModule,
     UploadModule,
+    WebhookModule,
   ],
   controllers: [AppController],
   providers: [AppService],
