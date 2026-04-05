@@ -14,6 +14,7 @@ import { OptionModule } from './modules/option/option.module';
 import { ElementModule } from './modules/element/element.module';
 import { ReviewModule } from './modules/review/review.module';
 import { ItineraryModule } from 'src/modules/Itinerary/itinerary.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ItineraryModule } from 'src/modules/Itinerary/itinerary.module';
     ElementModule,
     ReviewModule,
     ItineraryModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],
