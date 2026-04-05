@@ -3,6 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'; // Import Sw
 import { BaseEntity } from 'src/database/base.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { VideoType } from 'src/modules/video/video.type';
+import { BunnyVideoStatus } from 'src/modules/webhook/types/bunny-wehook.type';
 
 @Entity('video')
 export class Video extends BaseEntity {
@@ -51,6 +52,14 @@ export class Video extends BaseEntity {
   @ApiProperty({ enum: VideoType, default: VideoType.NORMAL })
   @Column({ default: VideoType.NORMAL, length: 50 })
   type: VideoType;
+
+  @ApiProperty({ description: 'bunny video guid' })
+  @Column({ nullable: true, length: 255, unique: true })
+  guid: string;
+
+  @ApiProperty({ description: 'uploading status', enum: BunnyVideoStatus })
+  @Column({ nullable: true, type: 'integer', name: 'uploading_status' })
+  uploadingStatus: BunnyVideoStatus;
 
   //@ApiProperty({ type: () => Product })
   @ManyToOne(() => Product, (product) => product.videos)
