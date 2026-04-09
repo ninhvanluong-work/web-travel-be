@@ -61,6 +61,9 @@ export class Video extends BaseEntity {
   @Column({ nullable: true, type: 'integer', name: 'uploading_status' })
   uploadingStatus: BunnyVideoStatus;
 
+  @Column({ name: 'product_id' })
+  productId: string;
+
   //@ApiProperty({ type: () => Product })
   @ManyToOne(() => Product, (product) => product.videos)
   @JoinColumn({

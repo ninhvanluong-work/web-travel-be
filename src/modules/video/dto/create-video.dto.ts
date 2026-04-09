@@ -1,27 +1,33 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsUUID } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { VideoType } from 'src/modules/video/video.type';
 export class CreateVideoDto {
   @ApiProperty()
+  @IsString()
   name: string;
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ format: 'uuid', type: 'string' })
+  @IsNotEmpty()
+  @IsString()
+  guid: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  @IsString()
   url?: string;
 
-  @ApiProperty({ nullable: true })
+  @ApiPropertyOptional({ nullable: true })
+  @IsString()
   thumbnail?: string;
-
-  @ApiProperty({ nullable: true })
+  
+  @ApiPropertyOptional({ nullable: true })
+  @IsString()
   description?: string;
-
-  @ApiProperty({ nullable: true, enum: VideoType })
+  
+  @ApiPropertyOptional({ nullable: true, enum: VideoType })
   @IsEnum(VideoType)
-  type: VideoType;
+  type?: VideoType;
 
-  @ApiProperty({ nullable: true })
-  tag?: string;
-
-  @ApiProperty({ nullable: true })
+  @ApiPropertyOptional({ nullable: true })
   @IsUUID()
-  productId?: string;
+  productId: string;
 }

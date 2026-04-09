@@ -1,5 +1,5 @@
 import { IsNull, Repository } from 'typeorm';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import pgvector from 'pgvector';
 
@@ -16,9 +16,13 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { ProductService } from 'src/modules/product/product.service';
 import { BunnyVideoStatus } from 'src/modules/webhook/types/bunny-webhook.type';
+import { generateSlug } from 'src/common/utils/gen-code';
+import { VideoType } from 'src/modules/video/video.type';
 
 @Injectable()
 export class VideoService {
+  logger = new Logger(VideoService.name);
+
   constructor(
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
@@ -28,17 +32,63 @@ export class VideoService {
     private readonly configService: ConfigService,
   ) {}
 
+  getVideoEmbedUrl(guid: string): string {
+    const baseUri = `https://player.mediadelivery.net`;
+    const libraryId = this.configService.get<string>('BUNNY_LIBRARY_ID');
+    return `${baseUri}/embed/${libraryId}/${guid}`;
+  }
+
+  getVideoShortUrl(guid: string): string {
+    const baseUri = this.configService.get<string>('STREAM_SERVER_URI');
+    return `${baseUri}/${guid}/preview.webp`;
+  }
+
+  getVideoThumbnailUrl(guid: string): string {
+    const baseUri = this.configService.get<string>('STREAM_SERVER_URI');
+    return `${baseUri}/${guid}/thumbnail.jpg`;
+  }
+
   async create(payload: CreateVideoDto) {
-    const { productId } = payload;
+    const { productId, name, guid } = payload;
+    const prefixLog = `[create] productId ${productId}`;
+    const videoInsertData: Partial<Video> = payload;
+    videoInsertData.slug = generateSlug(name);
+    videoInsertData.embedUrl = this.getVideoEmbedUrl(guid);
+    videoInsertData.shortUrl = this.getVideoShortUrl(guid);
+    if (!payload.thumbnail) {
+      videoInsertData.thumbnail = this.getVideoThumbnailUrl(guid);
+    }
+
     if (productId) {
       const product = await this.productService.findOne(productId);
       if (!product) {
         throw new NotFoundException('Product not found');
       }
+      //description, slug
+      this.logger.log(
+        `${prefixLog} product provided -> save description, slug`,
+      );
+
+      videoInsertData.description = product.description;
+      videoInsertData.slug = product.slug;
+
+      if (payload.type === VideoType.HERO) {
+        this.logger.log(
+          `${prefixLog} hero video -> set all current product video = normal`,
+        );
+        await this.videoRepository.update(
+          { productId },
+          { type: VideoType.NORMAL },
+        );
+      }
     }
 
-    const newVideo = this.videoRepository.create(payload);
+    const newVideo = this.videoRepository.create(videoInsertData);
     const result = await this.videoRepository.save(newVideo);
+
+    if(productId) {
+      
+    }
     return result;
   }
 
@@ -110,8 +160,32 @@ export class VideoService {
   }
 
   async update(id: string, updateVideoDto: UpdateVideoDto) {
+    const prefixLog = `[update] ${id}`;
+    const  productId  = updateVideoDto?.productId as string;
+    if (productId) {
+      const product = await this.productService.findOne(productId);
+      if (!product) {
+        throw new NotFoundException('Product not found');
+      }
+      //description, slug
+      this.logger.log(
+        `${prefixLog} product provided -> save description, slug`,
+      );
+
+      if (updateVideoDto.type === VideoType.HERO) {
+        this.logger.log(
+          `${prefixLog} hero video -> set all current product video = normal`,
+        );
+        await this.videoRepository.update(
+          { productId },
+          { type: VideoType.NORMAL },
+        );
+      }
+    }
+    
     await this.videoRepository.update(id, updateVideoDto);
-    const updatedVideo = await this.findOne(id);
+    const updatedVideo = await this.findOne(id) as Video;
+    await this.updateVideoEmbedding(updatedVideo);
     return updatedVideo;
   }
 
