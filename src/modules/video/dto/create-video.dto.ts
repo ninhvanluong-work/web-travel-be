@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { VideoType } from 'src/modules/video/video.type';
 export class CreateVideoDto {
   @ApiProperty()
@@ -13,21 +19,26 @@ export class CreateVideoDto {
 
   @ApiPropertyOptional({ nullable: true })
   @IsString()
+  @IsOptional()
   url?: string;
 
   @ApiPropertyOptional({ nullable: true })
   @IsString()
+  @IsOptional()
   thumbnail?: string;
-  
-  @ApiPropertyOptional({ nullable: true })
-  @IsString()
-  description?: string;
-  
-  @ApiPropertyOptional({ nullable: true, enum: VideoType })
-  @IsEnum(VideoType)
-  type?: VideoType;
 
   @ApiPropertyOptional({ nullable: true })
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @ApiPropertyOptional({ nullable: true, enum: VideoType })
+  @IsEnum(VideoType)
+  @IsOptional()
+  type?: VideoType;
+
+  @ApiPropertyOptional({ nullable: true, format: 'uuid' })
   @IsUUID()
-  productId: string;
+  @IsOptional()
+  productId?: string;
 }
