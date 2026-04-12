@@ -94,4 +94,9 @@ export class CreateProductDto {
   @IsOptional()
   @IsUUID()
   supplierId?: string;
+
+  @ApiPropertyOptional({ format: 'uuid' })
+  @IsOptional()
+  @IsUUID()
+  heroVideoId?: string;
 }
