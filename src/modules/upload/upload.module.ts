@@ -7,5 +7,6 @@ import { UploadController } from 'src/modules/upload/upload.controller';
   providers: [UploadService],
   imports: [ConfigModule],
   controllers: [UploadController],
+  exports: [UploadService],
 })
 export class UploadModule {}

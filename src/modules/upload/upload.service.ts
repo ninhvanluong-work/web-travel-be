@@ -77,6 +77,7 @@ export class UploadService {
   async handleUploadFile(
     file: Express.Multer.File,
     fileType: FileType,
+    folder = '',
   ): Promise<{
     fileType: FileType;
     url: string;
@@ -87,7 +88,6 @@ export class UploadService {
     }
     // define whitelist
     const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-    const VIDEO_EXTS = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
 
     // validate theo fileType
     if (fileType === FileType.IMG) {
@@ -98,21 +98,14 @@ export class UploadService {
       }
     }
 
-    if (fileType === FileType.FILE) {
-      if (VIDEO_EXTS.includes(ext)) {
-        throw new BadRequestException(
-          'Video files are not allowed in this API. Please use the video upload API.',
-        );
-      }
-    }
-
     // create file path
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const timestamp = now.getTime();
     const fileName = `wt_${timestamp}.${ext}`;
-    const path = `${fileType}/${year}/${month}/${fileName}`;
+    const folderPath = folder.length === 0 ? '' : `/${folder}`;
+    const path = `${fileType}${folderPath}/${year}/${month}/${fileName}`;
 
     // convert sang Web Stream
     const nodeStream = Readable.from(file.buffer);

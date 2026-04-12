@@ -10,6 +10,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ProductModule } from 'src/modules/product/product.module';
 import { ProductService } from 'src/modules/product/product.service';
 import { Product } from 'src/modules/product/entities/product.entity';
+import { VideoEditorService } from 'src/modules/video/video-editor.service';
+import { UploadModule } from 'src/modules/upload/upload.module';
 
 @Module({
   controllers: [VideoController],
@@ -18,8 +20,9 @@ import { Product } from 'src/modules/product/entities/product.entity';
     EmbeddingModule,
     ConfigModule,
     ProductModule,
+    UploadModule,
   ],
-  providers: [VideoService, ProductService],
-  exports: [VideoService],
+  providers: [VideoService, ProductService, VideoEditorService],
+  exports: [VideoService, VideoEditorService],
 })
 export class VideoModule {}
