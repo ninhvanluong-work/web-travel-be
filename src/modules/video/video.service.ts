@@ -18,6 +18,7 @@ import { ProductService } from 'src/modules/product/product.service';
 import { BunnyVideoStatus } from 'src/modules/webhook/types/bunny-webhook.type';
 import { generateSlug } from 'src/common/utils/gen-code';
 import { VideoType } from 'src/modules/video/video.type';
+import { VideoEditorService } from 'src/modules/video/video-editor.service';
 
 @Injectable()
 export class VideoService {
@@ -30,6 +31,7 @@ export class VideoService {
     private readonly productService: ProductService,
     private readonly embeddingService: EmbeddingService,
     private readonly configService: ConfigService,
+    private readonly videoEditorService: VideoEditorService,
   ) {}
 
   getVideoEmbedUrl(guid: string): string {
@@ -86,9 +88,6 @@ export class VideoService {
     const newVideo = this.videoRepository.create(videoInsertData);
     const result = await this.videoRepository.save(newVideo);
 
-    if(productId) {
-      
-    }
     return result;
   }
 
@@ -161,7 +160,7 @@ export class VideoService {
 
   async update(id: string, updateVideoDto: UpdateVideoDto) {
     const prefixLog = `[update] ${id}`;
-    const  productId  = updateVideoDto?.productId as string;
+    const productId = updateVideoDto?.productId as string;
     if (productId) {
       const product = await this.productService.findOne(productId);
       if (!product) {
@@ -182,9 +181,9 @@ export class VideoService {
         );
       }
     }
-    
+
     await this.videoRepository.update(id, updateVideoDto);
-    const updatedVideo = await this.findOne(id) as Video;
+    const updatedVideo = (await this.findOne(id)) as Video;
     await this.updateVideoEmbedding(updatedVideo);
     return updatedVideo;
   }
@@ -280,6 +279,15 @@ export class VideoService {
   }
 
   async updateUploadingStatus(guid: string, uploadingStatus: BunnyVideoStatus) {
-    await this.videoRepository.update({ guid }, { uploadingStatus });
+    const updatePayload: Partial<Video> = { uploadingStatus };
+    if (uploadingStatus === BunnyVideoStatus.Finished) {
+      const hostname = this.configService.get<string>('STREAM_SERVER_URI');
+      const videoUrl = `${hostname}/${guid}/play_720p.mp4`;
+      const previewUrl =
+        await this.videoEditorService.cutVideoPreview(videoUrl);
+      updatePayload.shortUrl = previewUrl;
+    }
+
+    await this.videoRepository.update({ guid }, updatePayload);
   }
 }
