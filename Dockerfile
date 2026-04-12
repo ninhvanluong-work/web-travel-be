@@ -20,7 +20,7 @@ FROM base AS build
 
 # Install packages needed to build node modules
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3 ffmpeg
+    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
 
 # Install node modules
 COPY package.json yarn.lock ./
@@ -35,6 +35,10 @@ RUN yarn run build
 
 # Final stage for app image
 FROM base
+
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y ffmpeg && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy built application
 COPY --from=build /app /app
