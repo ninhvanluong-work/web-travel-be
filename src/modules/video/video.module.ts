@@ -15,10 +15,17 @@ import { UploadModule } from 'src/modules/upload/upload.module';
 import { ProductService } from 'src/modules/product/product.service';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
+import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 @Module({
   controllers: [VideoController],
   imports: [
-    TypeOrmModule.forFeature([Video, Product, Destination, Supplier]),
+    TypeOrmModule.forFeature([
+      Video,
+      Product,
+      Destination,
+      Supplier,
+      Itinerary,
+    ]),
     EmbeddingModule,
     ConfigModule,
     forwardRef(() => ProductModule),

@@ -9,9 +9,18 @@ import { Destination } from 'src/modules/destination/entities/destination.entity
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 
 import { Video } from 'src/modules/video/entities/video.entity';
+import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, Destination, Supplier, Video])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Product,
+      Destination,
+      Supplier,
+      Video,
+      Itinerary,
+    ]),
+  ],
   controllers: [ProductController],
   providers: [ProductService],
 })

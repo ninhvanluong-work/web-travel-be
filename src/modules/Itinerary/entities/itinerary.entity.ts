@@ -22,6 +22,10 @@ export class Itinerary extends BaseEntity {
   @ApiProperty({ type: 'string', example: 'description...' })
   description: string;
 
+  @Column({ name: 'product_id' })
+  @ApiProperty({ type: 'string', format: 'uuid' })
+  productId: string;
+
   @ManyToOne(() => Product, (product) => product.itineraries)
   @JoinColumn({
     name: 'product_id',

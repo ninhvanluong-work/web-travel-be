@@ -122,6 +122,8 @@ export class Product extends BaseEntity {
   @OneToMany(() => Review, (review: Review) => review.product)
   reviews: Review[];
 
-  @OneToMany(() => Itinerary, (itinerary: Itinerary) => itinerary.product)
+  @OneToMany(() => Itinerary, (itinerary: Itinerary) => itinerary.product, {
+    cascade: true,
+  })
   itineraries: Itinerary[];
 }

@@ -1,3 +1,4 @@
+import { Itinerary } from './../Itinerary/entities/itinerary.entity';
 import {
   ListItemsResponse,
   PaginationResponse,
@@ -35,6 +36,8 @@ export class ProductService {
     private readonly supplierRepository: Repository<Supplier>,
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
+    @InjectRepository(Itinerary)
+    private readonly itineraryRepository: Repository<Itinerary>,
   ) {}
 
   async create(payload: CreateProductDto) {
@@ -178,11 +181,15 @@ export class ProductService {
       where: {
         id,
       },
+      relations: {
+        itineraries: true,
+      },
     });
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    const { destinationId, supplierId, heroVideoId } = updateProductDto;
+    const { destinationId, supplierId, heroVideoId, itineraries } =
+      updateProductDto;
     const product = await this.findOne(id);
     if (!product) throw new NotFoundException('Product Not Found');
 
@@ -221,6 +228,21 @@ export class ProductService {
         type: VideoType.HERO,
         productId: id,
       });
+    }
+
+    if (itineraries) {
+      await this.itineraryRepository.softDelete({ productId: id });
+      const newItins = itineraries.map((itinerary) =>
+        this.itineraryRepository.create({
+          ...itinerary,
+          productId: id,
+        }),
+      );
+
+      //save db
+      await this.itineraryRepository.save(newItins);
+
+      delete updateProductDto.itineraries;
     }
 
     await this.productRepository.update(id, updateProductDto);

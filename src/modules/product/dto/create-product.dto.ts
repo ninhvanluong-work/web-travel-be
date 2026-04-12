@@ -9,9 +9,24 @@ import {
   IsInt,
   Min,
   IsUUID,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ProductStatus } from '../entities/product.entity';
+
+export class ItineraryDto {
+  @ApiProperty({ example: 'itinerary title' })
+  name: string;
+
+  @ApiProperty({ example: 'day 1' })
+  featuredName: string;
+
+  @ApiProperty({ type: 'integer', example: '1', default: '1' })
+  order: number;
+
+  @ApiProperty({ type: 'string', example: 'description...' })
+  description: string;
+}
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Hạ Long Bay Tour' })
@@ -99,4 +114,11 @@ export class CreateProductDto {
   @IsOptional()
   @IsUUID()
   heroVideoId?: string;
+
+  @ApiPropertyOptional({ isArray: true, type: ItineraryDto })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ItineraryDto)
+  itineraries: ItineraryDto[];
 }
