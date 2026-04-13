@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 
 import {
@@ -9,6 +9,9 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { Video } from 'src/modules/video/entities/video.entity';
+import { VideoType } from 'src/modules/video/video.type';
+import { ListItemsResponse, PaginationDto } from 'src/types/pagination.dto';
 
 export class GetVideoDto {
   @ApiProperty({
@@ -126,4 +129,13 @@ export class GetVideoResponseDto {
 
   @ApiProperty({})
   stats: GetVideoResponseStatsDto;
+}
+
+export class GetVideoAdminDto extends PaginationDto {
+  @ApiPropertyOptional({ enum: VideoType })
+  type: VideoType;
+}
+export class GetVideoAdminResponseDto extends ListItemsResponse<Video> {
+  @ApiProperty({ type: [Video] })
+  items: Video[] = [];
 }

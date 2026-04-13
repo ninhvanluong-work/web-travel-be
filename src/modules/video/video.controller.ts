@@ -3,9 +3,7 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
-  Delete,
   Query,
   HttpStatus,
   Put,
@@ -16,6 +14,7 @@ import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { ApiExtraModels, ApiResponse } from '@nestjs/swagger';
 import {
+  GetVideoAdminDto,
   GetVideoDto,
   GetVideoResponseDto,
 } from 'src/modules/video/dto/get-video.dto';
@@ -23,7 +22,7 @@ import { formatApiResponse, getSchemaRefPath } from 'src/common/utils/format';
 import { Video } from 'src/modules/video/entities/video.entity';
 
 @Controller('video')
-@ApiExtraModels(GetVideoDto, GetVideoResponseDto, Video)
+@ApiExtraModels(GetVideoDto, GetVideoResponseDto, Video, GetVideoAdminDto)
 export class VideoController {
   constructor(private readonly videosService: VideoService) {}
 
@@ -47,6 +46,29 @@ export class VideoController {
   })
   async findAll(@Query() query: GetVideoDto) {
     const result = await this.videosService.findAll(query);
+    return formatApiResponse(result, HttpStatus.OK, 'ok');
+  }
+
+  @Get('/admin')
+  @ApiResponse({
+    status: 200,
+    description: 'get list video for admin purpose',
+    schema: {
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            $ref: getSchemaRefPath('GetVideoAdminDto'),
+          },
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async findAllAdmin(@Query() query: GetVideoAdminDto) {
+    const result = await this.videosService.getVideos(query);
     return formatApiResponse(result, HttpStatus.OK, 'ok');
   }
 

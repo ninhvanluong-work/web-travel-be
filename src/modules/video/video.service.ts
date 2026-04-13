@@ -1,4 +1,10 @@
-import { IsNull, Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  FindOptionsWhere,
+  ILike,
+  IsNull,
+  Repository,
+} from 'typeorm';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import pgvector from 'pgvector';
@@ -9,6 +15,8 @@ import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { EmbeddingService } from 'src/modules/embedding/embedding.service';
 import {
+  GetVideoAdminDto,
+  GetVideoAdminResponseDto,
   GetVideoDto,
   GetVideoResponseDto,
   VideoDto,
@@ -19,6 +27,7 @@ import { BunnyVideoStatus } from 'src/modules/webhook/types/bunny-webhook.type';
 import { generateSlug } from 'src/common/utils/gen-code';
 import { VideoType } from 'src/modules/video/video.type';
 import { VideoEditorService } from 'src/modules/video/video-editor.service';
+import { PaginationResponse } from 'src/types/pagination.dto';
 
 @Injectable()
 export class VideoService {
@@ -289,5 +298,52 @@ export class VideoService {
     }
 
     await this.videoRepository.update({ guid }, updatePayload);
+  }
+
+  //use for admin
+  async getVideos(
+    queryPayload: GetVideoAdminDto,
+  ): Promise<GetVideoAdminResponseDto> {
+    const { page = 1, pageSize = 10, keyword = '', type } = queryPayload;
+    const skip = (page - 1) * pageSize;
+    const condition: FindOptionsWhere<Video> = {
+      name: ILike(`%${keyword}%`),
+    };
+
+    if (type) {
+      condition.type = type;
+    }
+    const [videos, total] = await this.videoRepository.findAndCount({
+      select: [
+        'id',
+        'slug',
+        'url',
+        'shortUrl',
+        'embedUrl',
+        'thumbnail',
+        'name',
+        'description',
+        'like',
+        'tag',
+        'type',
+      ],
+      where: condition,
+      skip,
+      take: pageSize,
+    });
+
+    const pagination: PaginationResponse = {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    };
+
+    const result = {
+      items: videos,
+      pagination,
+    };
+
+    return result;
   }
 }
