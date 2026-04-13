@@ -19,6 +19,10 @@ export class Review extends BaseEntity {
   @ApiProperty({ example: 'VND' })
   currency: string;
 
+  @Column({ name: 'product_id' })
+  @ApiProperty({})
+  productId: string;
+
   @ManyToOne(() => Product, (product) => product.reviews)
   @JoinColumn({
     name: 'product_id',

@@ -23,11 +23,25 @@ import {
 } from 'src/modules/product/dto/get-product.dto';
 
 import { formatApiResponse, getSchemaRefPath } from 'src/common/utils/format';
+import {
+  GetProductReviewsDto,
+  GetReviewsResponseDto,
+} from 'src/modules/review/dto/get-review.dto';
+import { ReviewService } from 'src/modules/review/review.service';
 
 @Controller('product')
-@ApiExtraModels(Product, GetProductsResponseDto, ProductShortResponseDto)
+@ApiExtraModels(
+  Product,
+  GetProductsResponseDto,
+  ProductShortResponseDto,
+  GetReviewsResponseDto,
+  GetProductReviewsDto,
+)
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly reviewService: ReviewService,
+  ) {}
 
   @Post()
   @ApiResponse({
@@ -132,5 +146,32 @@ export class ProductController {
   //@Delete(':id')
   remove(@Param('id') id: string) {
     return this.productService.remove(+id);
+  }
+
+  @Get(':id/review')
+  @ApiResponse({
+    status: 200,
+    description: 'get product reviews',
+    schema: {
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            $ref: getSchemaRefPath('GetReviewsResponseDto'),
+          },
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async findProductReview(
+    @Param() param: IdDto,
+    @Query() query: GetProductReviewsDto,
+  ) {
+    const { id } = param;
+    const result = await this.reviewService.getProductReviews(id, query);
+    return formatApiResponse(result, HttpStatus.OK, 'ok');
   }
 }

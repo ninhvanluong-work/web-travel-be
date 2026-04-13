@@ -126,7 +126,7 @@ export class ProductService {
 
   async findAll(query: GetProductDto): Promise<ListItemsResponse<Product>> {
     const { page = 1, pageSize = 10 } = query;
-    console.log([page, pageSize]);
+
     const condition = this.buildQueryCondition(query);
     const skip = (page - 1) * pageSize;
 
