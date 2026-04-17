@@ -3,6 +3,7 @@ import { Entity, Column, OneToMany } from 'typeorm';
 import { BaseEntity } from 'src/database/base.entity';
 import { Booking } from 'src/modules/booking/entities/booking.entity';
 import { Review } from 'src/modules/review/entities/review.entity';
+import { SearchingLog } from 'src/modules/searching/entities/searching-log.entity';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -17,4 +18,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Review, (review) => review.user)
   reviews: Review[];
+
+  @OneToMany(() => SearchingLog, (searching) => searching.user)
+  searchingLogs: SearchingLog[];
 }
