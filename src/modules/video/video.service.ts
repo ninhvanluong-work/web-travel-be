@@ -28,6 +28,7 @@ import { generateSlug } from 'src/common/utils/gen-code';
 import { VideoType } from 'src/modules/video/video.type';
 import { VideoEditorService } from 'src/modules/video/video-editor.service';
 import { PaginationResponse } from 'src/types/pagination.dto';
+import { ProductStatus } from 'src/modules/product/entities/product.entity';
 
 @Injectable()
 export class VideoService {
@@ -247,6 +248,7 @@ export class VideoService {
 
     const videosQb = this.videoRepository
       .createQueryBuilder('v')
+      .innerJoin('product', 'p')
       .select([
         'v.id as id',
         'v.slug as slug',
@@ -261,9 +263,13 @@ export class VideoService {
       ])
       .addSelect(`v.embedding <=> :queryEmbedding`, 'score')
       .where('v.embedding is not null')
+      .andWhere('v.type = :videoType')
+      .andWhere('p.status = :productStatus')
       .orderBy('v.embedding <=> :queryEmbedding')
       .setParameters({
         queryEmbedding: pgVectorEmbedding,
+        videoType: VideoType.HERO,
+        productStatus: ProductStatus.PUBLISHED,
       })
       .limit(pageSize);
 
