@@ -35,19 +35,11 @@ export class SearchingController {
       },
     },
   })
-  async suggest(@Query() query: SuggestQueryDto, @Req() req: any) {
-    const { keyword, userId } = query;
-
-    const ipAddress: string =
-      (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
-      req.socket?.remoteAddress ||
-      '';
+  async suggest(@Query() query: SuggestQueryDto) {
+    const { keyword } = query;
 
     const result = await this.searchingService.getSuggestions(keyword);
 
-    if (keyword) {
-      await this.searchingService.create({ query: keyword, userId, ipAddress });
-    }
     return formatApiResponse(result, HttpStatus.OK, 'ok');
   }
 }

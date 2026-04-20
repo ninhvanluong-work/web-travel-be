@@ -1,16 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class SuggestQueryDto {
   @ApiProperty({ required: false, example: 'Ha Long' })
   @IsString()
   @IsOptional()
   keyword?: string;
-
-  @ApiProperty({ required: false })
-  @IsUUID()
-  @IsOptional()
-  userId?: string;
 }
 
 export class HotSearchDto {

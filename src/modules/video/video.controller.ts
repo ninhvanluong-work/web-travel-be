@@ -7,6 +7,7 @@ import {
   Query,
   HttpStatus,
   Put,
+  Req,
 } from '@nestjs/common';
 
 import { VideoService } from './video.service';
@@ -20,11 +21,15 @@ import {
 } from 'src/modules/video/dto/get-video.dto';
 import { formatApiResponse, getSchemaRefPath } from 'src/common/utils/format';
 import { Video } from 'src/modules/video/entities/video.entity';
+import { SearchingService } from 'src/modules/searching/searching.service';
 
 @Controller('video')
 @ApiExtraModels(GetVideoDto, GetVideoResponseDto, Video, GetVideoAdminDto)
 export class VideoController {
-  constructor(private readonly videosService: VideoService) {}
+  constructor(
+    private readonly videosService: VideoService,
+    private readonly searchingService: SearchingService,
+  ) {}
 
   @Get()
   @ApiResponse({
@@ -44,8 +49,21 @@ export class VideoController {
       },
     },
   })
-  async findAll(@Query() query: GetVideoDto) {
-    const result = await this.videosService.findAll(query);
+  async findAll(@Query() queryPayload: GetVideoDto, @Req() req: any) {
+    const ipAddress: string =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
+      req.socket?.remoteAddress ||
+      '';
+
+    if (queryPayload.query) {
+      await this.searchingService.create({
+        query: queryPayload.query,
+        ipAddress,
+        userId: queryPayload.userId,
+      });
+    }
+    const result = await this.videosService.findAll(queryPayload);
+
     return formatApiResponse(result, HttpStatus.OK, 'ok');
   }
 

@@ -16,6 +16,7 @@ import { ProductService } from 'src/modules/product/product.service';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
+import { SearchingModule } from 'src/modules/searching/searching.module';
 @Module({
   controllers: [VideoController],
   imports: [
@@ -30,6 +31,7 @@ import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
     ConfigModule,
     forwardRef(() => ProductModule),
     UploadModule,
+    SearchingModule,
   ],
   providers: [VideoService, VideoEditorService, ProductService],
   exports: [VideoService, VideoEditorService],

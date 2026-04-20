@@ -1,9 +1,8 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 
 import { CreateSearchingDto } from './dto/create-searching.dto';
-import { UpdateSearchingDto } from './dto/update-searching.dto';
 import { SearchingLog } from './entities/searching-log.entity';
 import { SearchingStat } from './entities/searching-stat.entity';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
@@ -73,54 +72,54 @@ export class SearchingService {
     return log;
   }
 
-  async findOne(id: string) {
-    const log = await this.searchingLogRepository.findOne({ where: { id } });
-    if (!log) throw new NotFoundException('Searching log not found');
-    return log;
-  }
-
-  async update(id: string, updateSearchingDto: UpdateSearchingDto) {
-    await this.findOne(id);
-    await this.searchingLogRepository.update(id, updateSearchingDto);
-    return this.findOne(id);
-  }
-
-  async remove(id: string) {
-    await this.findOne(id);
-    await this.searchingLogRepository.softDelete(id);
-  }
-
   async getSuggestions(keyword?: string): Promise<SuggestResult> {
-    const where = keyword ? ILike(`%${keyword}%`) : undefined;
+    const keywordCondition = keyword ? ILike(`${keyword}%`) : undefined;
+
+    const getHotSearchPromise = this.searchingStatRepository.find({
+      where: keyword ? { query: keywordCondition } : {},
+      select: { query: true, monthCount: true },
+      order: { monthCount: 'DESC' },
+      take: 8,
+    });
+
+    if (!keyword) {
+      //just return hot search
+      const hotSearches = await getHotSearchPromise;
+      return { hotSearches, destinations: [], products: [] };
+    }
+    const getDestinationPromise = this.destinationRepository.find({
+      where: { name: keywordCondition },
+      select: { id: true, name: true },
+      take: 2,
+    });
+
+    const getProductPromise = this.productRepository.find({
+      where: { name: keywordCondition, status: ProductStatus.PUBLISHED },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        thumbnail: true,
+        minPrice: true,
+      },
+      order: { reviewPoint: 'DESC' },
+      take: 2,
+    });
 
     const [hotSearches, destinations, products] = await Promise.all([
-      this.searchingStatRepository.find({
-        where: keyword ? { query: where } : {},
-        select: { query: true, monthCount: true },
-        order: { monthCount: 'DESC' },
-        take: 8,
-      }),
-      this.destinationRepository.find({
-        where: keyword ? { name: where } : {},
-        select: { id: true, name: true },
-        take: 5,
-      }),
-      this.productRepository.find({
-        where: keyword
-          ? { name: where, status: ProductStatus.PUBLISHED }
-          : { status: ProductStatus.PUBLISHED },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          thumbnail: true,
-          minPrice: true,
-        },
-        order: { reviewPoint: 'DESC' },
-        take: 5,
-      }),
+      getHotSearchPromise,
+      getDestinationPromise,
+      getProductPromise,
     ]);
 
     return { hotSearches, destinations, products };
+  }
+
+  async getHotSearches(limit = 8) {
+    return this.searchingStatRepository.find({
+      select: { query: true, monthCount: true },
+      order: { monthCount: 'DESC' },
+      take: limit,
+    });
   }
 }

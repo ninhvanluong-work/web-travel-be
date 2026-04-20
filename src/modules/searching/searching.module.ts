@@ -19,5 +19,6 @@ import { Product } from 'src/modules/product/entities/product.entity';
   ],
   controllers: [SearchingController],
   providers: [SearchingService],
+  exports: [SearchingService],
 })
 export class SearchingModule {}

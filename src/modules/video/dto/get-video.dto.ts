@@ -72,6 +72,11 @@ export class GetVideoDto {
   @IsArray()
   @IsUUID('all', { each: true })
   excludeIds?: string[];
+
+  @ApiProperty({ required: false })
+  @IsUUID()
+  @IsOptional()
+  userId?: string;
 }
 
 export class VideoDto {
