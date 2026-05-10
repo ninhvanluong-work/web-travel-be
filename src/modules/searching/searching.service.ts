@@ -122,4 +122,35 @@ export class SearchingService {
       take: limit,
     });
   }
+
+  async updateSearchingStatMonthCount() {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    const monthlyCounts: { query: string; count: string }[] =
+      await this.searchingLogRepository
+        .createQueryBuilder('log')
+        .select('log.query', 'query')
+        .addSelect('COUNT(*)', 'count')
+        .where('log.created_at >= :startOfMonth', { startOfMonth })
+        .andWhere('log.created_at < :endOfMonth', { endOfMonth })
+        .groupBy('log.query')
+        .getRawMany();
+
+    const stats = await this.searchingStatRepository.find();
+    const countMap = new Map(
+      monthlyCounts.map((r) => [r.query, parseInt(r.count, 10)]),
+    );
+
+    await Promise.all(
+      stats.map((stat) =>
+        this.searchingStatRepository.update(stat.id, {
+          monthCount: countMap.get(stat.query) ?? 0,
+        }),
+      ),
+    );
+
+    return monthlyCounts.length;
+  }
 }
