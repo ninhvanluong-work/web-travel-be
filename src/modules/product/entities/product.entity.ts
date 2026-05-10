@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  OneToMany,
+  ManyToMany,
+  JoinColumn,
+  JoinTable,
+} from 'typeorm';
 
 import { BaseEntity } from 'src/database/base.entity';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
@@ -9,6 +17,7 @@ import { Booking } from 'src/modules/booking/entities/booking.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
 import { Review } from 'src/modules/review/entities/review.entity';
 import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
+import { Tag } from 'src/modules/product/entities/tag.entity';
 
 export enum ProductStatus {
   DRAFT = 'draft',
@@ -161,4 +170,21 @@ export class Product extends BaseEntity {
     cascade: true,
   })
   itineraries: Itinerary[];
+
+  @ApiProperty({ type: () => [Tag], nullable: true })
+  @ManyToMany(() => Tag, (tag: Tag) => tag.products, {
+    cascade: true,
+  })
+  @JoinTable({
+    name: 'product_tag',
+    joinColumn: {
+      name: 'product_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'tag_id',
+      referencedColumnName: 'id',
+    },
+  })
+  tags: Tag[];
 }

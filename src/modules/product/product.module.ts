@@ -5,6 +5,7 @@ import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
 
 import { Product } from 'src/modules/product/entities/product.entity';
+import { Tag } from 'src/modules/product/entities/tag.entity';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 
@@ -16,6 +17,7 @@ import { ReviewModule } from 'src/modules/review/review.module';
   imports: [
     TypeOrmModule.forFeature([
       Product,
+      Tag,
       Destination,
       Supplier,
       Video,
