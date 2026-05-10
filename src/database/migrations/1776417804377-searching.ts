@@ -9,9 +9,6 @@ export class Searching1776417804377 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            DROP INDEX "public"."idx_video_embedding_cosine"
-        `);
-    await queryRunner.query(`
             CREATE TABLE "${schema}"."searching_log" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),

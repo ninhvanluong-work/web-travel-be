@@ -19,6 +19,17 @@ export class Review extends BaseEntity {
   @ApiProperty({ example: 'VND' })
   currency: string;
 
+  @Column({
+    type: 'varchar',
+    length: 500,
+    name: 'images',
+    array: true,
+    nullable: true,
+    comment: 'array of images url',
+  })
+  @ApiProperty({})
+  images: string[];
+
   @Column({ name: 'product_id' })
   @ApiProperty({})
   productId: string;
