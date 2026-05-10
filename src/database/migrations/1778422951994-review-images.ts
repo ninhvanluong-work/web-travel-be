@@ -19,7 +19,7 @@ export class ReviewImages1778422951994 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            COMMENT ON COLUMN "${schema}"."review"."images" IS 'array of images url'
+            COMMENT ON COLUMN "${schema}". "review"."images" IS 'array of images url'
         `);
     await queryRunner.query(`
             ALTER TABLE "${schema}"."review" DROP COLUMN "images"

@@ -15,6 +15,17 @@ export enum ProductStatus {
   PUBLISHED = 'published',
   HIDDEN = 'hidden',
 }
+
+type BannerItem = {
+  type: 'image' | 'video';
+  url: string;
+};
+
+type ReadBefore = {
+  key: string;
+  title: string;
+  description: string;
+};
 @Entity('product')
 export class Product extends BaseEntity {
   @ApiProperty({ example: 'Hạ Long Bay Tour' })
@@ -24,6 +35,10 @@ export class Product extends BaseEntity {
   @ApiProperty({ example: 'Detailed description of the tour...' })
   @Column({ type: 'text', nullable: true })
   description: string;
+
+  @ApiProperty({ example: 'Short description of the tour...' })
+  @Column({ type: 'text', name: 'short_description', nullable: true })
+  shortDescription: string;
 
   @ApiProperty({ example: 'ha-long-bay-tour' })
   @Column({ unique: true, nullable: true })
@@ -43,6 +58,22 @@ export class Product extends BaseEntity {
   })
   @Column({ type: 'json', nullable: true })
   images: string[];
+
+  @Column({
+    type: 'jsonb',
+    default: [],
+    comment: 'array of media banner ex: [{type: image, url: "...."]',
+  })
+  @ApiProperty({ type: 'array' })
+  banner: BannerItem[];
+
+  @Column({
+    type: 'jsonb',
+    default: [],
+    comment: 'array of read before ex: [{key: " }]',
+  })
+  @ApiProperty({ type: 'array' })
+  readBefore: ReadBefore[];
 
   @ApiProperty({ example: 'https://example.com/itinerary.jpg' })
   @Column({ nullable: true, name: 'itinerary_image' })
@@ -89,6 +120,10 @@ export class Product extends BaseEntity {
   @ApiProperty({ example: 4.5 })
   @Column({ type: 'float', name: 'review_point', default: 0 })
   reviewPoint: number;
+
+  @ApiProperty({ example: 300 })
+  @Column({ type: 'int', name: 'review_count', default: 0 })
+  reviewCount: number;
 
   @Column({ type: 'uuid', name: 'destination_id' })
   destinationId: string;
