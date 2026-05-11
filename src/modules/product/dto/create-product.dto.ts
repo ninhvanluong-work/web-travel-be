@@ -137,6 +137,17 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({
     isArray: true,
+    type: 'string',
+    format: 'uuid',
+    description: 'Array of tour guide IDs',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('all', { each: true })
+  tourGuideIds?: string[];
+
+  @ApiPropertyOptional({
+    isArray: true,
     type: BannerItem,
     example: [
       { type: 'image', url: 'https://example.com/banner.jpg' },

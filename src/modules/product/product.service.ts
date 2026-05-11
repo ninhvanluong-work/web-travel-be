@@ -23,6 +23,7 @@ import { GetProductDto } from 'src/modules/product/dto/get-product.dto';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 import { Tag } from 'src/modules/product/entities/tag.entity';
+import { TourGuide } from 'src/modules/product/entities/tour-guide.entity';
 
 import { Video } from 'src/modules/video/entities/video.entity';
 import { VideoType } from 'src/modules/video/video.type';
@@ -42,10 +43,19 @@ export class ProductService {
     private readonly itineraryRepository: Repository<Itinerary>,
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
+    @InjectRepository(TourGuide)
+    private readonly tourGuideRepository: Repository<TourGuide>,
   ) {}
 
   async create(payload: CreateProductDto) {
-    const { name, destinationId, supplierId, heroVideoId, tagIds } = payload;
+    const {
+      name,
+      destinationId,
+      supplierId,
+      heroVideoId,
+      tagIds,
+      tourGuideIds,
+    } = payload;
     const slug = generateSlug(name);
     const code = generateRandomCode(8);
 
@@ -101,6 +111,18 @@ export class ProductService {
       });
       if (tags.length > 0) {
         result.tags = tags;
+        await this.productRepository.save(result);
+      }
+    }
+
+    if (tourGuideIds && tourGuideIds.length > 0) {
+      const tourGuides = await this.tourGuideRepository.find({
+        where: {
+          id: In(tourGuideIds),
+        },
+      });
+      if (tourGuides.length > 0) {
+        result.tourGuides = tourGuides;
         await this.productRepository.save(result);
       }
     }
@@ -207,8 +229,14 @@ export class ProductService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    const { destinationId, supplierId, heroVideoId, itineraries, tagIds } =
-      updateProductDto;
+    const {
+      destinationId,
+      supplierId,
+      heroVideoId,
+      itineraries,
+      tagIds,
+      tourGuideIds,
+    } = updateProductDto;
     const product = await this.findOne(id);
     if (!product) throw new NotFoundException('Product Not Found');
 
@@ -273,6 +301,17 @@ export class ProductService {
       product.tags = tags;
       await this.productRepository.save(product);
       delete updateProductDto.tagIds;
+    }
+
+    if (tourGuideIds && tourGuideIds?.length > 0) {
+      const tourGuides = await this.tourGuideRepository.find({
+        where: {
+          id: In(tourGuideIds),
+        },
+      });
+      product.tourGuides = tourGuides;
+      await this.productRepository.save(product);
+      delete updateProductDto.tourGuideIds;
     }
 
     await this.productRepository.update(id, updateProductDto);
