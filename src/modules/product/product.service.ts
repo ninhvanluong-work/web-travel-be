@@ -10,6 +10,7 @@ import {
   LessThanOrEqual,
   MoreThanOrEqual,
   Repository,
+  In,
 } from 'typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,6 +22,7 @@ import { generateRandomCode, generateSlug } from 'src/common/utils/gen-code';
 import { GetProductDto } from 'src/modules/product/dto/get-product.dto';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
+import { Tag } from 'src/modules/product/entities/tag.entity';
 
 import { Video } from 'src/modules/video/entities/video.entity';
 import { VideoType } from 'src/modules/video/video.type';
@@ -38,10 +40,12 @@ export class ProductService {
     private readonly videoRepository: Repository<Video>,
     @InjectRepository(Itinerary)
     private readonly itineraryRepository: Repository<Itinerary>,
+    @InjectRepository(Tag)
+    private readonly tagRepository: Repository<Tag>,
   ) {}
 
   async create(payload: CreateProductDto) {
-    const { name, destinationId, supplierId, heroVideoId } = payload;
+    const { name, destinationId, supplierId, heroVideoId, tagIds } = payload;
     const slug = generateSlug(name);
     const code = generateRandomCode(8);
 
@@ -70,6 +74,7 @@ export class ProductService {
     });
 
     const result = await this.productRepository.save(newProduct);
+
     if (heroVideoId) {
       const video = await this.videoRepository.findOne({
         where: { id: heroVideoId },
@@ -86,6 +91,18 @@ export class ProductService {
           type: VideoType.HERO,
         },
       );
+    }
+
+    if (tagIds && tagIds.length > 0) {
+      const tags = await this.tagRepository.find({
+        where: {
+          id: In(tagIds),
+        },
+      });
+      if (tags.length > 0) {
+        result.tags = tags;
+        await this.productRepository.save(result);
+      }
     }
 
     return result;

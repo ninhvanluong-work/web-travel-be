@@ -12,7 +12,11 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ProductStatus } from '../entities/product.entity';
+import {
+  ProductStatus,
+  BannerItem,
+  ReadBefore,
+} from '../entities/product.entity';
 
 export class ItineraryDto {
   @ApiProperty({ example: 'itinerary title' })
@@ -37,6 +41,11 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional({ example: 'Short description of the tour...' })
+  @IsOptional()
+  @IsString()
+  shortDescription?: string;
 
   @ApiPropertyOptional({ example: 'ha-long-bay-tour' })
   @IsOptional()
@@ -114,6 +123,48 @@ export class CreateProductDto {
   @IsOptional()
   @IsUUID()
   heroVideoId?: string;
+
+  @ApiPropertyOptional({
+    isArray: true,
+    type: 'string',
+    format: 'uuid',
+    description: 'Array of tag IDs',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('all', { each: true })
+  tagIds?: string[];
+
+  @ApiPropertyOptional({
+    isArray: true,
+    type: BannerItemDto,
+    example: [
+      { type: 'image', url: 'https://example.com/banner.jpg' },
+      { type: 'video', url: 'https://example.com/banner.mp4' },
+    ],
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BannerItem)
+  banner?: BannerItem[];
+
+  @ApiPropertyOptional({
+    isArray: true,
+    type: ReadBefore,
+    example: [
+      {
+        key: 'passport',
+        title: 'Passport Required',
+        description: 'You need a valid passport to enter the country',
+      },
+    ],
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ReadBefore)
+  readBefore?: ReadBefore[];
 
   @ApiPropertyOptional({ isArray: true, type: ItineraryDto })
   @IsOptional()

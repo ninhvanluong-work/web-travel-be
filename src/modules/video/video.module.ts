@@ -17,6 +17,7 @@ import { Destination } from 'src/modules/destination/entities/destination.entity
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 import { SearchingModule } from 'src/modules/searching/searching.module';
+import { Tag } from 'src/modules/product/entities/tag.entity';
 @Module({
   controllers: [VideoController],
   imports: [
@@ -26,6 +27,7 @@ import { SearchingModule } from 'src/modules/searching/searching.module';
       Destination,
       Supplier,
       Itinerary,
+      Tag,
     ]),
     EmbeddingModule,
     ConfigModule,
