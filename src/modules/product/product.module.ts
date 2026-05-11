@@ -6,6 +6,7 @@ import { ProductController } from './product.controller';
 
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Tag } from 'src/modules/product/entities/tag.entity';
+import { TourGuide } from 'src/modules/product/entities/tour-guide.entity';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 
@@ -18,6 +19,7 @@ import { ReviewModule } from 'src/modules/review/review.module';
     TypeOrmModule.forFeature([
       Product,
       Tag,
+      TourGuide,
       Destination,
       Supplier,
       Video,
