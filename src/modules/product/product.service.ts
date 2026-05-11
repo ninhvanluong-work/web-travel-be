@@ -207,7 +207,7 @@ export class ProductService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    const { destinationId, supplierId, heroVideoId, itineraries } =
+    const { destinationId, supplierId, heroVideoId, itineraries, tagIds } =
       updateProductDto;
     const product = await this.findOne(id);
     if (!product) throw new NotFoundException('Product Not Found');
@@ -262,6 +262,17 @@ export class ProductService {
       await this.itineraryRepository.save(newItins);
 
       delete updateProductDto.itineraries;
+    }
+
+    if (tagIds && tagIds?.length > 0) {
+      const tags = await this.tagRepository.find({
+        where: {
+          id: In(tagIds),
+        },
+      });
+      product.tags = tags;
+      await this.productRepository.save(product);
+      delete updateProductDto.tagIds;
     }
 
     await this.productRepository.update(id, updateProductDto);

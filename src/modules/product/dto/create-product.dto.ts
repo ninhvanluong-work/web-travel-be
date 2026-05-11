@@ -137,7 +137,7 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({
     isArray: true,
-    type: BannerItemDto,
+    type: BannerItem,
     example: [
       { type: 'image', url: 'https://example.com/banner.jpg' },
       { type: 'video', url: 'https://example.com/banner.mp4' },
