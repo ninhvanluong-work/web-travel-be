@@ -26,16 +26,26 @@ export enum ProductStatus {
   HIDDEN = 'hidden',
 }
 
-type BannerItem = {
+export class BannerItem {
+  @ApiProperty({ example: 'image', enum: ['image', 'video'] })
   type: 'image' | 'video';
-  url: string;
-};
 
-type ReadBefore = {
+  @ApiProperty({ example: 'https://example.com/banner.jpg' })
+  url: string;
+}
+
+export class ReadBefore {
+  @ApiProperty({ example: 'passport' })
   key: string;
+
+  @ApiProperty({ example: 'Passport Required' })
   title: string;
+
+  @ApiProperty({
+    example: 'You need a valid passport to enter the country',
+  })
   description: string;
-};
+}
 @Entity('product')
 export class Product extends BaseEntity {
   @ApiProperty({ example: 'Hạ Long Bay Tour' })

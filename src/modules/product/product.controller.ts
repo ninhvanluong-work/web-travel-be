@@ -15,6 +15,7 @@ import { ProductService } from './product.service';
 
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { ProductDetailDto } from './dto/product-detail.dto';
 import { IdDto } from 'src/types/common.dto';
 import {
   GetProductDto,
@@ -32,6 +33,7 @@ import { ReviewService } from 'src/modules/review/review.service';
 @Controller('product')
 @ApiExtraModels(
   Product,
+  ProductDetailDto,
   GetProductsResponseDto,
   ProductShortResponseDto,
   GetReviewsResponseDto,
@@ -101,7 +103,7 @@ export class ProductController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaRefPath('Product'),
+          $ref: getSchemaRefPath('ProductDetailDto'),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },

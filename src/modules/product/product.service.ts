@@ -183,6 +183,8 @@ export class ProductService {
       },
       relations: {
         itineraries: true,
+        tourGuides: true,
+        tags: true,
       },
     });
   }
