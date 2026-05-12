@@ -79,6 +79,14 @@ export class GetVideoDto {
   userId?: string;
 }
 
+export class ProductVideoDto {
+  @ApiProperty({ example: '37418d9b-cae4-42ab-ba36-65a0893e6d33' })
+  id: string;
+
+  @ApiProperty({ example: 'product-slug' })
+  slug: string;
+}
+
 export class VideoDto {
   @ApiProperty({
     description: 'ID',
@@ -121,6 +129,9 @@ export class VideoDto {
 
   @ApiProperty({ description: 'video like', example: 100 })
   like: string;
+
+  @ApiProperty({ type: ProductVideoDto })
+  product: ProductVideoDto;
 }
 
 export class GetVideoResponseStatsDto {

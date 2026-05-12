@@ -159,6 +159,13 @@ export class VideoService {
         description: true,
         tag: true,
         like: true,
+        product: {
+          id: true,
+          slug: true,
+        },
+      },
+      relations: {
+        product: true,
       },
       where: {
         slug,
@@ -262,8 +269,11 @@ export class VideoService {
         'v.like as like',
       ])
       .addSelect(`v.embedding <=> :queryEmbedding`, 'score')
+      .addSelect(`json_build_object('id', p.id, 'slug', p.slug)`, 'product')
       .where('v.embedding is not null')
-      .andWhere('v.type = :videoType')
+      .andWhere('v.productId is not null')
+      //TODO: wait to confirm
+      //.andWhere('v.type = :videoType')
       .andWhere('p.status = :productStatus')
       .orderBy('v.embedding <=> :queryEmbedding')
       .setParameters({
