@@ -4,6 +4,7 @@ import {
   BannerItem,
   ReadBefore,
 } from 'src/modules/product/entities/product.entity';
+import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 
 class TagDto {
   @ApiProperty({ format: 'uuid' })
@@ -133,6 +134,9 @@ export class ProductDetailDto {
     description: 'List of tour guides',
   })
   tourGuides: TourGuideDto[];
+
+  @ApiProperty({ type: Supplier })
+  supplier: Supplier;
 
   @ApiProperty({
     type: () => [TagDto],

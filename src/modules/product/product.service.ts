@@ -224,6 +224,7 @@ export class ProductService {
         itineraries: true,
         tourGuides: true,
         tags: true,
+        supplier: true,
       },
     });
   }
