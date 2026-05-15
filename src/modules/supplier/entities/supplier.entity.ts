@@ -17,25 +17,29 @@ export class Supplier extends BaseEntity {
   @ApiProperty({ nullable: true })
   avatar: string;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'int', name: 'rating_count', default: 0 })
   @ApiProperty({ default: 0 })
   ratingCount: number;
 
-  @Column({ type: 'float', default: 0 })
+  @Column({ type: 'float', name: 'rating_rate', default: 0 })
   @ApiProperty({ default: 0 })
   ratingRate: number;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', name: 'is_verified', default: false })
   @ApiProperty({ default: false })
   isVerified: boolean;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'int', name: 'tour_offered', default: 0 })
   @ApiProperty({ default: 0 })
   tourOffered: number;
 
-  @Column({ type: 'float', default: 0 })
+  @Column({ type: 'float', name: 'response_rate', default: 0 })
   @ApiProperty({ default: 0 })
   responseRate: number;
+
+  @Column({ type: 'int', name: 'exp_years', default: 1 })
+  @ApiProperty({ default: 1 })
+  expYears: number;
 
   @OneToMany(() => Product, (product) => product.supplier)
   products: Product[];
