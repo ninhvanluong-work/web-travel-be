@@ -15,10 +15,6 @@ export class Review extends BaseEntity {
   @ApiProperty({})
   point: number;
 
-  @Column({ name: 'currency', nullable: true, default: 'VND' })
-  @ApiProperty({ example: 'VND' })
-  currency: string;
-
   @Column({
     type: 'varchar',
     length: 500,

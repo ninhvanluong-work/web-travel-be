@@ -7,6 +7,9 @@ import { SearchingLog } from 'src/modules/searching/entities/searching-log.entit
 
 @Entity('user')
 export class User extends BaseEntity {
+  @Column({ name: 'name', length: 255, nullable: true })
+  name: string;
+
   @Column({ name: 'ip_address', length: 255, nullable: true })
   ipAddress: string;
 

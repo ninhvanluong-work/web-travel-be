@@ -14,8 +14,10 @@ export class ReviewService {
     private readonly reviewRepository: Repository<Review>,
   ) {}
 
-  async getProductReviews(productId, payload: GetProductReviewsDto) {
+  async getProductReviews(productId: string, payload: GetProductReviewsDto) {
     const { page = 1, pageSize = 10 } = payload;
+    const skip = (page - 1) * pageSize;
+
     const [reviews, total] = await this.reviewRepository.findAndCount({
       where: {
         productId,
@@ -26,6 +28,19 @@ export class ReviewService {
         updatedAt: true,
         comment: true,
         point: true,
+        images: true,
+        user: {
+          id: true,
+          name: true,
+        },
+      },
+      relations: {
+        user: true,
+      },
+      take: pageSize,
+      skip,
+      order: {
+        createdAt: 'DESC',
       },
     });
 
