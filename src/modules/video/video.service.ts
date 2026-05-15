@@ -255,7 +255,7 @@ export class VideoService {
 
     const videosQb = this.videoRepository
       .createQueryBuilder('v')
-      .innerJoin('product', 'p')
+      .innerJoin('product', 'p', 'v.product_id = p.id')
       .select([
         'v.id as id',
         'v.slug as slug',
