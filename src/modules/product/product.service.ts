@@ -359,7 +359,7 @@ export class ProductService {
     }
 
     await this.productRepository.update(id, updateProductDto);
-    return await this.findByPk(id);
+    return await this.getProductDetail(id);
   }
 
   remove(id: number) {
