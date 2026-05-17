@@ -13,6 +13,7 @@ import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 import { Video } from 'src/modules/video/entities/video.entity';
 import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 import { ReviewModule } from 'src/modules/review/review.module';
+import { ElementModule } from 'src/modules/element/element.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ReviewModule } from 'src/modules/review/review.module';
       Itinerary,
     ]),
     ReviewModule,
+    ElementModule,
   ],
   controllers: [ProductController],
   providers: [ProductService],

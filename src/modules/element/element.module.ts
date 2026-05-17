@@ -8,5 +8,6 @@ import { ElementController } from 'src/modules/element/element.controller';
   imports: [TypeOrmModule.forFeature([Element])],
   providers: [ElementService],
   controllers: [ElementController],
+  exports: [ElementService],
 })
 export class ElementModule {}

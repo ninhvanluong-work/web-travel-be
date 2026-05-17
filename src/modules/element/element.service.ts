@@ -4,7 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository, ILike, FindOptionsWhere } from 'typeorm';
+import {
+  Not,
+  Repository,
+  ILike,
+  FindOptionsWhere,
+  FindManyOptions,
+  FindOneOptions,
+} from 'typeorm';
 import { Element } from './entities/element.entity';
 import { CreateElementDto } from './dto/create-element.dto';
 import { UpdateElementDto } from './dto/update-element.dto';
@@ -54,14 +61,14 @@ export class ElementService {
   }
 
   async remove(id: string) {
-    const found = await this.elementRepository.findOne({ where: { id } });
+    const found = await this.findOneById(id);
     if (!found) throw new NotFoundException('Element not found');
     found.isActive = false;
     return this.elementRepository.save(found);
   }
 
   async activate(id: string) {
-    const found = await this.elementRepository.findOne({ where: { id } });
+    const found = await this.findOneById(id);
     if (!found) throw new NotFoundException('Element not found');
     found.isActive = true;
     return this.elementRepository.save(found);
@@ -82,7 +89,15 @@ export class ElementService {
     return this.elementRepository.find({ where: condition });
   }
 
-  async findOne(id: string) {
+  async findOneById(id: string) {
     return this.elementRepository.findOne({ where: { id } });
+  }
+
+  async find(options?: FindManyOptions<Element>) {
+    return this.elementRepository.find(options);
+  }
+
+  async findOne(options: FindOneOptions<Element>) {
+    return this.elementRepository.findOne(options);
   }
 }

@@ -27,6 +27,7 @@ import { TourGuide } from 'src/modules/product/entities/tour-guide.entity';
 
 import { Video } from 'src/modules/video/entities/video.entity';
 import { VideoType } from 'src/modules/video/video.type';
+import { ElementService } from 'src/modules/element/element.service';
 
 @Injectable()
 export class ProductService {
@@ -45,6 +46,8 @@ export class ProductService {
     private readonly tagRepository: Repository<Tag>,
     @InjectRepository(TourGuide)
     private readonly tourGuideRepository: Repository<TourGuide>,
+
+    private readonly elementService: ElementService,
   ) {}
 
   async create(payload: CreateProductDto) {
@@ -55,6 +58,7 @@ export class ProductService {
       heroVideoId,
       tagIds,
       tourGuideIds,
+      elementIds,
     } = payload;
     const slug = generateSlug(name);
     const code = generateRandomCode(8);
@@ -123,6 +127,18 @@ export class ProductService {
       });
       if (tourGuides.length > 0) {
         result.tourGuides = tourGuides;
+        await this.productRepository.save(result);
+      }
+    }
+
+    if (elementIds && elementIds.length > 0) {
+      const elements = await this.elementService.find({
+        where: {
+          id: In(elementIds),
+        },
+      });
+      if (elements.length > 0) {
+        result.elements = elements;
         await this.productRepository.save(result);
       }
     }
@@ -241,6 +257,7 @@ export class ProductService {
       itineraries,
       tagIds,
       tourGuideIds,
+      elementIds,
     } = updateProductDto;
     const product = await this.findOne(id);
     if (!product) throw new NotFoundException('Product Not Found');
@@ -317,6 +334,17 @@ export class ProductService {
       product.tourGuides = tourGuides;
       await this.productRepository.save(product);
       delete updateProductDto.tourGuideIds;
+    }
+
+    if (elementIds && elementIds?.length > 0) {
+      const elements = await this.elementService.find({
+        where: {
+          id: In(elementIds),
+        },
+      });
+      product.elements = elements;
+      await this.productRepository.save(product);
+      delete updateProductDto.elementIds;
     }
 
     await this.productRepository.update(id, updateProductDto);

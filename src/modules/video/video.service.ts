@@ -1,10 +1,4 @@
-import {
-  FindManyOptions,
-  FindOptionsWhere,
-  ILike,
-  IsNull,
-  Repository,
-} from 'typeorm';
+import { FindOptionsWhere, ILike, IsNull, Repository } from 'typeorm';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import pgvector from 'pgvector';

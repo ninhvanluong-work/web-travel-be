@@ -19,6 +19,7 @@ import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 import { SearchingModule } from 'src/modules/searching/searching.module';
 import { Tag } from 'src/modules/product/entities/tag.entity';
 import { TourGuide } from 'src/modules/product/entities/tour-guide.entity';
+import { ElementModule } from 'src/modules/element/element.module';
 @Module({
   controllers: [VideoController],
   imports: [
@@ -36,6 +37,7 @@ import { TourGuide } from 'src/modules/product/entities/tour-guide.entity';
     forwardRef(() => ProductModule),
     UploadModule,
     SearchingModule,
+    ElementModule,
   ],
   providers: [VideoService, VideoEditorService, ProductService],
   exports: [VideoService, VideoEditorService],
