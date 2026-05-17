@@ -18,10 +18,6 @@ export class Element extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @ApiProperty({ example: 1, description: 'Sorting order' })
-  @Column({ type: 'int', default: 0 })
-  order: number;
-
   @ApiProperty({ example: true, description: 'Activation status' })
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;

@@ -219,6 +219,9 @@ export class ProductService {
     return await this.productRepository.findOne({
       where: {
         id,
+        elements: {
+          isActive: true,
+        },
       },
       relations: {
         itineraries: true,
