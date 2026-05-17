@@ -19,6 +19,7 @@ import { Review } from 'src/modules/review/entities/review.entity';
 import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 import { Tag } from 'src/modules/product/entities/tag.entity';
 import { TourGuide } from 'src/modules/product/entities/tour-guide.entity';
+import { Element } from 'src/modules/element/entities/element.entity';
 
 export enum ProductStatus {
   DRAFT = 'draft',
@@ -218,6 +219,23 @@ export class Product extends BaseEntity {
     },
   })
   tags: Tag[];
+
+  @ApiProperty({ type: () => [Element], nullable: true })
+  @ManyToMany(() => Element, (element: Element) => element.products, {
+    cascade: true,
+  })
+  @JoinTable({
+    name: 'product_element',
+    joinColumn: {
+      name: 'product_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'element_id',
+      referencedColumnName: 'id',
+    },
+  })
+  elements: Element[];
 
   @ApiProperty({ type: () => [TourGuide], nullable: true })
   @ManyToMany(() => TourGuide, (guide: TourGuide) => guide.products, {

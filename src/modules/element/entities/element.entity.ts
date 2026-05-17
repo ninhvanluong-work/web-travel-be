@@ -1,12 +1,8 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, ManyToMany } from 'typeorm';
 import { BaseEntity } from 'src/database/base.entity';
 
 import { ApiProperty } from '@nestjs/swagger';
-
-export enum OwnerType {
-  PRODUCT = 'product',
-  OPTION = 'option',
-}
+import { Product } from 'src/modules/product/entities/product.entity';
 
 @Entity('element')
 export class Element extends BaseEntity {
@@ -30,21 +26,7 @@ export class Element extends BaseEntity {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
 
-  @ApiProperty({
-    example: 'uuid-of-product-or-option',
-    description: 'ID record (Product or Option)',
-  })
-  @Column({ name: 'owner_id', type: 'uuid', nullable: true })
-  ownerId: string;
-
-  @ApiProperty({
-    enum: OwnerType,
-    example: OwnerType.PRODUCT,
-  })
-  @Column({
-    name: 'owner_type',
-    nullable: true,
-    length: '50',
-  })
-  ownerType: OwnerType;
+  @ApiProperty({ type: () => [Product], nullable: true })
+  @ManyToMany(() => Product, (product: Product) => product.elements)
+  products: Product[];
 }

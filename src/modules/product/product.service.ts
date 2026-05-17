@@ -225,6 +225,7 @@ export class ProductService {
         tourGuides: true,
         tags: true,
         supplier: true,
+        elements: true,
       },
     });
   }
