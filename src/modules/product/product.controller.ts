@@ -113,7 +113,7 @@ export class ProductController {
   })
   async findOne(@Param() param: IdDto) {
     const { id } = param;
-    const result = await this.productService.findOne(id);
+    const result = await this.productService.getProductDetail(id);
     return formatApiResponse(result, HttpStatus.OK, 'ok');
   }
 

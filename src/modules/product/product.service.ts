@@ -11,6 +11,7 @@ import {
   MoreThanOrEqual,
   Repository,
   In,
+  FindOneOptions,
 } from 'typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -231,13 +232,10 @@ export class ProductService {
     };
   }
 
-  async findOne(id: string) {
-    return await this.productRepository.findOne({
+  async getProductDetail(id: string) {
+    const product = await this.productRepository.findOne({
       where: {
         id,
-        elements: {
-          isActive: true,
-        },
       },
       relations: {
         itineraries: true,
@@ -247,6 +245,19 @@ export class ProductService {
         elements: true,
       },
     });
+
+    if (product?.elements) {
+      product.elements = product?.elements.filter((e) => e.isActive);
+    }
+    return product;
+  }
+
+  async findOne(options: FindOneOptions<Product>) {
+    return this.productRepository.findOne(options);
+  }
+
+  async findByPk(id: string) {
+    return this.productRepository.findOneBy({ id });
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
@@ -259,7 +270,7 @@ export class ProductService {
       tourGuideIds,
       elementIds,
     } = updateProductDto;
-    const product = await this.findOne(id);
+    const product = await this.findByPk(id);
     if (!product) throw new NotFoundException('Product Not Found');
 
     if (destinationId) {
@@ -348,7 +359,7 @@ export class ProductService {
     }
 
     await this.productRepository.update(id, updateProductDto);
-    return await this.findOne(id);
+    return await this.findByPk(id);
   }
 
   remove(id: number) {

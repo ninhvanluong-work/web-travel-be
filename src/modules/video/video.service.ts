@@ -66,7 +66,7 @@ export class VideoService {
     }
 
     if (productId) {
-      const product = await this.productService.findOne(productId);
+      const product = await this.productService.findByPk(productId);
       if (!product) {
         throw new NotFoundException('Product not found');
       }
@@ -173,7 +173,7 @@ export class VideoService {
     const prefixLog = `[update] ${id}`;
     const productId = updateVideoDto?.productId as string;
     if (productId) {
-      const product = await this.productService.findOne(productId);
+      const product = await this.productService.findByPk(productId);
       if (!product) {
         throw new NotFoundException('Product not found');
       }
