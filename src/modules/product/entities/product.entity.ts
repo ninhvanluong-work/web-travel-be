@@ -46,6 +46,17 @@ export class ReadBefore {
   })
   description: string;
 }
+
+export class ExperienceItem {
+  @ApiProperty({ example: 'https://example.com/image.jpg' })
+  imageUrl: string;
+
+  @ApiProperty({ example: 'Experience title' })
+  title: string;
+
+  @ApiProperty({ example: 'Detailed content about this experience' })
+  content: string;
+}
 @Entity('product')
 export class Product extends BaseEntity {
   @ApiProperty({ example: 'Hạ Long Bay Tour' })
@@ -94,6 +105,15 @@ export class Product extends BaseEntity {
   })
   @ApiProperty({ type: 'array' })
   readBefore: ReadBefore[];
+
+  @Column({
+    type: 'jsonb',
+    default: [],
+    comment:
+      'array of experience items ex: [{image_url: "...", title: "...", content: "..."}]',
+  })
+  @ApiProperty({ type: 'array' })
+  experience: ExperienceItem[];
 
   @ApiProperty({ example: 'https://example.com/itinerary.jpg' })
   @Column({ nullable: true, name: 'itinerary_image' })

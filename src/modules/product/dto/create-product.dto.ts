@@ -16,6 +16,7 @@ import {
   ProductStatus,
   BannerItem,
   ReadBefore,
+  ExperienceItem,
 } from '../entities/product.entity';
 
 export class ItineraryDto {
@@ -166,6 +167,7 @@ export class CreateProductDto {
     example: [
       {
         key: 'passport',
+
         title: 'Passport Required',
         description: 'You need a valid passport to enter the country',
       },
@@ -183,4 +185,21 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => ItineraryDto)
   itineraries: ItineraryDto[];
+
+  @ApiPropertyOptional({
+    isArray: true,
+    type: ExperienceItem,
+    example: [
+      {
+        imageUrl: 'https://example.com/image.jpg',
+        title: 'Sunset cruise',
+        content: 'Enjoy a relaxing sunset cruise with live music',
+      },
+    ],
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ExperienceItem)
+  experience?: ExperienceItem[];
 }
