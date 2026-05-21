@@ -18,7 +18,7 @@ import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 import { SearchingModule } from 'src/modules/searching/searching.module';
 import { Tag } from 'src/modules/product/entities/tag.entity';
-import { TourGuide } from 'src/modules/product/entities/tour-guide.entity';
+import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { ElementModule } from 'src/modules/element/element.module';
 @Module({
   controllers: [VideoController],

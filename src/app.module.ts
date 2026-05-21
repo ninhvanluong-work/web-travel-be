@@ -17,6 +17,7 @@ import { ItineraryModule } from 'src/modules/Itinerary/itinerary.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
 import { SearchingModule } from './modules/searching/searching.module';
+import { TourGuideModule } from './modules/tour-guide/tour-guide.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { SearchingModule } from './modules/searching/searching.module';
     UploadModule,
     WebhookModule,
     SearchingModule,
+    TourGuideModule,
   ],
   controllers: [AppController],
   providers: [AppService],
