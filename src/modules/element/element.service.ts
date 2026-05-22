@@ -77,13 +77,20 @@ export class ElementService {
   async findAll(query: GetElementDto) {
     const { keyword = '', isActive } = query;
 
-    const condition: FindOptionsWhere<Element> = {
-      name: ILike(`%${keyword}%`),
-      key: ILike(`%${keyword}%`),
-    };
+    let condition: FindOptionsWhere<Element>[] = [
+      {
+        name: ILike(`%${keyword}%`),
+      },
+      {
+        key: ILike(`%${keyword}%`),
+      },
+    ];
 
     if (typeof isActive !== 'undefined') {
-      condition.isActive = isActive;
+      condition = condition.map((c) => ({
+        ...c,
+        isActive: isActive === 'true',
+      }));
     }
 
     return this.elementRepository.find({ where: condition });
