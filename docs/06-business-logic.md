@@ -227,3 +227,134 @@ Các field thống kê trên `supplier` hiện được cập nhật thủ công
 - `exp_years`: Số năm kinh nghiệm
 
 > Chưa có auto-sync từ review/booking. Cần update qua API khi có thay đổi.
+
+---
+
+## 6.9 Webhook Module — BunnyCDN Video Webhook
+
+### 6.9.1 Mục đích
+
+Sau khi client upload video lên BunnyCDN (qua TUS protocol), BunnyCDN tự động gọi webhook `POST /webhook/bunny` để thông báo trạng thái xử lý video (encode, thumbnail, hoàn thành...). Backend nhận sự kiện này để đồng bộ `video.uploading_status` trong database.
+
+---
+
+### 6.9.2 Luồng xử lý (Flow)
+
+```
+BunnyCDN (sau khi xử lý video)
+    │
+    │  POST /webhook/bunny
+    │  Headers:
+    │    x-bunnystream-signature: <hmac-sha256-hex>
+    │    x-bunnystream-signature-version: v1
+    │    x-bunnystream-signature-algorithm: hmac-sha256
+    │  Body (raw JSON):
+    │    { VideoGuid, VideoLibraryId, Status, IsLiveStreamWebhook }
+    │
+    ▼
+WebhookController.handleWebhook()
+    │
+    ├─ [1] Kiểm tra headers đầy đủ → thiếu → 401 Unauthorized
+    │
+    ├─ [2] Lấy rawBody (đã được body-parser giữ lại)
+    │       → thiếu body → 401 Unauthorized
+    │
+    ├─ [3] validateWebhookSignature()
+    │       → HMAC-SHA256(rawBody, BUNNY_READONLY_API_KEY)
+    │       → So sánh timing-safe với header signature
+    │       → không khớp → 401 Unauthorized
+    │
+    ├─ [4] Parse JSON body → BunnyWebhookPayload
+    │
+    └─ [5] WebhookService.handleBunnyWebhook(payload)
+            → VideoService.updateUploadingStatus(VideoGuid, Status)
+            → UPDATE video SET uploading_status = ? WHERE guid = ?
+            → Return { success: true }
+```
+
+---
+
+### 6.9.3 Xác thực chữ ký (Signature Validation)
+
+Đây là bước quan trọng nhất — đảm bảo request thực sự đến từ BunnyCDN, không phải bên thứ ba giả mạo.
+
+**Điều kiện để signature hợp lệ (tất cả phải đúng):**
+
+| Điều kiện | Giá trị hợp lệ | Lỗi nếu sai |
+|-----------|---------------|------------|
+| `x-bunnystream-signature-version` | phải là `"v1"` | 401 |
+| `x-bunnystream-signature-algorithm` | phải là `"hmac-sha256"` | 401 |
+| Header signature | chỉ chứa ký tự `[0-9a-f]` (hex) | 401 |
+| Độ dài signature | phải bằng đúng độ dài expected hex | 401 |
+| Chữ ký HMAC | `HMAC-SHA256(rawBody, BUNNY_READONLY_API_KEY)` phải khớp | 401 |
+
+**Tại sao dùng `timingSafeEqual`?**
+
+So sánh chuỗi thông thường (`===`) dễ bị **timing attack** — kẻ tấn công đo thời gian response để đoán từng ký tự. `crypto.timingSafeEqual()` luôn mất cùng một lượng thời gian bất kể kết quả so sánh → ngăn chặn timing attack.
+
+**Tại sao cần `rawBody`?**
+
+HMAC được tính trên **raw bytes của body**, không phải parsed JSON. Nếu body bị parse rồi `JSON.stringify()` lại, thứ tự key có thể thay đổi → chữ ký sai. `body-parser` được cấu hình trong `main.ts` để giữ `req.rawBody`:
+
+```typescript
+// main.ts
+app.use(bodyParser.json({
+  verify: (req: any, res, buf) => {
+    req.rawBody = buf.toString(); // giữ nguyên raw string
+  },
+}));
+```
+
+**Biến môi trường cần thiết:**
+
+| Biến | Mô tả |
+|------|-------|
+| `BUNNY_READONLY_API_KEY` | Readonly API Key từ BunnyCDN dashboard — dùng làm secret cho HMAC |
+
+> ⚠️ **Khác với `BUNNY_API_KEY`** — `BUNNY_READONLY_API_KEY` là key chỉ đọc, dùng riêng để verify webhook. Cần thêm vào `docs/08-environment.md` và Fly.io secrets.
+
+---
+
+### 6.9.4 BunnyVideoStatus — Bảng trạng thái
+
+| Giá trị (int) | Tên enum | Mô tả |
+|--------------|----------|-------|
+| `0` | `Queued` | Video đang chờ trong hàng đợi |
+| `1` | `Processing` | Đang xử lý (phân tích video) |
+| `2` | `Encoding` | Đang encode sang HLS |
+| `3` | `Finished` | ✅ Hoàn thành — video sẵn sàng phát |
+| `4` | `ResolutionFinished` | Một resolution đã encode xong (nhiều quality) |
+| `5` | `Failed` | ❌ Xử lý thất bại |
+| `6` | `PresignedUploadStarted` | Bắt đầu upload qua presigned URL |
+| `7` | `PresignedUploadFinished` | Upload qua presigned URL xong |
+| `8` | `PresignedUploadFailed` | ❌ Upload qua presigned URL thất bại |
+| `9` | `CaptionsGenerated` | Phụ đề đã được tạo |
+| `10` | `TitleOrDescriptionGenerated` | AI đã sinh title/description |
+
+> BunnyCDN có thể gọi webhook **nhiều lần** với các status khác nhau trong vòng đời 1 video. Backend cập nhật `uploading_status` mỗi lần nhận.
+
+---
+
+### 6.9.5 Payload Interface
+
+```typescript
+interface BunnyWebhookPayload {
+  IsLiveStreamWebhook: boolean; // false với video thường
+  VideoLibraryId: number;       // ID của Video Library
+  VideoGuid: string;            // GUID dùng để lookup trong DB
+  Status: number;               // BunnyVideoStatus enum value
+}
+```
+
+---
+
+### 6.9.6 Cấu hình Webhook trên BunnyCDN
+
+Để BunnyCDN biết gọi về đâu, cần đăng ký URL trong dashboard:
+
+1. Vào **BunnyCDN Dashboard** → **Stream** → chọn Video Library
+2. Tab **Settings** → **Webhook URL**
+3. Điền: `https://web-travel-be.fly.dev/webhook/bunny`
+4. Lưu lại — BunnyCDN sẽ tự gọi mỗi khi video thay đổi trạng thái
+
+> ⚠️ Webhook chỉ hoạt động với HTTPS URL public. Khi dev local cần dùng tunnel như **ngrok**: `ngrok http 3000` rồi dùng URL ngrok.
