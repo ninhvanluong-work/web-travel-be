@@ -14,7 +14,7 @@ export class TasksService {
   ) {}
 
   async onModuleInit() {
-    await this.handleEmbeddingCron();
+    //await this.handleEmbeddingCron();
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)

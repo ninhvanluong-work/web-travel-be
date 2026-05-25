@@ -10,7 +10,10 @@ import {
 } from '@nestjs/common';
 import { ApiExtraModels, ApiResponse } from '@nestjs/swagger';
 
-import { Product } from 'src/modules/product/entities/product.entity';
+import {
+  Product,
+  ProductStatus,
+} from 'src/modules/product/entities/product.entity';
 import { ProductService } from './product.service';
 
 import { CreateProductDto } from './dto/create-product.dto';
@@ -142,6 +145,33 @@ export class ProductController {
       result,
       HttpStatus.OK,
       'updated product successfully!',
+    );
+  }
+
+  @Post(':id/publish')
+  @ApiResponse({
+    status: 200,
+    description: 'publish product',
+    schema: {
+      properties: {
+        data: {
+          $ref: getSchemaRefPath('Product'),
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async publish(@Param() param: IdDto) {
+    const { id } = param;
+    const result = await this.productService.update(id, {
+      status: ProductStatus.PUBLISHED,
+    });
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'published product successfully!',
     );
   }
 

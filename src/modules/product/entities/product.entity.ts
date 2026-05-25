@@ -18,7 +18,7 @@ import { Option } from 'src/modules/option/entities/option.entity';
 import { Review } from 'src/modules/review/entities/review.entity';
 import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 import { Tag } from 'src/modules/product/entities/tag.entity';
-import { TourGuide } from 'src/modules/product/entities/tour-guide.entity';
+import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { Element } from 'src/modules/element/entities/element.entity';
 
 export enum ProductStatus {
