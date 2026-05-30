@@ -72,18 +72,6 @@ export class CreateProductDto {
   @IsUrl()
   itineraryImage?: string;
 
-  @ApiPropertyOptional({ example: 3 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  duration?: number;
-
-  @ApiPropertyOptional({ example: 'day' })
-  @IsOptional()
-  @IsString()
-  durationType?: string;
-
   @ApiPropertyOptional({ example: 'Visit cave, swimming...' })
   @IsOptional()
   @IsString()

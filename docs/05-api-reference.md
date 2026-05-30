@@ -70,8 +70,6 @@
   "supplierId": "uuid",
   "description": "...",
   "shortDescription": "...",
-  "duration": 3,
-  "durationType": "day",
   "highlight": "...",
   "include": "...",
   "exclude": "...",

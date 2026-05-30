@@ -120,14 +120,6 @@ export class Product extends BaseEntity {
   @Column({ nullable: true, name: 'itinerary_image' })
   itineraryImage: string;
 
-  @ApiProperty({ example: 3 })
-  @Column({ type: 'int', default: 1 })
-  duration: number;
-
-  @ApiProperty({ example: 'day', description: 'day, hour, etc.' })
-  @Column({ nullable: true, name: 'duration_type', default: 'day' })
-  durationType: string;
-
   @ApiProperty({ example: 'Visit cave, swimming...' })
   @Column({ type: 'text', nullable: true })
   highlight: string;

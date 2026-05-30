@@ -96,12 +96,6 @@ export class ProductDetailDto {
   @ApiPropertyOptional({ example: 'https://example.com/itinerary.jpg' })
   itineraryImage?: string;
 
-  @ApiProperty({ example: 3 })
-  duration: number;
-
-  @ApiPropertyOptional({ example: 'day', description: 'day, hour, etc.' })
-  durationType?: string;
-
   @ApiPropertyOptional({ example: 'Visit cave, swimming...' })
   highlight?: string;
 
