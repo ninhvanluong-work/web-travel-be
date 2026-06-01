@@ -32,6 +32,7 @@ import {
   GetReviewsResponseDto,
 } from 'src/modules/review/dto/get-review.dto';
 import { ReviewService } from 'src/modules/review/review.service';
+import { UpdateProductStatusDto } from 'src/modules/product/dto/update-product-status.dto';
 
 @Controller('product')
 @ApiExtraModels(
@@ -172,6 +173,33 @@ export class ProductController {
       result,
       HttpStatus.OK,
       'published product successfully!',
+    );
+  }
+
+  @Post(':id/status/:status')
+  @ApiResponse({
+    status: 200,
+    description: 'update product status',
+    schema: {
+      properties: {
+        data: {
+          $ref: getSchemaRefPath('Product'),
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async updateStatus(@Param() param: UpdateProductStatusDto) {
+    const { id, status } = param;
+    const result = await this.productService.update(id, {
+      status,
+    });
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'updated product status successfully!',
     );
   }
 
