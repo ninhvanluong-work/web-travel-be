@@ -328,6 +328,8 @@ export class ProductService {
         type: VideoType.HERO,
         productId: id,
       });
+
+      delete updateProductDto.heroVideoId;
     }
 
     if (itineraries) {
