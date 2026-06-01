@@ -29,6 +29,7 @@ import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { Video } from 'src/modules/video/entities/video.entity';
 import { VideoType } from 'src/modules/video/video.type';
 import { ElementService } from 'src/modules/element/element.service';
+import { HeroVideoDto } from 'src/modules/product/dto/product-detail.dto';
 
 @Injectable()
 export class ProductService {
@@ -249,6 +250,25 @@ export class ProductService {
     if (product?.elements) {
       product.elements = product?.elements.filter((e) => e.isActive);
     }
+
+    if (product) {
+      const productHeroVideo = await this.videoRepository.findOne({
+        select: {
+          id: true,
+          createdAt: true,
+          name: true,
+          embedUrl: true,
+          thumbnail: true,
+        },
+        where: {
+          productId: id,
+          type: VideoType.HERO,
+        },
+      });
+
+      product.heroVideo = productHeroVideo as HeroVideoDto;
+    }
+
     return product;
   }
 

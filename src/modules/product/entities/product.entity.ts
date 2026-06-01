@@ -20,6 +20,7 @@ import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 import { Tag } from 'src/modules/product/entities/tag.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { Element } from 'src/modules/element/entities/element.entity';
+import { HeroVideoDto } from 'src/modules/product/dto/product-detail.dto';
 
 export enum ProductStatus {
   DRAFT = 'draft',
@@ -194,6 +195,8 @@ export class Product extends BaseEntity {
     cascade: true,
   })
   itineraries: Itinerary[];
+
+  heroVideo?: HeroVideoDto;
 
   @ApiProperty({ type: () => [Tag], nullable: true })
   @ManyToMany(() => Tag, (tag: Tag) => tag.products, {

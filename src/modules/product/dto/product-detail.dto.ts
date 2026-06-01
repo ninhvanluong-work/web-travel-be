@@ -51,6 +51,23 @@ class ItineraryDto {
   description?: string;
 }
 
+export class HeroVideoDto {
+  @ApiProperty({ format: 'uuid' })
+  id: string;
+
+  @ApiProperty({ example: 'video name' })
+  name: string;
+
+  @ApiProperty({ example: 'https://example.com/embed/...' })
+  embedUrl: string;
+
+  @ApiProperty({ example: 'https://example.com/thumb.jpg' })
+  thumbnail: string;
+
+  @ApiProperty({ example: '2026-05-11T00:00:00.000Z' })
+  createdAt: Date;
+}
+
 export class ProductDetailDto {
   @ApiProperty({ format: 'uuid' })
   id: string;
@@ -72,6 +89,9 @@ export class ProductDetailDto {
 
   @ApiPropertyOptional({ example: 'PROD-001' })
   code?: string;
+
+  @ApiPropertyOptional({ type: HeroVideoDto })
+  heroVideo?: HeroVideoDto;
 
   @ApiPropertyOptional({
     example: ['img1.jpg', 'img2.jpg'],
