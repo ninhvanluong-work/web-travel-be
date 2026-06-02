@@ -23,8 +23,49 @@ export class TourGuide extends BaseEntity {
   expYear: number;
 
   @ApiProperty({ example: 4.5 })
-  @Column({ type: 'float', name: 'rating_star', default: 0 })
-  ratingStar: number;
+  @Column({ type: 'float', name: 'rating_value', default: 0 })
+  ratingValue: number;
+
+  @ApiProperty({
+    example: 'Expert tour guide with passion for travel',
+    nullable: true,
+    maxLength: 500,
+  })
+  @Column({ nullable: true, length: 500 })
+  quote: string;
+
+  @ApiProperty({ example: 'https://example.com/cover.jpg', nullable: true })
+  @Column({ name: 'cover_img', nullable: true })
+  coverImg: string;
+
+  @ApiProperty({
+    example: 'Experienced guide specializing in cultural tours',
+    nullable: true,
+  })
+  @Column({ nullable: true, type: 'text' })
+  summary: string;
+
+  @ApiProperty({ example: ['English', 'Vietnamese', 'French'], nullable: true })
+  @Column({ type: 'varchar', array: true, length: 50, nullable: true })
+  languages: string[];
+
+  @ApiProperty({
+    example: { rating: 4, reviews: 150, comment: 'comment' },
+    nullable: true,
+  })
+  @Column({ type: 'jsonb', name: 'supplier_review', nullable: true })
+  supplierReview: Record<string, any>;
+
+  @ApiProperty({ example: { rating: 4.5, reviews: 200 }, nullable: true })
+  @Column({ type: 'jsonb', name: 'user_review', nullable: true })
+  userReview: Record<string, any>;
+
+  @ApiProperty({
+    example: { current: 'Senior Guide', yearsInRole: 5 },
+    nullable: true,
+  })
+  @Column({ type: 'jsonb', name: 'career_path', nullable: true })
+  careerPath: Record<string, any>;
 
   @ManyToMany(() => Product, (product: Product) => product.tourGuides)
   products: Product[];

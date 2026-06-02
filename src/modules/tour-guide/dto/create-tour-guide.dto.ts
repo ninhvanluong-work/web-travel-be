@@ -1,13 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsNumber,
-  IsOptional,
-  IsString,
-  IsUrl,
-  Max,
-  Min,
-} from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUrl, Min } from 'class-validator';
 
 export class CreateTourGuideDto {
   @ApiProperty({ example: 'Nguyễn Văn A' })
@@ -24,22 +16,9 @@ export class CreateTourGuideDto {
   @IsOptional()
   avatar?: string;
 
-  @ApiProperty({ example: 120, required: false, default: 0 })
-  @IsInt()
-  @Min(0)
-  @IsOptional()
-  ratingCount?: number;
-
   @ApiProperty({ example: 5, required: false, default: 0 })
   @IsInt()
   @Min(0)
   @IsOptional()
   expYear?: number;
-
-  @ApiProperty({ example: 4.5, required: false, default: 0 })
-  @IsNumber()
-  @Min(0)
-  @Max(5)
-  @IsOptional()
-  ratingStar?: number;
 }

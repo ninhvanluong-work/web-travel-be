@@ -20,7 +20,7 @@ export class TourGuideDto {
   expYear: number;
 
   @ApiProperty({ example: 4.5 })
-  ratingStar: number;
+  ratingValue: number;
 }
 
 export class GetTourGuidesResponseDto extends ListItemsResponse<TourGuideDto> {
