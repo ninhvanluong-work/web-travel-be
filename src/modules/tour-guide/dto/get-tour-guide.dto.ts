@@ -3,7 +3,7 @@ import { ListItemsResponse, PaginationDto } from 'src/types/pagination.dto';
 
 export class GetTourGuidesDto extends PaginationDto {}
 
-export class TourGuideResponseDto {
+export class TourGuideDto {
   @ApiProperty({ example: '0df1ec7e-166e-4209-810a-23156b3b0489' })
   id: string;
 
@@ -23,7 +23,7 @@ export class TourGuideResponseDto {
   ratingStar: number;
 }
 
-export class GetTourGuidesResponseDto extends ListItemsResponse<TourGuideResponseDto> {
-  @ApiProperty({ type: [TourGuideResponseDto] })
-  declare items: TourGuideResponseDto[];
+export class GetTourGuidesResponseDto extends ListItemsResponse<TourGuideDto> {
+  @ApiProperty({ type: [TourGuideDto] })
+  declare items: TourGuideDto[];
 }
