@@ -8,7 +8,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse } from '@nestjs/swagger';
+import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
 import {
   Product,
@@ -26,7 +26,7 @@ import {
   ProductShortResponseDto,
 } from 'src/modules/product/dto/get-product.dto';
 
-import { formatApiResponse, getSchemaRefPath } from 'src/common/utils/format';
+import { formatApiResponse } from 'src/common/utils/format';
 import {
   GetProductReviewsDto,
   GetReviewsResponseDto,
@@ -56,7 +56,7 @@ export class ProductController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaRefPath('Product'),
+          $ref: getSchemaPath('Product'),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
@@ -82,7 +82,7 @@ export class ProductController {
         data: {
           type: 'array',
           items: {
-            $ref: getSchemaRefPath('GetProductsResponseDto'),
+            $ref: getSchemaPath('GetProductsResponseDto'),
           },
         },
         code: { type: 'number', example: 200 },
@@ -107,7 +107,7 @@ export class ProductController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaRefPath('ProductDetailDto'),
+          $ref: getSchemaPath('ProductDetailDto'),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
@@ -128,7 +128,7 @@ export class ProductController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaRefPath('Product'),
+          $ref: getSchemaPath('Product'),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
@@ -156,7 +156,7 @@ export class ProductController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaRefPath('Product'),
+          $ref: getSchemaPath('Product'),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
@@ -183,7 +183,7 @@ export class ProductController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaRefPath('Product'),
+          $ref: getSchemaPath('Product'),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
@@ -217,7 +217,7 @@ export class ProductController {
         data: {
           type: 'array',
           items: {
-            $ref: getSchemaRefPath('GetReviewsResponseDto'),
+            $ref: getSchemaPath('GetReviewsResponseDto'),
           },
         },
         code: { type: 'number', example: 200 },

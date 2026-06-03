@@ -14,9 +14,10 @@ import {
   ApiConsumes,
   ApiExtraModels,
   ApiResponse,
+  getSchemaPath,
 } from '@nestjs/swagger';
 
-import { formatApiResponse, getSchemaRefPath } from 'src/common/utils/format';
+import { formatApiResponse } from 'src/common/utils/format';
 import {
   UploadFileDto,
   UploadFileParam,
@@ -40,7 +41,7 @@ export class UploadController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaRefPath('UploadVideoResponseDto'),
+          $ref: getSchemaPath('UploadVideoResponseDto'),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
@@ -68,7 +69,7 @@ export class UploadController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaRefPath('UploadFileResponseDto'),
+          $ref: getSchemaPath('UploadFileResponseDto'),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },

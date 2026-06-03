@@ -9,9 +9,9 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse } from '@nestjs/swagger';
+import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
-import { formatApiResponse, getSchemaRefPath } from 'src/common/utils/format';
+import { formatApiResponse } from 'src/common/utils/format';
 import { IdDto } from 'src/types/common.dto';
 
 import { TagService } from './tag.service';
@@ -31,7 +31,7 @@ export class TagController {
     description: 'create tag',
     schema: {
       properties: {
-        data: { $ref: getSchemaRefPath('TagDto') },
+        data: { $ref: getSchemaPath('TagDto') },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
         message: { type: 'string' },
@@ -52,7 +52,7 @@ export class TagController {
         data: {
           type: 'array',
           items: {
-            $ref: getSchemaRefPath('GetTagsResponseDto'),
+            $ref: getSchemaPath('GetTagsResponseDto'),
           },
         },
         code: { type: 'number', example: 200 },
@@ -72,7 +72,7 @@ export class TagController {
     description: 'update tag',
     schema: {
       properties: {
-        data: { $ref: getSchemaRefPath('TagDto') },
+        data: { $ref: getSchemaPath('TagDto') },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
         message: { type: 'string', example: 'updated tag successfully' },
@@ -91,7 +91,7 @@ export class TagController {
     description: 'deactivate tag',
     schema: {
       properties: {
-        data: { $ref: getSchemaRefPath('TagDto') },
+        data: { $ref: getSchemaPath('TagDto') },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
         message: { type: 'string', example: 'deactivated tag successfully' },

@@ -10,11 +10,11 @@ import {
   Query,
   NotFoundException,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse } from '@nestjs/swagger';
+import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
 import { TourGuideService } from 'src/modules/tour-guide/tour-guide.service';
 
-import { formatApiResponse, getSchemaRefPath } from 'src/common/utils/format';
+import { formatApiResponse } from 'src/common/utils/format';
 import { IdDto } from 'src/types/common.dto';
 import { CreateTourGuideDto } from 'src/modules/tour-guide/dto/create-tour-guide.dto';
 import { UpdateTourGuideDto } from 'src/modules/tour-guide/dto/update-tour-guide.dto';
@@ -37,7 +37,7 @@ export class TourGuideController {
     description: 'create tour guide',
     schema: {
       properties: {
-        data: { $ref: getSchemaRefPath('TourGuideDto') },
+        data: { $ref: getSchemaPath('GetTourGuideDetailDto') },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
         message: { type: 'string' },
@@ -62,7 +62,7 @@ export class TourGuideController {
         data: {
           type: 'array',
           items: {
-            $ref: getSchemaRefPath('GetTourGuidesResponseDto'),
+            $ref: getSchemaPath('GetTourGuidesResponseDto'),
           },
         },
         code: { type: 'number', example: 200 },
@@ -86,7 +86,7 @@ export class TourGuideController {
     description: 'get tour guide by id',
     schema: {
       properties: {
-        data: { $ref: getSchemaRefPath('GetTourGuideDetailDto') },
+        data: { $ref: getSchemaPath('GetTourGuideDetailDto') },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
         message: { type: 'string' },
@@ -111,7 +111,7 @@ export class TourGuideController {
     description: 'update tour guide',
     schema: {
       properties: {
-        data: { $ref: getSchemaRefPath('TourGuideDto') },
+        data: { $ref: getSchemaPath('TourGuideDto') },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
         message: { type: 'string' },

@@ -13,13 +13,13 @@ import {
 import { VideoService } from './video.service';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
-import { ApiExtraModels, ApiResponse } from '@nestjs/swagger';
+import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 import {
   GetVideoAdminDto,
   GetVideoDto,
   GetVideoResponseDto,
 } from 'src/modules/video/dto/get-video.dto';
-import { formatApiResponse, getSchemaRefPath } from 'src/common/utils/format';
+import { formatApiResponse } from 'src/common/utils/format';
 import { Video } from 'src/modules/video/entities/video.entity';
 import { SearchingService } from 'src/modules/searching/searching.service';
 
@@ -40,7 +40,7 @@ export class VideoController {
         data: {
           type: 'array',
           items: {
-            $ref: getSchemaRefPath('GetVideoResponseDto'),
+            $ref: getSchemaPath('GetVideoResponseDto'),
           },
         },
         code: { type: 'number', example: 200 },
@@ -76,7 +76,7 @@ export class VideoController {
         data: {
           type: 'array',
           items: {
-            $ref: getSchemaRefPath('GetVideoAdminDto'),
+            $ref: getSchemaPath('GetVideoAdminDto'),
           },
         },
         code: { type: 'number', example: 200 },
@@ -97,7 +97,7 @@ export class VideoController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaRefPath('GetVideoResponseDto'),
+          $ref: getSchemaPath('GetVideoResponseDto'),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
@@ -129,7 +129,7 @@ export class VideoController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaRefPath('Video'),
+          $ref: getSchemaPath('Video'),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
@@ -148,7 +148,7 @@ export class VideoController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaRefPath('Video'),
+          $ref: getSchemaPath('Video'),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
@@ -172,7 +172,7 @@ export class VideoController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaRefPath('Video'),
+          $ref: getSchemaPath('Video'),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },

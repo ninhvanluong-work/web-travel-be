@@ -13,7 +13,3 @@ export const formatApiResponse = <T>(
     error,
   };
 };
-
-export const getSchemaRefPath = (schema: string) => {
-  return `#/components/schemas/${schema}`;
-};

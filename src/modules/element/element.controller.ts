@@ -9,7 +9,7 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse } from '@nestjs/swagger';
+import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
 import { ElementService } from 'src/modules/element/element.service';
 
@@ -17,7 +17,7 @@ import { CreateElementDto } from './dto/create-element.dto';
 
 import { UpdateElementDto } from './dto/update-element.dto';
 import { IdDto } from 'src/types/common.dto';
-import { formatApiResponse, getSchemaRefPath } from 'src/common/utils/format';
+import { formatApiResponse } from 'src/common/utils/format';
 import { GetElementDto } from './dto/get-element.dto';
 import { ElementDto } from './dto/element-response.dto';
 
@@ -32,7 +32,7 @@ export class ElementController {
     description: 'create element',
     schema: {
       properties: {
-        data: { $ref: getSchemaRefPath('ElementDto') },
+        data: { $ref: getSchemaPath('ElementDto') },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
         message: { type: 'string' },
@@ -57,7 +57,7 @@ export class ElementController {
         data: {
           type: 'array',
           items: {
-            $ref: getSchemaRefPath('ElementDto'),
+            $ref: getSchemaPath('ElementDto'),
           },
         },
         code: { type: 'number', example: 200 },
@@ -77,7 +77,7 @@ export class ElementController {
     description: 'UPDATE element',
     schema: {
       properties: {
-        data: { $ref: getSchemaRefPath('ElementDto') },
+        data: { $ref: getSchemaPath('ElementDto') },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
         message: { type: 'string', example: 'updated element successfully' },
@@ -100,7 +100,7 @@ export class ElementController {
     description: 'UPDATE element',
     schema: {
       properties: {
-        data: { $ref: getSchemaRefPath('ElementDto') },
+        data: { $ref: getSchemaPath('ElementDto') },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
         message: { type: 'string', example: 'activated element successfully' },
@@ -123,7 +123,7 @@ export class ElementController {
     description: 'deactivate element',
     schema: {
       properties: {
-        data: { $ref: getSchemaRefPath('ElementDto') },
+        data: { $ref: getSchemaPath('ElementDto') },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
         message: { type: 'string', example: 'deactivate element successfully' },
