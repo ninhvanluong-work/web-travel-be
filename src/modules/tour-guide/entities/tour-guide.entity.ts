@@ -3,6 +3,7 @@ import { Entity, Column, ManyToMany } from 'typeorm';
 
 import { BaseEntity } from 'src/database/base.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
+import { CareerPathItemDto } from 'src/modules/tour-guide/dto/create-tour-guide.dto';
 
 @Entity('tour_guide')
 export class TourGuide extends BaseEntity {
@@ -45,7 +46,7 @@ export class TourGuide extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   summary: string;
 
-  @ApiProperty({ example: ['English', 'Vietnamese', 'French'], nullable: true })
+  @ApiProperty({ example: ['EN', 'VN', 'FR'], nullable: true })
   @Column({ type: 'varchar', array: true, length: 50, nullable: true })
   languages: string[];
 
@@ -65,7 +66,7 @@ export class TourGuide extends BaseEntity {
     nullable: true,
   })
   @Column({ type: 'jsonb', name: 'career_path', nullable: true })
-  careerPath: Record<string, any>;
+  careerPath: CareerPathItemDto[];
 
   @ManyToMany(() => Product, (product: Product) => product.tourGuides)
   products: Product[];
