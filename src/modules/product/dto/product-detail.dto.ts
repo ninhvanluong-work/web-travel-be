@@ -6,7 +6,7 @@ import {
 } from 'src/modules/product/entities/product.entity';
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 
-class TagDto {
+class ProductTagDto {
   @ApiProperty({ format: 'uuid' })
   id: string;
 
@@ -14,7 +14,7 @@ class TagDto {
   name: string;
 }
 
-class TourGuideDto {
+class ProductTourGuideDto {
   @ApiProperty({ format: 'uuid' })
   id: string;
 
@@ -144,19 +144,19 @@ export class ProductDetailDto {
   itineraries: ItineraryDto[];
 
   @ApiProperty({
-    type: () => [TourGuideDto],
+    type: () => [ProductTourGuideDto],
     description: 'List of tour guides',
   })
-  tourGuides: TourGuideDto[];
+  tourGuides: ProductTourGuideDto[];
 
   @ApiProperty({ type: Supplier })
   supplier: Supplier;
 
   @ApiProperty({
-    type: () => [TagDto],
+    type: () => [ProductTagDto],
     description: 'List of tags',
   })
-  tags: TagDto[];
+  tags: ProductTagDto[];
 
   @ApiProperty({ example: '2026-05-11T00:00:00.000Z' })
   createdAt: Date;

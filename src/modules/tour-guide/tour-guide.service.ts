@@ -30,6 +30,15 @@ export class TourGuideService {
     const skip = (page - 1) * pageSize;
 
     const [tourGuides, total] = await this.tourGuideRepository.findAndCount({
+      select: {
+        id: true,
+        createdAt: true,
+        name: true,
+        avatar: true,
+        ratingCount: true,
+        ratingValue: true,
+        expYear: true,
+      },
       where: {
         name: ILike(`%${keyword}%`),
       },

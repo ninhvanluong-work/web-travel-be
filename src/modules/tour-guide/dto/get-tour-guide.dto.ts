@@ -1,4 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
+
+import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { ListItemsResponse, PaginationDto } from 'src/types/pagination.dto';
 
 export class GetTourGuidesDto extends PaginationDto {}
@@ -21,9 +23,14 @@ export class TourGuideDto {
 
   @ApiProperty({ example: 4.5 })
   ratingValue: number;
+
+  @ApiProperty({})
+  createdAt: Date;
 }
 
 export class GetTourGuidesResponseDto extends ListItemsResponse<TourGuideDto> {
   @ApiProperty({ type: [TourGuideDto] })
   declare items: TourGuideDto[];
 }
+
+export class GetTourGuideDetailDto extends OmitType(TourGuide, ['products']) {}

@@ -20,13 +20,14 @@ import { CreateTourGuideDto } from 'src/modules/tour-guide/dto/create-tour-guide
 import { UpdateTourGuideDto } from 'src/modules/tour-guide/dto/update-tour-guide.dto';
 
 import {
+  GetTourGuideDetailDto,
   GetTourGuidesDto,
   GetTourGuidesResponseDto,
   TourGuideDto,
 } from 'src/modules/tour-guide/dto/get-tour-guide.dto';
 
 @Controller('tour-guide')
-@ApiExtraModels(TourGuideDto, GetTourGuidesResponseDto)
+@ApiExtraModels(TourGuideDto, GetTourGuidesResponseDto, GetTourGuideDetailDto)
 export class TourGuideController {
   constructor(private readonly tourGuideService: TourGuideService) {}
 
@@ -85,7 +86,7 @@ export class TourGuideController {
     description: 'get tour guide by id',
     schema: {
       properties: {
-        data: { $ref: getSchemaRefPath('TourGuideDto') },
+        data: { $ref: getSchemaRefPath('GetTourGuideDetailDto') },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
         message: { type: 'string' },
@@ -132,7 +133,7 @@ export class TourGuideController {
     description: 'delete tour guide',
     schema: {
       properties: {
-        data: { $ref: getSchemaRefPath('TourGuideDto') },
+        data: { type: 'null', example: null },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },
         message: { type: 'string' },
@@ -140,9 +141,9 @@ export class TourGuideController {
     },
   })
   async remove(@Param() param: IdDto) {
-    const result = await this.tourGuideService.remove(param.id);
+    await this.tourGuideService.remove(param.id);
     return formatApiResponse(
-      result,
+      null,
       HttpStatus.OK,
       'deleted tour guide successfully',
     );
