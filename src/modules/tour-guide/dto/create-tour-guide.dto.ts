@@ -95,6 +95,15 @@ export class CreateTourGuideDto {
   summary?: string;
 
   @ApiProperty({
+    example: 'tour guide description',
+    required: false,
+    nullable: true,
+  })
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @ApiProperty({
     example: ['VI', 'EN', 'JP'],
     required: false,
     nullable: true,
@@ -107,6 +116,20 @@ export class CreateTourGuideDto {
   @IsString({ each: true })
   @IsOptional()
   languages?: string[];
+
+  @ApiProperty({
+    example: ['Cultural tours', 'Trekking', 'Food tours'],
+    required: false,
+    nullable: true,
+    type: 'array',
+    items: {
+      type: 'string',
+    },
+  })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  experts?: string[];
 
   @ApiProperty({
     type: [CareerPathItemDto],
