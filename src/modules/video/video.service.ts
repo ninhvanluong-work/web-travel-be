@@ -337,12 +337,8 @@ export class VideoService {
     return await this.videoRepository.update({ guid }, updatePayload);
   }
 
-  //use for admin
-  async getVideos(
-    queryPayload: GetVideoAdminDto,
-  ): Promise<GetVideoAdminResponseDto> {
-    const { page = 1, pageSize = 10, keyword = '', type } = queryPayload;
-    const skip = (page - 1) * pageSize;
+  buildAdminVideosCondition(queryPayload: GetVideoAdminDto) {
+    const { keyword = '', type } = queryPayload;
     const condition: FindOptionsWhere<Video> = {
       name: ILike(`%${keyword}%`),
     };
@@ -350,6 +346,13 @@ export class VideoService {
     if (type) {
       condition.type = type;
     }
+    return condition;
+  }
+
+  async getVideos(condition: FindOptionsWhere<Video>, queryPayload: any) {
+    const { page = 1, pageSize = 10 } = queryPayload;
+    const skip = (page - 1) * pageSize;
+
     const [videos, total] = await this.videoRepository.findAndCount({
       select: [
         'id',
@@ -363,6 +366,7 @@ export class VideoService {
         'like',
         'tag',
         'type',
+        'duration',
       ],
       where: condition,
       skip,
@@ -382,5 +386,41 @@ export class VideoService {
     };
 
     return result;
+  }
+
+  //use for admin
+  async getAdminVideos(
+    queryPayload: GetVideoAdminDto,
+  ): Promise<GetVideoAdminResponseDto> {
+    const condition = this.buildAdminVideosCondition(queryPayload);
+    return await this.getVideos(condition, queryPayload);
+  }
+
+  buildTourGuideMomentsCondition(
+    tourGuideId: string,
+    queryPayload: GetVideoAdminDto,
+  ) {
+    const { keyword = '', type } = queryPayload;
+    const condition: FindOptionsWhere<Video> = {
+      tourGuideId,
+      name: ILike(`%${keyword}%`),
+    };
+
+    if (type) {
+      condition.type = type;
+    }
+    return condition;
+  }
+
+  async getTourGuideMoments(
+    tourGuideId: string,
+    queryPayload: GetVideoAdminDto,
+  ): Promise<GetVideoAdminResponseDto> {
+    const condition = this.buildTourGuideMomentsCondition(
+      tourGuideId,
+      queryPayload,
+    );
+    const videos = await this.getVideos(condition, queryPayload);
+    return videos;
   }
 }

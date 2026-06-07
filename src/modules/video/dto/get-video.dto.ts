@@ -128,7 +128,10 @@ export class VideoDto {
   tag?: string;
 
   @ApiProperty({ description: 'video like', example: 100 })
-  like: string;
+  like: number;
+
+  @ApiProperty({ description: 'video duration', example: 100 })
+  duration: number;
 
   @ApiProperty({ type: ProductVideoDto })
   product: ProductVideoDto;

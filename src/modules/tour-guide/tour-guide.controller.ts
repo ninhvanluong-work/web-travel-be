@@ -16,6 +16,9 @@ import { TourGuideService } from 'src/modules/tour-guide/tour-guide.service';
 import { ReviewService } from 'src/modules/review/review.service';
 import { GetTourGuideReviewsDto } from 'src/modules/review/dto/get-review.dto';
 import { GetReviewsResponseDto } from 'src/modules/review/dto/get-review.dto';
+import { VideoService } from 'src/modules/video/video.service';
+import { GetVideoAdminDto } from 'src/modules/video/dto/get-video.dto';
+import { Video } from 'src/modules/video/entities/video.entity';
 
 import { formatApiResponse } from 'src/common/utils/format';
 import { IdDto } from 'src/types/common.dto';
@@ -35,11 +38,14 @@ import {
   GetTourGuidesResponseDto,
   GetTourGuideDetailDto,
   GetReviewsResponseDto,
+  GetVideoAdminDto,
+  Video,
 )
 export class TourGuideController {
   constructor(
     private readonly tourGuideService: TourGuideService,
     private readonly reviewService: ReviewService,
+    private readonly videoService: VideoService,
   ) {}
 
   @Post()
@@ -183,6 +189,39 @@ export class TourGuideController {
     @Query() query: GetTourGuideReviewsDto,
   ) {
     const result = await this.reviewService.getTourGuideReviews(
+      param.id,
+      query,
+    );
+    return formatApiResponse(result, HttpStatus.OK, 'ok');
+  }
+
+  @Get(':id/moment')
+  @ApiResponse({
+    status: 200,
+    description: 'get video moment list by tour guide id',
+    schema: {
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            $ref: getSchemaPath('VideoDto'),
+          },
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async findTourGuideMoments(
+    @Param() param: IdDto,
+    @Query() query: GetVideoAdminDto,
+  ) {
+    const tourGuide = await this.tourGuideService.findOneById(param.id);
+    if (!tourGuide) {
+      throw new NotFoundException('Tour guide not found');
+    }
+    const result = await this.videoService.getTourGuideMoments(
       param.id,
       query,
     );

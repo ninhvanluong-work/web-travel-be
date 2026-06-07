@@ -86,7 +86,7 @@ export class VideoController {
     },
   })
   async findAllAdmin(@Query() query: GetVideoAdminDto) {
-    const result = await this.videosService.getVideos(query);
+    const result = await this.videosService.getAdminVideos(query);
     return formatApiResponse(result, HttpStatus.OK, 'ok');
   }
 
