@@ -13,6 +13,9 @@ import {
 import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
 import { TourGuideService } from 'src/modules/tour-guide/tour-guide.service';
+import { ReviewService } from 'src/modules/review/review.service';
+import { GetTourGuideReviewsDto } from 'src/modules/review/dto/get-review.dto';
+import { GetReviewsResponseDto } from 'src/modules/review/dto/get-review.dto';
 
 import { formatApiResponse } from 'src/common/utils/format';
 import { IdDto } from 'src/types/common.dto';
@@ -27,9 +30,17 @@ import {
 } from 'src/modules/tour-guide/dto/get-tour-guide.dto';
 
 @Controller('tour-guide')
-@ApiExtraModels(TourGuideDto, GetTourGuidesResponseDto, GetTourGuideDetailDto)
+@ApiExtraModels(
+  TourGuideDto,
+  GetTourGuidesResponseDto,
+  GetTourGuideDetailDto,
+  GetReviewsResponseDto,
+)
 export class TourGuideController {
-  constructor(private readonly tourGuideService: TourGuideService) {}
+  constructor(
+    private readonly tourGuideService: TourGuideService,
+    private readonly reviewService: ReviewService,
+  ) {}
 
   @Post()
   @ApiResponse({
@@ -147,5 +158,34 @@ export class TourGuideController {
       HttpStatus.OK,
       'deleted tour guide successfully',
     );
+  }
+
+  @Get(':id/review')
+  @ApiResponse({
+    status: 200,
+    description: 'get tour guide reviews',
+    schema: {
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            $ref: getSchemaPath('GetReviewsResponseDto'),
+          },
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async findTourGuideReviews(
+    @Param() param: IdDto,
+    @Query() query: GetTourGuideReviewsDto,
+  ) {
+    const result = await this.reviewService.getTourGuideReviews(
+      param.id,
+      query,
+    );
+    return formatApiResponse(result, HttpStatus.OK, 'ok');
   }
 }

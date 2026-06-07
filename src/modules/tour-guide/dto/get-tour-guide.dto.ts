@@ -33,4 +33,21 @@ export class GetTourGuidesResponseDto extends ListItemsResponse<TourGuideDto> {
   declare items: TourGuideDto[];
 }
 
-export class GetTourGuideDetailDto extends OmitType(TourGuide, ['products']) {}
+export class DestinationSummaryDto {
+  @ApiProperty({ type: 'string', format: 'uuid' })
+  destinationId: string;
+
+  @ApiProperty({ type: 'string' })
+  destinationName: string;
+
+  @ApiProperty({ type: 'number', example: 1 })
+  productCount: number;
+}
+
+export class GetTourGuideDetailDto extends OmitType(TourGuide, ['products']) {
+  @ApiProperty({ type: 'number', example: 1 })
+  totalProducts: number;
+
+  @ApiProperty({ type: [DestinationSummaryDto] })
+  DestinationSummaryDto: DestinationSummaryDto;
+}

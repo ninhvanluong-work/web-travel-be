@@ -4,6 +4,10 @@ import { ListItemsResponse, PaginationDto } from 'src/types/pagination.dto';
 
 export class GetProductReviewsDto extends PaginationDto {}
 
+export class GetTourGuideReviewsDto extends PaginationDto {}
+
+export class GetReviewsDto extends PaginationDto {}
+
 export class UserReviewDto {
   @ApiProperty({ format: 'uuid' })
   id: string;

@@ -3,6 +3,7 @@ import { BaseEntity } from 'src/database/base.entity';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Product } from 'src/modules/product/entities/product.entity';
+import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 
 @Entity('review')
@@ -36,6 +37,19 @@ export class Review extends BaseEntity {
     foreignKeyConstraintName: 'FK_Review_Product',
   })
   product: Product;
+
+  @Column({ name: 'tour_guide_id', nullable: true })
+  @ApiProperty({})
+  tourGuideId: string;
+
+  @ManyToOne(() => TourGuide, {
+    nullable: true,
+  })
+  @JoinColumn({
+    name: 'tour_guide_id',
+    foreignKeyConstraintName: 'FK_Review_TourGuide',
+  })
+  tourGuide: TourGuide;
 
   @ManyToOne(() => User, (user) => user.reviews)
   @JoinColumn({
