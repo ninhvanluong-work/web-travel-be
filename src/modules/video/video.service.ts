@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import pgvector from 'pgvector';
 
 import { Video } from 'src/modules/video/entities/video.entity';
+import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
@@ -32,6 +33,9 @@ export class VideoService {
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
 
+    @InjectRepository(TourGuide)
+    private readonly tourGuideRepository: Repository<TourGuide>,
+
     private readonly productService: ProductService,
     private readonly embeddingService: EmbeddingService,
     private readonly configService: ConfigService,
@@ -55,8 +59,8 @@ export class VideoService {
   }
 
   async create(payload: CreateVideoDto) {
-    const { productId, name, guid } = payload;
-    const prefixLog = `[create] productId ${productId}`;
+    const { productId, tourGuideId, name, guid } = payload;
+    const prefixLog = `[create] productId ${productId} tourGuideId ${tourGuideId}`;
     const videoInsertData: Partial<Video> = payload;
     videoInsertData.slug = generateSlug(name);
     videoInsertData.embedUrl = this.getVideoEmbedUrl(guid);
@@ -86,6 +90,15 @@ export class VideoService {
           { productId },
           { type: VideoType.NORMAL },
         );
+      }
+    }
+
+    if (tourGuideId) {
+      const tourGuide = await this.tourGuideRepository.findOne({
+        where: { id: tourGuideId },
+      });
+      if (!tourGuide) {
+        throw new NotFoundException('Tour guide not found');
       }
     }
 
@@ -172,6 +185,7 @@ export class VideoService {
   async update(id: string, updateVideoDto: UpdateVideoDto) {
     const prefixLog = `[update] ${id}`;
     const productId = updateVideoDto?.productId as string;
+    const tourGuideId = updateVideoDto?.tourGuideId as string;
     if (productId) {
       const product = await this.productService.findByPk(productId);
       if (!product) {
@@ -190,6 +204,15 @@ export class VideoService {
           { productId },
           { type: VideoType.NORMAL },
         );
+      }
+    }
+
+    if (tourGuideId) {
+      const tourGuide = await this.tourGuideRepository.findOne({
+        where: { id: tourGuideId },
+      });
+      if (!tourGuide) {
+        throw new NotFoundException('Tour guide not found');
       }
     }
 

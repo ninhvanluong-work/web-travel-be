@@ -2,6 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'; // Import Swagger decorators
 import { BaseEntity } from 'src/database/base.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
+import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { VideoType } from 'src/modules/video/video.type';
 import { BunnyVideoStatus } from 'src/modules/webhook/types/bunny-webhook.type';
 
@@ -72,6 +73,10 @@ export class Video extends BaseEntity {
   @Column({ name: 'product_id' })
   productId: string;
 
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @Column({ name: 'tour_guide_id', nullable: true })
+  tourGuideId?: string;
+
   //@ApiProperty({ type: () => Product })
   @ManyToOne(() => Product, (product) => product.videos)
   @JoinColumn({
@@ -79,4 +84,11 @@ export class Video extends BaseEntity {
     foreignKeyConstraintName: 'Fk_Video_Product',
   })
   product: Product;
+
+  @ManyToOne(() => TourGuide)
+  @JoinColumn({
+    name: 'tour_guide_id',
+    foreignKeyConstraintName: 'Fk_Video_TourGuide',
+  })
+  tourGuide: TourGuide;
 }
