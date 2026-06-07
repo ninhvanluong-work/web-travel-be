@@ -310,6 +310,10 @@ export class VideoService {
     await this.videoRepository.update({ guid }, updatePayload);
   }
 
+  async updateByBunnyGuid(guid: string, updatePayload: Partial<Video>) {
+    return await this.videoRepository.update({ guid }, updatePayload);
+  }
+
   //use for admin
   async getVideos(
     queryPayload: GetVideoAdminDto,

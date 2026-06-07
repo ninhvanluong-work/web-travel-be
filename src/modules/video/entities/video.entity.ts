@@ -61,6 +61,14 @@ export class Video extends BaseEntity {
   @Column({ nullable: true, type: 'integer', name: 'uploading_status' })
   uploadingStatus: BunnyVideoStatus;
 
+  @ApiPropertyOptional({
+    example: 0,
+    description: 'Duration in seconds',
+    default: 0,
+  })
+  @Column({ type: 'integer', default: 0 })
+  duration: number;
+
   @Column({ name: 'product_id' })
   productId: string;
 

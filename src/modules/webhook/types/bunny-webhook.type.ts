@@ -16,5 +16,5 @@ export interface BunnyWebhookPayload {
   IsLiveStreamWebhook: boolean;
   VideoLibraryId: number;
   VideoGuid: string;
-  Status: number;
+  Status: BunnyVideoStatus;
 }
