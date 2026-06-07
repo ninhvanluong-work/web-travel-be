@@ -103,7 +103,7 @@ export class TourGuide extends BaseEntity {
     type: [SupplierReviewItem],
     example: [
       {
-        id: 'uuid',
+        id: '6cc93f4c-2e9b-4bf9-96e5-5acc1369a09c',
         name: 'Nguyễn Văn B',
         createdAt: '2024-01-01T00:00:00.000Z',
         content: 'Hướng dẫn viên rất nhiệt tình',

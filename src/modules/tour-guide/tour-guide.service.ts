@@ -63,10 +63,58 @@ export class TourGuideService {
   }
 
   async findOneById(id: string, withDeleted = false) {
-    return this.tourGuideRepository.findOne({
+    const tourGuide = await this.tourGuideRepository.findOne({
       where: { id },
+      relations: ['products', 'products.destination'],
       withDeleted,
     });
+
+    if (!tourGuide) {
+      return null;
+    }
+
+    let destinationSummary: {
+      destinationId: string;
+      destinationName: string;
+      productCount: number;
+    }[] = [];
+    let totalProducts = 0;
+    // Group products by destination and count them
+    const destinationMap = new Map<
+      string,
+      { destinationId: string; destinationName: string; productCount: number }
+    >();
+
+    if (tourGuide.products && tourGuide.products.length > 0) {
+      totalProducts = tourGuide.products?.length || 0;
+
+      tourGuide.products.forEach((product) => {
+        if (product.destination) {
+          const key = product.destination.id;
+          if (!destinationMap.has(key)) {
+            destinationMap.set(key, {
+              destinationId: product.destination.id,
+              destinationName: product.destination.name,
+              productCount: 0,
+            });
+          }
+          const dest = destinationMap.get(key)!;
+          dest.productCount += 1;
+        }
+      });
+      destinationSummary = Array.from(destinationMap.values()).sort(
+        (a, b) => a.productCount - b.productCount,
+      );
+    }
+
+    // Create response with destination summary (exclude products to avoid large payload)
+    const { products, ...tourGuideWithoutProducts } = tourGuide as any;
+
+    return {
+      ...tourGuideWithoutProducts,
+      destinationSummary,
+      totalProducts,
+    };
   }
 
   async update(id: string, payload: UpdateTourGuideDto) {
