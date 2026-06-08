@@ -1,5 +1,7 @@
 # 01 — Tổng quan hệ thống (System Overview)
 
+[🏠 Về trang chủ](./README.md)
+
 ## 1.1 Giới thiệu
 
 **Web Travel Backend** là REST API phục vụ nền tảng du lịch trực tuyến, cung cấp:
@@ -113,3 +115,6 @@ User → GET /product (browse)
 - Payment gateway
 - Email notification
 - Admin dashboard UI
+
+---
+[Trang sau →](./02-tech-stack.md)

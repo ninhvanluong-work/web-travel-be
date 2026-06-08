@@ -1,5 +1,7 @@
 # 09 — Hướng dẫn Phát triển (Development Guide)
 
+[🏠 Về trang chủ](./README.md)
+
 ## 9.1 Scripts
 
 ```bash
@@ -285,3 +287,6 @@ export class TasksService {
 | Thiếu input sanitization | 🟡 Medium | JSONB fields (banner, readBefore) không validate sâu |
 | Không có E2E tests | 🟠 Low | Cần thiết lập test database |
 | FFmpeg dependency | 🟠 Low | Cần cài local nếu dùng video preview feature |
+
+---
+[← Trang trước](./08-environment.md)

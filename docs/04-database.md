@@ -1,5 +1,7 @@
 # 04 — Thiết kế Cơ sở dữ liệu (Database Design)
 
+[🏠 Về trang chủ](./README.md)
+
 ## 4.1 Tổng quan
 
 - **Database**: PostgreSQL với extension `pgvector`
@@ -356,3 +358,6 @@ yarn migration:generate src/database/migrations/ten-migration
 # Rollback migration cuối
 yarn migration:revert
 ```
+
+---
+[← Trang trước](./03-architecture.md) | [Trang sau →](./05-api-reference.md)

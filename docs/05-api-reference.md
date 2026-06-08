@@ -1,5 +1,7 @@
 # 05 — API Reference
 
+[🏠 Về trang chủ](./README.md)
+
 > Swagger UI đầy đủ: `http://localhost:3000/docs` (hoặc production URL `https://web-travel-be.fly.dev/docs`)
 >
 > Tất cả response theo format:
@@ -305,3 +307,6 @@ BunnyCDN gọi tự động sau khi video hoàn thành encode.
 | Method | Path | Mô tả |
 |--------|------|-------|
 | `GET` | `/` | App health check (AppController) |
+
+---
+[← Trang trước](./04-database.md) | [Trang sau →](./06-business-logic.md)

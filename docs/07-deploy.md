@@ -1,5 +1,7 @@
 # 07 — Hướng dẫn Deploy
 
+[🏠 Về trang chủ](./README.md)
+
 ## 7.1 Môi trường
 
 | Môi trường | Mô tả | URL |
@@ -232,3 +234,6 @@ jobs:
 - [ ] Webhook URL đã được đăng ký trên BunnyCDN dashboard
 - [ ] Swagger UI accessible tại `/docs`
 - [ ] Health check endpoint `/` trả về 200
+
+---
+[← Trang trước](./06-business-logic.md) | [Trang sau →](./08-environment.md)

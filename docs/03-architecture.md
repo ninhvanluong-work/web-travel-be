@@ -1,5 +1,7 @@
 # 03 — Kiến trúc hệ thống (Architecture)
 
+[🏠 Về trang chủ](./README.md)
+
 ## 3.1 Cấu trúc thư mục
 
 ```
@@ -183,3 +185,6 @@ Tất cả entity kế thừa `BaseEntity` đều có cột `deleted_at` (timest
 4. Nhận vector number[]
 5. pgvector.toSql() → lưu vào video.embedding (pgvector column)
 ```
+
+---
+[← Trang trước](./02-tech-stack.md) | [Trang sau →](./04-database.md)

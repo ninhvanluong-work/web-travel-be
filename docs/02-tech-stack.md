@@ -1,5 +1,7 @@
 # 02 — Tech Stack
 
+[🏠 Về trang chủ](./README.md)
+
 ## 2.1 Runtime & Framework
 
 | Công nghệ | Phiên bản | Vai trò |
@@ -91,3 +93,6 @@
 │  BunnyCDN SDK | Axios (AI) | FFmpeg       │
 └────────────────────────────────────────────┘
 ```
+
+---
+[← Trang trước](./01-overview.md) | [Trang sau →](./03-architecture.md)

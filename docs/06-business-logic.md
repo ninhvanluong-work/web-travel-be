@@ -1,5 +1,7 @@
 # 06 — Đặc tả Logic Nghiệp vụ (Business Logic)
 
+[🏠 Về trang chủ](./README.md)
+
 ## 6.1 Product Module
 
 ### 6.1.1 Tạo sản phẩm (Create Product)
@@ -358,3 +360,6 @@ interface BunnyWebhookPayload {
 4. Lưu lại — BunnyCDN sẽ tự gọi mỗi khi video thay đổi trạng thái
 
 > ⚠️ Webhook chỉ hoạt động với HTTPS URL public. Khi dev local cần dùng tunnel như **ngrok**: `ngrok http 3000` rồi dùng URL ngrok.
+
+---
+[← Trang trước](./05-api-reference.md) | [Trang sau →](./07-deploy.md)
