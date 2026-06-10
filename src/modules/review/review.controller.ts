@@ -6,9 +6,10 @@ import { formatApiResponse } from 'src/common/utils/format';
 import { Review } from 'src/modules/review/entities/review.entity';
 import { ReviewService } from 'src/modules/review/review.service';
 import { CreateReviewDto } from 'src/modules/review/dto/create-review.dto';
+import { CreateReviewResponseDto } from 'src/modules/review/dto/get-review.dto';
 
 @Controller('review')
-@ApiExtraModels(Review, CreateReviewDto)
+@ApiExtraModels(Review, CreateReviewDto, CreateReviewResponseDto)
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
@@ -19,7 +20,7 @@ export class ReviewController {
     schema: {
       properties: {
         data: {
-          $ref: getSchemaPath('Review'),
+          $ref: getSchemaPath(CreateReviewResponseDto),
         },
         code: { type: 'number', example: 200 },
         error: { type: 'null', example: null },

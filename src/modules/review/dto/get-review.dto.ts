@@ -1,4 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { Review } from 'src/modules/review/entities/review.entity';
 
 import { ListItemsResponse, PaginationDto } from 'src/types/pagination.dto';
 
@@ -43,6 +44,14 @@ export class GetReviewResponseDto {
   @ApiProperty({ type: UserReviewDto })
   user: UserReviewDto;
 }
+
+export class CreateReviewResponseDto extends OmitType(Review, [
+  'product',
+  'productId',
+  'tourGuide',
+  'user',
+]) {}
+
 export class GetReviewsResponseDto extends ListItemsResponse<GetReviewResponseDto> {
   @ApiProperty({ type: [GetReviewResponseDto] })
   declare items: GetReviewResponseDto[];
