@@ -1,5 +1,6 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 
+import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { ListItemsResponse, PaginationDto } from 'src/types/pagination.dto';
 
@@ -44,7 +45,18 @@ export class DestinationSummaryDto {
   productCount: number;
 }
 
-export class GetTourGuideDetailDto extends OmitType(TourGuide, ['products']) {
+export class TourGuideLocationDto extends OmitType(Destination, [
+  'products',
+  'tourGuides',
+]) {}
+
+export class GetTourGuideDetailDto extends OmitType(TourGuide, [
+  'products',
+  'location',
+]) {
+  @ApiProperty({ type: TourGuideLocationDto, nullable: true })
+  location: TourGuideLocationDto;
+
   @ApiProperty({ type: 'number', example: 1 })
   totalProducts: number;
 

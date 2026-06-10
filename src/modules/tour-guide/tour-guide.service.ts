@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 
+import { generateRandomCode } from 'src/common/utils/gen-code';
+import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { CreateTourGuideDto } from 'src/modules/tour-guide/dto/create-tour-guide.dto';
 import { GetTourGuidesDto } from 'src/modules/tour-guide/dto/get-tour-guide.dto';
@@ -16,10 +18,35 @@ export class TourGuideService {
   constructor(
     @InjectRepository(TourGuide)
     private readonly tourGuideRepository: Repository<TourGuide>,
+    @InjectRepository(Destination)
+    private readonly destinationRepository: Repository<Destination>,
   ) {}
 
   async create(payload: CreateTourGuideDto) {
-    const tourGuide = this.tourGuideRepository.create(payload);
+    if (payload.locationId) {
+      const destination = await this.destinationRepository.findOne({
+        where: { id: payload.locationId },
+      });
+      if (!destination) {
+        throw new NotFoundException('Destination not found');
+      }
+    }
+    //generate ref - code
+    let refCode = generateRandomCode(8);
+    let existed = await this.tourGuideRepository.findOne({
+      where: { refCode },
+    });
+    while (existed) {
+      refCode = generateRandomCode(8);
+      existed = await this.tourGuideRepository.findOne({
+        where: { refCode },
+      });
+    }
+
+    const tourGuide = this.tourGuideRepository.create({
+      ...payload,
+      refCode,
+    });
     return this.tourGuideRepository.save(tourGuide);
   }
 
@@ -65,7 +92,7 @@ export class TourGuideService {
   async findOneById(id: string, withDeleted = false) {
     const tourGuide = await this.tourGuideRepository.findOne({
       where: { id },
-      relations: ['products', 'products.destination'],
+      relations: ['products', 'products.destination', 'location'],
       withDeleted,
     });
 
@@ -121,6 +148,15 @@ export class TourGuideService {
     const tourGuide = await this.findOneById(id);
     if (!tourGuide) {
       throw new NotFoundException('Tour guide not found');
+    }
+
+    if (payload.locationId) {
+      const destination = await this.destinationRepository.findOne({
+        where: { id: payload.locationId },
+      });
+      if (!destination) {
+        throw new NotFoundException('Destination not found');
+      }
     }
 
     Object.assign(tourGuide, payload);

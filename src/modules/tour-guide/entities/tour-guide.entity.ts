@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Entity, Column, ManyToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne } from 'typeorm';
 
 import { BaseEntity } from 'src/database/base.entity';
+import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { CareerPathItemDto } from 'src/modules/tour-guide/dto/create-tour-guide.dto';
 import { RatingItemDto } from 'src/modules/tour-guide/dto/review-rating.dto';
@@ -45,6 +46,10 @@ export class TourGuide extends BaseEntity {
   @Column({ length: 255 })
   name: string;
 
+  @ApiProperty({ example: 'TG-ABC123', maxLength: 50 })
+  @Column({ name: 'ref_code', length: 50, unique: true })
+  refCode: string;
+
   @ApiProperty({ example: 'https://example.com/avatar.jpg', nullable: true })
   @Column({ nullable: true })
   avatar: string;
@@ -56,6 +61,22 @@ export class TourGuide extends BaseEntity {
   @ApiProperty({ example: 5 })
   @Column({ type: 'int', name: 'exp_year', default: 0 })
   expYear: number;
+
+  @ApiProperty({
+    example: '0df1ec7e-166e-4209-810a-23156b3b0489',
+    nullable: true,
+  })
+  @Column({ type: 'uuid', name: 'location_id', nullable: true })
+  locationId: string;
+
+  @ManyToOne(() => Destination, (destination) => destination.tourGuides, {
+    nullable: true,
+  })
+  @JoinColumn({
+    name: 'location_id',
+    foreignKeyConstraintName: 'FK_TourGuide_Destination',
+  })
+  location: Destination;
 
   @ApiProperty({ example: 4.5 })
   @Column({ type: 'float', name: 'rating_value', default: 0 })
