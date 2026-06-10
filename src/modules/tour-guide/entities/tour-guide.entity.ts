@@ -13,22 +13,24 @@ export class UserReview {
   ratings: RatingItemDto[];
 }
 
+export const tourGuideRatingsDefault = [
+  { key: 'storytelling', name: 'Storytelling', value: 0 },
+  { key: 'localKnowledge', name: 'Local knowledge', value: 0 },
+  { key: 'careAttention', name: 'Care & attention', value: 0 },
+  { key: 'safetyAwareness', name: 'Safety awareness', value: 0 },
+  { key: 'punctuality', name: 'Punctuality', value: 0 },
+  { key: 'english', name: 'English', value: 0 },
+  {
+    key: 'funny',
+    name: 'funny',
+    value: 0,
+  },
+];
+
 const userReviewDefault = {
   reviewCount: 0,
   reviewValue: 0,
-  ratings: [
-    { key: 'storytelling', name: 'Storytelling', value: 0 },
-    { key: 'localKnowledge', name: 'Local knowledge', value: 0 },
-    { key: 'careAttention', name: 'Care & attention', value: 0 },
-    { key: 'safetyAwareness', name: 'Safety awareness', value: 0 },
-    { key: 'punctuality', name: 'Punctuality', value: 0 },
-    { key: 'english', name: 'English', value: 0 },
-    {
-      key: 'funny',
-      name: 'funny',
-      value: 0,
-    },
-  ],
+  ratings: tourGuideRatingsDefault,
 };
 
 export class SupplierReviewItem {

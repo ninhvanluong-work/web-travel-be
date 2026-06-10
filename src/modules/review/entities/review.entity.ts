@@ -5,6 +5,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { User } from 'src/modules/user/entities/user.entity';
+import { RatingItemDto } from 'src/modules/tour-guide/dto/review-rating.dto';
+
+export class ReviewMetaDataDto {
+  @ApiProperty({})
+  guide: RatingItemDto[];
+}
 
 @Entity('review')
 export class Review extends BaseEntity {
@@ -27,11 +33,27 @@ export class Review extends BaseEntity {
   @ApiProperty({})
   images: string[];
 
-  @Column({ name: 'product_id' })
+  @Column({
+    type: 'varchar',
+    name: 'videos',
+    array: true,
+    nullable: true,
+    comment: 'array of videos url',
+  })
+  @ApiProperty({ isArray: true, type: 'string', nullable: true })
+  videos: string[];
+
+  @Column({ type: 'jsonb', name: 'metadata', nullable: true })
+  @ApiProperty({ type: ReviewMetaDataDto, nullable: true })
+  metadata: ReviewMetaDataDto;
+
+  @Column({ name: 'product_id', nullable: true })
   @ApiProperty({})
   productId: string;
 
-  @ManyToOne(() => Product, (product) => product.reviews)
+  @ManyToOne(() => Product, (product) => product.reviews, {
+    nullable: true,
+  })
   @JoinColumn({
     name: 'product_id',
     foreignKeyConstraintName: 'FK_Review_Product',
@@ -51,7 +73,9 @@ export class Review extends BaseEntity {
   })
   tourGuide: TourGuide;
 
-  @ManyToOne(() => User, (user) => user.reviews)
+  @ManyToOne(() => User, (user) => user.reviews, {
+    nullable: true,
+  })
   @JoinColumn({
     name: 'user_id',
     foreignKeyConstraintName: 'FK_Review_User',

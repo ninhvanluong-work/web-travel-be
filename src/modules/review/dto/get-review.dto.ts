@@ -34,6 +34,12 @@ export class GetReviewResponseDto {
   @ApiProperty({ isArray: true, type: 'string' })
   images?: string[];
 
+  @ApiProperty({ isArray: true, type: 'string', required: false })
+  videos?: string[];
+
+  @ApiProperty({ type: Object, nullable: true })
+  metadata?: Record<string, any>;
+
   @ApiProperty({ type: UserReviewDto })
   user: UserReviewDto;
 }
