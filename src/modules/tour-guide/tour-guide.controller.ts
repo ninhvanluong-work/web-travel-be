@@ -17,6 +17,8 @@ import { ReviewService } from 'src/modules/review/review.service';
 import { GetTourGuideReviewsDto } from 'src/modules/review/dto/get-review.dto';
 import { GetReviewsResponseDto } from 'src/modules/review/dto/get-review.dto';
 import { VideoService } from 'src/modules/video/video.service';
+import { CreateVideoDto } from 'src/modules/video/dto/create-video.dto';
+import { UpdateVideoDto } from 'src/modules/video/dto/update-video.dto';
 import { GetVideoAdminDto } from 'src/modules/video/dto/get-video.dto';
 import { Video } from 'src/modules/video/entities/video.entity';
 
@@ -221,10 +223,80 @@ export class TourGuideController {
     if (!tourGuide) {
       throw new NotFoundException('Tour guide not found');
     }
-    const result = await this.videoService.getTourGuideMoments(
-      param.id,
-      query,
-    );
+    const result = await this.videoService.getTourGuideMoments(param.id, query);
     return formatApiResponse(result, HttpStatus.OK, 'ok');
+  }
+
+  @Post(':id/moment')
+  @ApiResponse({
+    status: 200,
+    description: 'create tour guide moment',
+    schema: {
+      properties: {
+        data: { $ref: getSchemaPath('Video') },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async createTourGuideMoment(
+    @Param() param: IdDto,
+    @Body() dto: CreateVideoDto,
+  ) {
+    dto.tourGuideId = param.id;
+    const result = await this.videoService.create(dto);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'created moment successfully',
+    );
+  }
+
+  @Put(':id/moment/:momentId')
+  @ApiResponse({
+    status: 200,
+    description: 'update tour guide moment',
+    schema: {
+      properties: {
+        data: { $ref: getSchemaPath('Video') },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async updateTourGuideMoment(
+    @Param('momentId') momentId: string,
+    @Body() dto: UpdateVideoDto,
+  ) {
+    const result = await this.videoService.update(momentId, dto);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'updated moment successfully',
+    );
+  }
+
+  @Delete(':id/moment/:momentId')
+  @ApiResponse({
+    status: 200,
+    description: 'delete tour guide moment',
+    schema: {
+      properties: {
+        data: { type: 'null', example: null },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async deleteTourGuideMoment(@Param('momentId') momentId: string) {
+    await this.videoService.remove(momentId);
+    return formatApiResponse(
+      null,
+      HttpStatus.OK,
+      'deleted moment successfully',
+    );
   }
 }

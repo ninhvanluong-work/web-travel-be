@@ -97,6 +97,7 @@ export class VideoService {
       const tourGuide = await this.tourGuideRepository.findOne({
         where: { id: tourGuideId },
       });
+      payload.type = VideoType.MOMENT;
       if (!tourGuide) {
         throw new NotFoundException('Tour guide not found');
       }
@@ -222,8 +223,9 @@ export class VideoService {
     return updatedVideo;
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} video`;
+  async remove(id: string) {
+    await this.videoRepository.delete(id);
+    return null;
   }
 
   async findEmbeddingMissing() {
