@@ -178,6 +178,10 @@ export class ProductService {
       condition.createdAt = LessThanOrEqual(new Date(query.toDate));
     }
 
+    if (query.tourGuideId) {
+      condition.tourGuides = { id: query.tourGuideId };
+    }
+
     return condition;
   }
 

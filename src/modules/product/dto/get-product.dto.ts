@@ -23,6 +23,14 @@ export class GetProductDto extends PaginationDto {
   destinationId?: string;
 
   @ApiPropertyOptional({
+    description: 'ID hướng dẫn viên',
+    example: '0df1ec7e-166e-4209-810a-23156b3b0489',
+  })
+  @IsOptional()
+  @IsUUID()
+  tourGuideId?: string;
+
+  @ApiPropertyOptional({
     description: 'Trạng thái sản phẩm',
     enum: ProductStatus,
     example: 'published',
