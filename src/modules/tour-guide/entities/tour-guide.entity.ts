@@ -6,6 +6,7 @@ import { Destination } from 'src/modules/destination/entities/destination.entity
 import { Product } from 'src/modules/product/entities/product.entity';
 import { CareerPathItemDto } from 'src/modules/tour-guide/dto/create-tour-guide.dto';
 import { RatingItemDto } from 'src/modules/tour-guide/dto/review-rating.dto';
+import { Exclude } from 'class-transformer';
 
 export class UserReview {
   reviewCount: number;
@@ -44,6 +45,18 @@ export class SupplierReviewItem {
 
 @Entity('tour_guide')
 export class TourGuide extends BaseEntity {
+  @ApiProperty({ example: 'nguyenvana' })
+  @Column({ length: 255, unique: true, nullable: true })
+  username: string;
+
+  @Column({ length: 500, nullable: true })
+  @Exclude()
+  password: string;
+
+  @Column({ name: 'refresh_token', length: 500, nullable: true })
+  @Exclude()
+  refreshToken: string;
+
   @ApiProperty({ example: 'Nguyễn Văn A' })
   @Column({ length: 255 })
   name: string;
