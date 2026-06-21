@@ -45,18 +45,6 @@ export class SupplierReviewItem {
 
 @Entity('tour_guide')
 export class TourGuide extends BaseEntity {
-  @ApiProperty({ example: 'nguyenvana' })
-  @Column({ length: 255, unique: true, nullable: true })
-  username: string;
-
-  @Column({ length: 500, nullable: true })
-  @Exclude()
-  password: string;
-
-  @Column({ name: 'refresh_token', length: 500, nullable: true })
-  @Exclude()
-  refreshToken: string;
-
   @ApiProperty({ example: 'Nguyễn Văn A' })
   @Column({ length: 255 })
   name: string;
