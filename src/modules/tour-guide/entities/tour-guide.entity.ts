@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToMany,
+  ManyToOne,
+  OneToOne,
+} from 'typeorm';
 
 import { BaseEntity } from 'src/database/base.entity';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
@@ -7,6 +14,7 @@ import { Product } from 'src/modules/product/entities/product.entity';
 import { CareerPathItemDto } from 'src/modules/tour-guide/dto/create-tour-guide.dto';
 import { RatingItemDto } from 'src/modules/tour-guide/dto/review-rating.dto';
 import { Exclude } from 'class-transformer';
+import { User } from 'src/modules/user/entities/user.entity';
 
 export class UserReview {
   reviewCount: number;
@@ -178,4 +186,7 @@ export class TourGuide extends BaseEntity {
 
   @ManyToMany(() => Product, (product: Product) => product.tourGuides)
   products: Product[];
+
+  @OneToOne(() => User, (user) => user.tourGuide)
+  user: User;
 }
