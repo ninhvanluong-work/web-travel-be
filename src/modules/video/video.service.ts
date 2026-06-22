@@ -7,7 +7,7 @@ import { Video } from 'src/modules/video/entities/video.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 
 import { CreateVideoDto } from './dto/create-video.dto';
-import { UpdateVideoDto } from './dto/update-video.dto';
+import { UpdateMomentDto, UpdateVideoDto } from './dto/update-video.dto';
 import { EmbeddingService } from 'src/modules/embedding/embedding.service';
 import {
   GetVideoAdminDto,
@@ -181,6 +181,26 @@ export class VideoService {
     });
 
     return result;
+  }
+
+  async updateMoment(
+    videoId: string,
+    tourGuideId: string,
+    payload: UpdateMomentDto,
+  ) {
+    const prefixLog = `[updateMoment] vId ${videoId}, tGID: ${tourGuideId}`;
+    const tourGuide = await this.tourGuideRepository.findOne({
+      where: { id: tourGuideId },
+    });
+
+    if (!tourGuide) {
+      this.logger.error(`${prefixLog} Tour guide not found`);
+      throw new NotFoundException('Tour guide not found');
+    }
+
+    await this.videoRepository.update(videoId, payload);
+    const updatedVideo = (await this.findOne(videoId)) as Video;
+    return updatedVideo;
   }
 
   async update(id: string, updateVideoDto: UpdateVideoDto) {

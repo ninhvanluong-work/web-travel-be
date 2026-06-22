@@ -18,7 +18,7 @@ import { GetTourGuideReviewsDto } from 'src/modules/review/dto/get-review.dto';
 import { GetReviewsResponseDto } from 'src/modules/review/dto/get-review.dto';
 import { VideoService } from 'src/modules/video/video.service';
 import { CreateVideoDto } from 'src/modules/video/dto/create-video.dto';
-import { UpdateVideoDto } from 'src/modules/video/dto/update-video.dto';
+import { UpdateMomentDto } from 'src/modules/video/dto/update-video.dto';
 import { GetVideoAdminDto } from 'src/modules/video/dto/get-video.dto';
 import { Video } from 'src/modules/video/entities/video.entity';
 
@@ -33,6 +33,7 @@ import {
   GetTourGuidesResponseDto,
   TourGuideDto,
 } from 'src/modules/tour-guide/dto/get-tour-guide.dto';
+import { UpdateTourGuideMomentParamsDto } from 'src/modules/tour-guide/dto/update-tour-guide-moment.dto';
 
 @Controller('tour-guide')
 @ApiExtraModels(
@@ -267,10 +268,11 @@ export class TourGuideController {
     },
   })
   async updateTourGuideMoment(
-    @Param('momentId') momentId: string,
-    @Body() dto: UpdateVideoDto,
+    @Param() param: UpdateTourGuideMomentParamsDto,
+    @Body() dto: UpdateMomentDto,
   ) {
-    const result = await this.videoService.update(momentId, dto);
+    const { id, momentId } = param;
+    const result = await this.videoService.updateMoment(momentId, id, dto);
     return formatApiResponse(
       result,
       HttpStatus.OK,
