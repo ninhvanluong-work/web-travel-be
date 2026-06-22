@@ -19,6 +19,7 @@ import { WebhookModule } from './modules/webhook/webhook.module';
 import { SearchingModule } from './modules/searching/searching.module';
 import { TourGuideModule } from './modules/tour-guide/tour-guide.module';
 import { TagModule } from './modules/tag/tag.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { TagModule } from './modules/tag/tag.module';
     SearchingModule,
     TourGuideModule,
     TagModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

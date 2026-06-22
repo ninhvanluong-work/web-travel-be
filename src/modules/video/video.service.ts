@@ -206,7 +206,7 @@ export class VideoService {
   async update(id: string, updateVideoDto: UpdateVideoDto) {
     const prefixLog = `[update] ${id}`;
     const productId = updateVideoDto?.productId as string;
-    const tourGuideId = updateVideoDto?.tourGuideId as string;
+
     if (productId) {
       const product = await this.productService.findByPk(productId);
       if (!product) {
@@ -225,15 +225,6 @@ export class VideoService {
           { productId },
           { type: VideoType.NORMAL },
         );
-      }
-    }
-
-    if (tourGuideId) {
-      const tourGuide = await this.tourGuideRepository.findOne({
-        where: { id: tourGuideId },
-      });
-      if (!tourGuide) {
-        throw new NotFoundException('Tour guide not found');
       }
     }
 
