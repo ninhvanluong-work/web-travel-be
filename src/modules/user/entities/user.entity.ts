@@ -1,11 +1,4 @@
-import {
-  Entity,
-  Column,
-  OneToMany,
-  OneToOne,
-  JoinTable,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, OneToMany, OneToOne, JoinColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
 import { BaseEntity } from 'src/database/base.entity';
@@ -14,10 +7,23 @@ import { Review } from 'src/modules/review/entities/review.entity';
 import { SearchingLog } from 'src/modules/searching/entities/searching-log.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 
+export enum UserRole {
+  NORMAL = 'normal',
+  TOUR_GUIDE = 'tour_guide',
+}
+
 @Entity('user')
 export class User extends BaseEntity {
   @Column({ name: 'name', length: 255, nullable: true })
   name: string;
+
+  @Column({
+    name: 'role',
+    length: 50,
+    default: UserRole.NORMAL,
+    nullable: true,
+  })
+  role: UserRole;
 
   @Column({ name: 'ip_address', length: 255, nullable: true })
   ipAddress: string;
