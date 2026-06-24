@@ -17,5 +17,6 @@ import { VideoModule } from 'src/modules/video/video.module';
   ],
   controllers: [TourGuideController],
   providers: [TourGuideService],
+  exports: [TourGuideService],
 })
 export class TourGuideModule {}

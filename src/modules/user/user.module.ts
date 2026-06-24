@@ -6,10 +6,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { User } from './entities/user.entity';
+import { TourGuideModule } from 'src/modules/tour-guide/tour-guide.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
+    TourGuideModule,
     ConfigModule,
     JwtModule.registerAsync({
       global: true,

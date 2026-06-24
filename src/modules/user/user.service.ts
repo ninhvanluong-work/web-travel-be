@@ -10,11 +10,13 @@ import { JwtService } from '@nestjs/jwt';
 import { plainToInstance } from 'class-transformer';
 import * as bcrypt from 'bcrypt';
 
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginDto, UserLoginDto } from 'src/modules/auth/dto/login.dto';
 import { RegisterDto } from 'src/modules/auth/dto/register.dto';
+import { TourGuideService } from 'src/modules/tour-guide/tour-guide.service';
+import { CreateTourGuideDto } from 'src/modules/tour-guide/dto/create-tour-guide.dto';
 
 @Injectable()
 export class UserService {
@@ -23,6 +25,7 @@ export class UserService {
     private readonly userRepository: Repository<User>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly tourGuideService: TourGuideService,
   ) {}
 
   async hashPassword(plainText: string) {
@@ -71,7 +74,7 @@ export class UserService {
   //}
 
   async register(registerDto: RegisterDto) {
-    const { email, password } = registerDto;
+    const { email, password, role = UserRole.NORMAL } = registerDto;
     const existUser = await this.userRepository.findOneBy({ email });
     if (existUser) {
       throw new ConflictException(
@@ -81,10 +84,22 @@ export class UserService {
 
     const hashedPassword = await this.hashPassword(password);
 
-    const user = this.userRepository.create({
+    const newUser: Partial<User> = {
       email,
       password: hashedPassword,
-    });
+      role,
+    };
+
+    if (role === UserRole.TOUR_GUIDE) {
+      //link user to tour-guide
+      const newTourGuide: CreateTourGuideDto = {
+        name: 'tour-guide',
+      };
+      const savedTourGuide = await this.tourGuideService.create(newTourGuide);
+      newUser.tourGuideId = savedTourGuide.id;
+    }
+
+    const user = this.userRepository.create(newUser);
     return this.userRepository.save(user);
   }
 
