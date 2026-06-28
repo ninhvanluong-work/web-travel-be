@@ -9,8 +9,14 @@ import {
   Put,
   Query,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import { TourGuideService } from 'src/modules/tour-guide/tour-guide.service';
 import { ReviewService } from 'src/modules/review/review.service';
@@ -34,8 +40,12 @@ import {
   TourGuideDto,
 } from 'src/modules/tour-guide/dto/get-tour-guide.dto';
 import { UpdateTourGuideMomentParamsDto } from 'src/modules/tour-guide/dto/update-tour-guide-moment.dto';
+import { UserGuard } from 'src/common/guards';
+import { USER_TOKEN } from 'src/common/constants';
+import { Public, TourGuide } from 'src/common/decorators';
 
 @Controller('tour-guide')
+@Public()
 @ApiExtraModels(
   TourGuideDto,
   GetTourGuidesResponseDto,
@@ -126,6 +136,9 @@ export class TourGuideController {
   }
 
   @Put(':id')
+  @ApiBearerAuth(USER_TOKEN)
+  @TourGuide()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update tour guide',
@@ -229,6 +242,9 @@ export class TourGuideController {
   }
 
   @Post(':id/moment')
+  @ApiBearerAuth(USER_TOKEN)
+  @TourGuide()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create tour guide moment',
@@ -255,6 +271,9 @@ export class TourGuideController {
   }
 
   @Put(':id/moment/:momentId')
+  @ApiBearerAuth(USER_TOKEN)
+  @TourGuide()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update tour guide moment',
@@ -281,6 +300,9 @@ export class TourGuideController {
   }
 
   @Delete(':id/moment/:momentId')
+  @ApiBearerAuth(USER_TOKEN)
+  @TourGuide()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'delete tour guide moment',

@@ -4,11 +4,16 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
+import { USER_TOKEN } from 'src/common/constants';
 
 const config = new DocumentBuilder()
   .setTitle('Web travel API')
   .setDescription('API Documents ')
   .setVersion('1.0')
+  .addBearerAuth(
+    { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+    USER_TOKEN,
+  )
   .build();
 
 const options: SwaggerDocumentOptions = {

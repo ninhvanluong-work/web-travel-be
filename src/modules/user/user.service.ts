@@ -13,6 +13,10 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
+  async isExisted(userId: string) {
+    return await this.userRepository.existsBy({ id: userId });
+  }
+
   create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
   }
@@ -21,8 +25,8 @@ export class UserService {
     return `This action returns all user`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    return this.userRepository.findOneBy({ id });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

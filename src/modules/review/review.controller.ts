@@ -1,12 +1,28 @@
-import { Body, Controller, HttpStatus, Param, Post } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
-
-import { formatApiResponse } from 'src/common/utils/format';
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import { Review } from 'src/modules/review/entities/review.entity';
-import { ReviewService } from 'src/modules/review/review.service';
 import { CreateReviewDto } from 'src/modules/review/dto/create-review.dto';
 import { CreateReviewResponseDto } from 'src/modules/review/dto/get-review.dto';
+
+import { ReviewService } from 'src/modules/review/review.service';
+import { formatApiResponse } from 'src/common/utils/format';
+
+import { Public, UserId } from 'src/common/decorators';
+import { UserGuard } from 'src/common/guards';
+import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('review')
 @ApiExtraModels(Review, CreateReviewDto, CreateReviewResponseDto)
@@ -14,6 +30,8 @@ export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Post('tour-guide/:tourGuideId')
+  @ApiBearerAuth(USER_TOKEN)
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create tour guide review',
@@ -31,8 +49,10 @@ export class ReviewController {
   async createTourGuideReview(
     @Param('tourGuideId') tourGuideId: string,
     @Body() dto: CreateReviewDto,
+    @UserId() userId: string,
   ) {
     const result = await this.reviewService.createTourGuideReview(
+      userId,
       tourGuideId,
       dto,
     );

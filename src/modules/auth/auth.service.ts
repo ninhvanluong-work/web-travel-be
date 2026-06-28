@@ -42,12 +42,13 @@ export class AuthService {
     return bcrypt.compare(plainText, hashed);
   }
 
-  async genLoginJwtToken(userId: string): Promise<string> {
+  async genLoginJwtToken(userId: string, tourGuideId: string): Promise<string> {
     // Generate JWT token
 
     const jwtSecret = this.configService.get<string>('JWT_SECRET', '');
     const jwtPayload = {
       userId,
+      tourGuideId,
     };
     const accessToken = await this.jwtService.signAsync(jwtPayload, {
       secret: jwtSecret,
@@ -126,7 +127,7 @@ export class AuthService {
       excludeExtraneousValues: true,
     });
 
-    const token = await this.genLoginJwtToken(user.id);
+    const token = await this.genLoginJwtToken(user.id, user.tourGuideId);
     return {
       token,
       refreshToken: token,

@@ -64,6 +64,10 @@ export class Review extends BaseEntity {
   @ApiProperty({})
   tourGuideId: string;
 
+  @Column({ name: 'user_id', nullable: true })
+  @ApiProperty({})
+  userId: string;
+
   @ManyToOne(() => TourGuide, {
     nullable: true,
   })

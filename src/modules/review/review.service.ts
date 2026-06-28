@@ -4,9 +4,7 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 
 import { Review } from 'src/modules/review/entities/review.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
-import { User } from 'src/modules/user/entities/user.entity';
 import { RatingItemDto } from 'src/modules/tour-guide/dto/review-rating.dto';
-
 import { CreateReviewDto } from 'src/modules/review/dto/create-review.dto';
 import {
   GetProductReviewsDto,
@@ -14,6 +12,8 @@ import {
   GetTourGuideReviewsDto,
 } from 'src/modules/review/dto/get-review.dto';
 import { PaginationResponse } from 'src/types/pagination.dto';
+
+import { UserService } from 'src/modules/user/user.service';
 
 @Injectable()
 export class ReviewService {
@@ -28,8 +28,8 @@ export class ReviewService {
     private readonly reviewRepository: Repository<Review>,
     @InjectRepository(TourGuide)
     private readonly tourGuideRepository: Repository<TourGuide>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+
+    private readonly userService: UserService,
   ) {}
 
   private calculateAverage(
@@ -140,7 +140,11 @@ export class ReviewService {
     return await this.getReviews({ tourGuideId }, payload);
   }
 
-  async createTourGuideReview(tourGuideId: string, payload: CreateReviewDto) {
+  async createTourGuideReview(
+    userId: string,
+    tourGuideId: string,
+    payload: CreateReviewDto,
+  ) {
     const tourGuide = await this.tourGuideRepository.findOne({
       where: { id: tourGuideId },
     });
@@ -153,17 +157,17 @@ export class ReviewService {
     this.logger.debug(`${prefix} ${JSON.stringify(payload)}`);
 
     const { tourGuideSubRatings, ...restPayload } = payload;
-    const user = this.userRepository.create({
-      name: 'Review user',
-    });
-    const savedUser = await this.userRepository.save(user);
-    this.logger.debug(`${prefix} created user ${savedUser.id}`);
+
+    const isExisted = await this.userService.isExisted(userId);
+    if (!isExisted) {
+      throw new NotFoundException('User not found');
+    }
 
     this.logger.log(`${prefix} creating review`);
     const reviewData: Partial<Review> = {
       ...restPayload,
       tourGuideId,
-      user: savedUser,
+      userId,
     };
 
     if (tourGuideSubRatings) {
