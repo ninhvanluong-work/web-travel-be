@@ -9,6 +9,7 @@ import { User } from 'src/modules/user/entities/user.entity';
 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -23,6 +24,23 @@ import { AuthController } from './auth.controller';
         secret: configService.get('JWT_SECRET'),
         signOptions: {
           expiresIn: configService.get('JWT_EXPIRES_IN', '7d'),
+        },
+      }),
+    }),
+    MailerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        transport: {
+          host: 'smtp.gmail.com',
+          port: 587,
+          secure: false,
+          auth: {
+            user: configService.getOrThrow('SMPT_USER'),
+            pass: configService.getOrThrow('SMPT_APP_PASSWORD'),
+          },
+        },
+        defaults: {
+          from: `"Web Travel VVV" <${configService.getOrThrow('SMPT_USER')}>`,
         },
       }),
     }),

@@ -2,6 +2,8 @@ import { Repository } from 'typeorm';
 import {
   ConflictException,
   Injectable,
+  Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +11,8 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { plainToInstance } from 'class-transformer';
 import { ConfigService } from '@nestjs/config';
+import { createHash, randomBytes } from 'crypto';
+import { MailerService } from '@nestjs-modules/mailer';
 
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto, UserLoginDto } from 'src/modules/auth/dto/login.dto';
@@ -19,10 +23,13 @@ import { TourGuideService } from 'src/modules/tour-guide/tour-guide.service';
 
 @Injectable()
 export class AuthService {
+  logger = new Logger(AuthService.name);
+
   constructor(
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly tourGuideService: TourGuideService,
+    private readonly mailerService: MailerService,
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -133,5 +140,40 @@ export class AuthService {
       refreshToken: token,
       user,
     };
+  }
+
+  async handleForgotPassword(userId: string) {
+    const prefixLog = `[handleForgotPassword] ${userId}`;
+    this.logger.log(`${prefixLog} running `);
+
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    this.logger.log(`${prefixLog} check existed reset password `);
+
+    if (user.resetPasswordTokenExp && user.resetPasswordTokenExp > new Date()) {
+      throw new ConflictException('Please check reset password in your email');
+    }
+
+    this.logger.log(`${prefixLog} create password token `);
+
+    const rawToken = randomBytes(32).toString('hex'); // 64 chars hex
+    const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
+
+    await this.userRepository.update(userId, {
+      resetPasswordToken: tokenHash,
+      resetPasswordTokenExp: expiresAt,
+    });
+
+    const resetUrl = `${this.configService.getOrThrow('FRONTEND_URL')}/reset-password?token=${rawToken}`;
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Reset your password',
+      html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. Link expires in 5 minutes.</p>`,
+    });
   }
 }

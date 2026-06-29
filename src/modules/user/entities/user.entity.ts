@@ -39,6 +39,18 @@ export class User extends BaseEntity {
   @Exclude()
   refreshToken: string;
 
+  @Column({ name: 'reset_password_token', length: 500, nullable: true })
+  @Exclude()
+  resetPasswordToken: string;
+
+  @Column({
+    name: 'reset_password_token_exp',
+    type: 'timestamptz',
+    nullable: true,
+  })
+  @Exclude()
+  resetPasswordTokenExp: Date;
+
   @Column({ name: 'tour_guide_id', type: 'uuid', nullable: true })
   tourGuideId: string;
 

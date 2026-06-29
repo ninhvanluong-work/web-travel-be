@@ -1,10 +1,13 @@
-import { Controller, Post, Body, HttpStatus } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { Controller, Post, Body, HttpStatus, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { formatApiResponse } from 'src/common/utils/format';
 import { LoginDto, LoginResponseDto } from 'src/modules/auth/dto/login.dto';
+import { UserGuard } from 'src/common/guards';
+import { UserId } from 'src/common/decorators';
+import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('auth')
 @ApiExtraModels(LoginResponseDto)
@@ -45,5 +48,18 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto) {
     const result = await this.authService.login(loginDto);
     return formatApiResponse(result, HttpStatus.OK, 'user login successfully');
+  }
+
+  @Post('forgot-password')
+  @ApiBearerAuth(USER_TOKEN)
+  @UseGuards(UserGuard)
+  async forgotPassword(@UserId() userId: string) {
+    await this.authService.handleForgotPassword(userId);
+
+    return formatApiResponse(
+      null,
+      HttpStatus.OK,
+      'forget password on processing',
+    );
   }
 }
