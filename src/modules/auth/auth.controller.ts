@@ -1,18 +1,10 @@
-import { Controller, Post, Body, HttpStatus, UseGuards } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiExtraModels,
-  ApiResponse,
-  getSchemaPath,
-} from '@nestjs/swagger';
+import { Controller, Post, Body, HttpStatus } from '@nestjs/common';
+import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { formatApiResponse } from 'src/common/utils/format';
 import { LoginDto, LoginResponseDto } from 'src/modules/auth/dto/login.dto';
-import { UserGuard } from 'src/common/guards';
-import { UserId } from 'src/common/decorators';
-import { USER_TOKEN } from 'src/common/constants';
 import { ForgotPasswordDto } from 'src/modules/auth/dto/forgot-password.dto';
 import { ResetPasswordDto } from 'src/modules/auth/dto/reset-password.dto';
 

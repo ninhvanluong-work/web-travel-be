@@ -42,10 +42,9 @@ import {
 import { UpdateTourGuideMomentParamsDto } from 'src/modules/tour-guide/dto/update-tour-guide-moment.dto';
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
-import { Public, TourGuide } from 'src/common/decorators';
+import { TourGuide } from 'src/common/decorators';
 
 @Controller('tour-guide')
-@Public()
 @ApiExtraModels(
   TourGuideDto,
   GetTourGuidesResponseDto,

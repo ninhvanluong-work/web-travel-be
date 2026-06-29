@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { TourGuideModule } from 'src/modules/tour-guide/tour-guide.module';
 
@@ -9,7 +10,6 @@ import { User } from 'src/modules/user/entities/user.entity';
 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
