@@ -20,6 +20,8 @@ import { User, UserRole } from 'src/modules/user/entities/user.entity';
 
 import { CreateTourGuideDto } from 'src/modules/tour-guide/dto/create-tour-guide.dto';
 import { TourGuideService } from 'src/modules/tour-guide/tour-guide.service';
+import { ForgotPasswordDto } from 'src/modules/auth/dto/forgot-password.dto';
+import { ResetPasswordDto } from 'src/modules/auth/dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -142,11 +144,12 @@ export class AuthService {
     };
   }
 
-  async handleForgotPassword(userId: string) {
-    const prefixLog = `[handleForgotPassword] ${userId}`;
+  async handleForgotPassword(payload: ForgotPasswordDto) {
+    const { email } = payload;
+    const prefixLog = `[handleForgotPassword] ${email}`;
     this.logger.log(`${prefixLog} running `);
 
-    const user = await this.userRepository.findOneBy({ id: userId });
+    const user = await this.userRepository.findOneBy({ email });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -163,10 +166,15 @@ export class AuthService {
     const tokenHash = createHash('sha256').update(rawToken).digest('hex');
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
 
-    await this.userRepository.update(userId, {
-      resetPasswordToken: tokenHash,
-      resetPasswordTokenExp: expiresAt,
-    });
+    await this.userRepository.update(
+      {
+        email,
+      },
+      {
+        resetPasswordToken: tokenHash,
+        resetPasswordTokenExp: expiresAt,
+      },
+    );
 
     const resetUrl = `${this.configService.getOrThrow('FRONTEND_URL')}/reset-password?token=${rawToken}`;
 
@@ -176,4 +184,6 @@ export class AuthService {
       html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. Link expires in 5 minutes.</p>`,
     });
   }
+
+  async handleResetPassword(payload: ResetPasswordDto) {}
 }
