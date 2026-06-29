@@ -35,13 +35,23 @@ export class User extends BaseEntity {
   @Exclude()
   password: string;
 
-  @Column({ name: 'refresh_token', length: 500, nullable: true })
+  @Column({
+    name: 'refresh_token',
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+  })
   @Exclude()
   refreshToken: string;
 
-  @Column({ name: 'reset_password_token', length: 500, nullable: true })
+  @Column({
+    name: 'reset_password_token',
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+  })
   @Exclude()
-  resetPasswordToken: string;
+  resetPasswordToken?: string | null = null;
 
   @Column({
     name: 'reset_password_token_exp',
@@ -49,7 +59,7 @@ export class User extends BaseEntity {
     nullable: true,
   })
   @Exclude()
-  resetPasswordTokenExp: Date;
+  resetPasswordTokenExp?: Date | null = null;
 
   @Column({ name: 'tour_guide_id', type: 'uuid', nullable: true })
   tourGuideId: string;

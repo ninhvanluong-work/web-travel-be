@@ -1,5 +1,6 @@
 import { Repository } from 'typeorm';
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -166,6 +167,7 @@ export class AuthService {
     const tokenHash = createHash('sha256').update(rawToken).digest('hex');
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
 
+    this.logger.log(`${prefixLog} update user resetPassword`);
     await this.userRepository.update(
       {
         email,
@@ -178,6 +180,7 @@ export class AuthService {
 
     const resetUrl = `${this.configService.getOrThrow('FRONTEND_URL')}/reset-password?token=${rawToken}`;
 
+    this.logger.log(`${prefixLog} send mail to user`);
     await this.mailerService.sendMail({
       to: user.email,
       subject: 'Reset your password',
@@ -185,5 +188,38 @@ export class AuthService {
     });
   }
 
-  async handleResetPassword(payload: ResetPasswordDto) {}
+  async handleResetPassword(payload: ResetPasswordDto) {
+    const { token, newPassword } = payload;
+    const prefixLog = `[handleResetPassword] token: ${token}`;
+
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+
+    this.logger.log(`${prefixLog} find user by passwordToken`);
+    const user = await this.userRepository.findOneBy({
+      resetPasswordToken: tokenHash,
+    });
+
+    console.log(user?.resetPasswordTokenExp);
+    console.log(new Date());
+    if (
+      !user ||
+      !user.resetPasswordTokenExp ||
+      user.resetPasswordTokenExp.getTime() < new Date().getTime()
+    ) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    const hashedPassword = await this.hashPassword(newPassword);
+
+    this.logger.log(`${prefixLog} update user new password`);
+
+    await this.userRepository.update(
+      { id: user.id },
+      {
+        password: hashedPassword,
+        resetPasswordToken: null,
+        resetPasswordTokenExp: null,
+      },
+    );
+  }
 }
