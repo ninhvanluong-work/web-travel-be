@@ -36,13 +36,13 @@ export class User extends BaseEntity {
   password: string;
 
   @Column({
-    name: 'refresh_token',
-    type: 'varchar',
-    length: 500,
+    name: 'refresh_token_version',
+    type: 'integer',
+    default: 1,
     nullable: true,
   })
   @Exclude()
-  refreshToken: string;
+  refreshTokenVersion: number;
 
   @Column({
     name: 'reset_password_token',
