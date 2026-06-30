@@ -7,6 +7,7 @@ import { formatApiResponse } from 'src/common/utils/format';
 import { LoginDto, LoginResponseDto } from 'src/modules/auth/dto/login.dto';
 import { ForgotPasswordDto } from 'src/modules/auth/dto/forgot-password.dto';
 import { ResetPasswordDto } from 'src/modules/auth/dto/reset-password.dto';
+import { RenewTokenDto } from 'src/modules/auth/dto/renew-token.dto';
 
 @Controller('auth')
 @ApiExtraModels(LoginResponseDto)
@@ -91,6 +92,28 @@ export class AuthController {
       null,
       HttpStatus.OK,
       'reset password successfully!',
+    );
+  }
+
+  @Post('access-token/renew')
+  @ApiResponse({
+    status: 200,
+    description: 'get new access token',
+    schema: {
+      properties: {
+        data: { $ref: getSchemaPath('LoginResponseDto') },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async renewAccessToken(@Body() body: RenewTokenDto) {
+    const result = await this.authService.handleRenewAccessToken(body);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'renew token successfully!',
     );
   }
 }

@@ -23,7 +23,9 @@ import { CreateTourGuideDto } from 'src/modules/tour-guide/dto/create-tour-guide
 import { TourGuideService } from 'src/modules/tour-guide/tour-guide.service';
 import { ForgotPasswordDto } from 'src/modules/auth/dto/forgot-password.dto';
 import { ResetPasswordDto } from 'src/modules/auth/dto/reset-password.dto';
+import { RenewTokenDto } from 'src/modules/auth/dto/renew-token.dto';
 
+//TODO: refactor: authDto, jwtPayloadDto
 @Injectable()
 export class AuthService {
   logger = new Logger(AuthService.name);
@@ -52,37 +54,35 @@ export class AuthService {
     return bcrypt.compare(plainText, hashed);
   }
 
-  async genLoginJwtToken(userId: string, tourGuideId: string): Promise<string> {
-    // Generate JWT token
-
+  async genLoginJwtToken(payload: {
+    userId: string;
+    tourGuideId: string;
+    version?: number;
+  }): Promise<{ accessToken: string; refreshToken: string }> {
+    const { userId, tourGuideId, version = 1 } = payload;
     const jwtSecret = this.configService.get<string>('JWT_SECRET', '');
     const jwtPayload = {
       userId,
       tourGuideId,
     };
+
+    const refreshTokenPayload = {
+      userId,
+      tourGuideId,
+      version,
+    };
+
     const accessToken = await this.jwtService.signAsync(jwtPayload, {
       secret: jwtSecret,
     });
 
-    return accessToken;
+    const refreshToken = await this.jwtService.signAsync(refreshTokenPayload, {
+      secret: jwtSecret,
+      expiresIn: '7d',
+    });
+
+    return { accessToken, refreshToken };
   }
-
-  //TODO: check refresh token
-  //async genRefreshToken(userId: string): Promise<string> {
-  //  // Generate JWT token
-  //  const jwtPayload = {
-  //    userId,
-  //  };
-  //  const refreshToken = await this.jwtService.signAsync(
-  //    { ...jwtPayload, jti: generateUUID() },
-  //    {
-  //      secret: generateUUID(),
-  //      expiresIn: '7d',
-  //    },
-  //  );
-
-  //  return refreshToken;
-  //}
 
   async register(registerDto: RegisterDto) {
     const { email, password, role = UserRole.NORMAL } = registerDto;
@@ -133,14 +133,19 @@ export class AuthService {
       throw new UnauthorizedException(loginErrMsg);
     }
 
+    const { accessToken, refreshToken } = await this.genLoginJwtToken({
+      userId: existUser.id,
+      tourGuideId: existUser.tourGuideId,
+      version: existUser.refreshTokenVersion,
+    });
+
     const user = plainToInstance(UserLoginDto, existUser, {
       excludeExtraneousValues: true,
     });
 
-    const token = await this.genLoginJwtToken(user.id, user.tourGuideId);
     return {
-      token,
-      refreshToken: token,
+      token: accessToken,
+      refreshToken,
       user,
     };
   }
@@ -199,8 +204,6 @@ export class AuthService {
       resetPasswordToken: tokenHash,
     });
 
-    console.log(user?.resetPasswordTokenExp);
-    console.log(new Date());
     if (
       !user ||
       !user.resetPasswordTokenExp ||
@@ -221,5 +224,73 @@ export class AuthService {
         resetPasswordTokenExp: null,
       },
     );
+  }
+
+  async handleRenewAccessToken(payload: RenewTokenDto) {
+    const prefixLog = `[handleRenewAccessToken]`;
+
+    const { refreshToken } = payload;
+    let decoded: { userId: string; tourGuideId: string; version: number };
+
+    const errorMsg = `Token expired or invalid`;
+    try {
+      const secret = this.configService.get<string>('JWT_SECRET');
+      decoded = await this.jwtService.verifyAsync(refreshToken, { secret });
+    } catch (error: any) {
+      this.logger.warn(
+        `${prefixLog} Verify refresh token failed: ${error.message}`,
+      );
+      throw new UnauthorizedException(errorMsg);
+    }
+
+    const { userId, version, tourGuideId } = decoded;
+    this.logger.log(
+      `${prefixLog} Decoded token - userId=${userId}, tourGuideId=${tourGuideId}, version=${version}`,
+    );
+
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) {
+      this.logger.warn(`${prefixLog} User not found - userId=${userId}`);
+      throw new UnauthorizedException(errorMsg);
+    }
+
+    if (!version || user.refreshTokenVersion !== version) {
+      this.logger.warn(
+        `${prefixLog} Token version mismatch (possible token reuse) - userId=${userId}, tokenVersion=${version}, dbVersion=${user.refreshTokenVersion}`,
+      );
+      throw new UnauthorizedException(errorMsg);
+    }
+
+    await this.userRepository.increment(
+      { id: userId },
+      'refreshTokenVersion',
+      1,
+    );
+
+    const newVersion = version + 1;
+    this.logger.log(
+      `${prefixLog} Refresh token version incremented - userId=${userId}, newVersion=${newVersion}`,
+    );
+
+    const { accessToken, refreshToken: newRefreshToken } =
+      await this.genLoginJwtToken({
+        userId,
+        tourGuideId,
+        version: newVersion,
+      });
+
+    const userDto = plainToInstance(UserLoginDto, user, {
+      excludeExtraneousValues: true,
+    });
+
+    this.logger.log(
+      `${prefixLog} Renew access token success - userId=${userId}`,
+    );
+
+    return {
+      token: accessToken,
+      refreshToken: newRefreshToken,
+      user: userDto,
+    };
   }
 }

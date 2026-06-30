@@ -28,7 +28,6 @@ export class UserGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    console.log([isPublic, isTourGuide]);
     if (isPublic) {
       return true;
     }
