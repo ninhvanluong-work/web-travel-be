@@ -1,11 +1,23 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { IsOptional, IsUUID } from 'class-validator';
 import { Review } from 'src/modules/review/entities/review.entity';
 
 import { ListItemsResponse, PaginationDto } from 'src/types/pagination.dto';
 
 export class GetProductReviewsDto extends PaginationDto {}
 
-export class GetTourGuideReviewsDto extends PaginationDto {}
+export class GetTourGuideReviewsDto extends OmitType(PaginationDto, [
+  'keyword',
+]) {
+  @ApiProperty({
+    required: false,
+    format: 'uuid',
+    description: 'filter reviews created by this user',
+  })
+  @IsUUID()
+  @IsOptional()
+  userId?: string;
+}
 
 export class GetReviewsDto extends PaginationDto {}
 

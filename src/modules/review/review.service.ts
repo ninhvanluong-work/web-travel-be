@@ -137,7 +137,11 @@ export class ReviewService {
   ) {
     const prefix = this.prefix('getTourGuideReviews', tourGuideId);
     this.logger.debug(`${prefix} payload=${JSON.stringify(payload)}`);
-    return await this.getReviews({ tourGuideId }, payload);
+    const { userId, ...rest } = payload;
+    return await this.getReviews(
+      { tourGuideId, ...(userId ? { userId } : {}) },
+      rest,
+    );
   }
 
   async createTourGuideReview(
