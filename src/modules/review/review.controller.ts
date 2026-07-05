@@ -20,8 +20,8 @@ import { CreateReviewResponseDto } from 'src/modules/review/dto/get-review.dto';
 import { ReviewService } from 'src/modules/review/review.service';
 import { formatApiResponse } from 'src/common/utils/format';
 
-import { Public, UserId } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
+import { UserId } from 'src/common/decorators';
+import { OptionalUserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('review')
@@ -31,7 +31,7 @@ export class ReviewController {
 
   @Post('tour-guide/:tourGuideId')
   @ApiBearerAuth(USER_TOKEN)
-  @UseGuards(UserGuard)
+  @UseGuards(OptionalUserGuard)
   @ApiResponse({
     status: 200,
     description: 'create tour guide review',
@@ -49,7 +49,7 @@ export class ReviewController {
   async createTourGuideReview(
     @Param('tourGuideId') tourGuideId: string,
     @Body() dto: CreateReviewDto,
-    @UserId() userId: string,
+    @UserId() userId: string | undefined,
   ) {
     const result = await this.reviewService.createTourGuideReview(
       userId,

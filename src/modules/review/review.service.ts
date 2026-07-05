@@ -141,7 +141,7 @@ export class ReviewService {
   }
 
   async createTourGuideReview(
-    userId: string,
+    userId: string | undefined,
     tourGuideId: string,
     payload: CreateReviewDto,
   ) {
@@ -158,16 +158,23 @@ export class ReviewService {
 
     const { tourGuideSubRatings, ...restPayload } = payload;
 
-    const isExisted = await this.userService.isExisted(userId);
-    if (!isExisted) {
-      throw new NotFoundException('User not found');
+    let reviewerId = userId;
+    if (!reviewerId) {
+      const anonymousUser = await this.userService.createAnonymousUser();
+      reviewerId = anonymousUser.id;
+      this.logger.log(`${prefix} created anonymous user ${reviewerId}`);
+    } else {
+      const isExisted = await this.userService.isExisted(reviewerId);
+      if (!isExisted) {
+        throw new NotFoundException('User not found');
+      }
     }
 
     this.logger.log(`${prefix} creating review`);
     const reviewData: Partial<Review> = {
       ...restPayload,
       tourGuideId,
-      userId,
+      userId: reviewerId,
     };
 
     if (tourGuideSubRatings) {

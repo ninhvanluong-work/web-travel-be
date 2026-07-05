@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -15,6 +15,15 @@ export class UserService {
 
   async isExisted(userId: string) {
     return await this.userRepository.existsBy({ id: userId });
+  }
+
+  async createAnonymousUser(): Promise<User> {
+    const user = this.userRepository.create({
+      name: 'Anonymous',
+      role: UserRole.NORMAL,
+    });
+
+    return this.userRepository.save(user);
   }
 
   create(createUserDto: CreateUserDto) {
