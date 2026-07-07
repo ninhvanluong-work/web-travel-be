@@ -293,4 +293,12 @@ export class AuthService {
       user: userDto,
     };
   }
+
+  async logout(userId: string) {
+    await this.userRepository.increment(
+      { id: userId },
+      'refreshTokenVersion',
+      1,
+    );
+  }
 }
