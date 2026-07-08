@@ -184,6 +184,10 @@ export class TourGuide extends BaseEntity {
   @Column({ type: 'jsonb', name: 'career_path', nullable: true })
   careerPath: CareerPathItemDto[];
 
+  @ApiProperty({ example: false })
+  @Column({ type: 'boolean', default: false })
+  onboarding: boolean;
+
   @ManyToMany(() => Product, (product: Product) => product.tourGuides)
   products: Product[];
 

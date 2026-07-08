@@ -163,6 +163,18 @@ export class TourGuideService {
     return this.tourGuideRepository.save(tourGuide);
   }
 
+  async onboarding(id: string) {
+    const tourGuide = await this.tourGuideRepository.findOne({
+      where: { id },
+    });
+    if (!tourGuide) {
+      throw new NotFoundException('Tour guide not found');
+    }
+
+    tourGuide.onboarding = true;
+    return this.tourGuideRepository.save(tourGuide);
+  }
+
   async remove(id: string) {
     const tourGuide = await this.findOneById(id);
     if (!tourGuide) {

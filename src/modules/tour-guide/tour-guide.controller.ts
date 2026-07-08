@@ -42,7 +42,7 @@ import {
 import { UpdateTourGuideMomentParamsDto } from 'src/modules/tour-guide/dto/update-tour-guide-moment.dto';
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
-import { TourGuide } from 'src/common/decorators';
+import { TourGuide, TourGuideId } from 'src/common/decorators';
 
 @Controller('tour-guide')
 @ApiExtraModels(
@@ -156,6 +156,31 @@ export class TourGuideController {
       result,
       HttpStatus.OK,
       'updated tour guide successfully',
+    );
+  }
+
+  @Post('onboarding')
+  @ApiBearerAuth(USER_TOKEN)
+  @TourGuide()
+  @UseGuards(UserGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'update tour guide onboarding status to true',
+    schema: {
+      properties: {
+        data: { $ref: getSchemaPath('TourGuideDto') },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async onboarding(@TourGuideId() tourGuideId: string) {
+    const result = await this.tourGuideService.onboarding(tourGuideId);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'updated tour guide onboarding successfully',
     );
   }
 
