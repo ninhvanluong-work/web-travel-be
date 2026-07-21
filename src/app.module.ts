@@ -20,6 +20,8 @@ import { SearchingModule } from './modules/searching/searching.module';
 import { TourGuideModule } from './modules/tour-guide/tour-guide.module';
 import { TagModule } from './modules/tag/tag.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { TourSessionModule } from './modules/tour-session/tour-session.module';
+import { UnitReferenceModule } from './modules/unit-reference/unit-reference.module';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { AuthModule } from './modules/auth/auth.module';
     TourGuideModule,
     TagModule,
     AuthModule,
+    TourSessionModule,
+    UnitReferenceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

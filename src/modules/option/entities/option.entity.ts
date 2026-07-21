@@ -4,6 +4,11 @@ import { BaseEntity } from 'src/database/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Product } from 'src/modules/product/entities/product.entity';
 
+export enum OptionStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
+
 @Entity('option')
 export class Option extends BaseEntity {
   @Column({ length: 500 })
@@ -14,17 +19,39 @@ export class Option extends BaseEntity {
   @ApiProperty({ example: 'product description' })
   description: string;
 
-  @Column({ type: 'int', name: 'adult_price', nullable: true, default: 0 })
+  @Column({ type: 'int', nullable: true, default: 0 })
   @ApiProperty({})
-  adultPrice: number;
+  day: number;
 
-  @Column({ type: 'int', name: 'child_price', nullable: true, default: 0 })
+  @Column({ type: 'int', nullable: true, default: 0 })
   @ApiProperty({})
-  childPrice: number;
+  night: number;
 
-  @Column({ type: 'int', name: 'infant_price', nullable: true, default: 0 })
+  @Column({ name: 'is_default', type: 'boolean', default: false })
   @ApiProperty({})
-  infantPrice: number;
+  isDefault: boolean;
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    default: OptionStatus.ACTIVE,
+  })
+  @ApiProperty({ enum: OptionStatus })
+  status: OptionStatus;
+
+  @Column({ type: 'int', default: 0 })
+  @ApiProperty({})
+  order: number;
+
+  @Column({
+    name: 'allow_unit',
+    type: 'uuid',
+    array: true,
+    nullable: true,
+    comment: 'array of unit id',
+  })
+  @ApiProperty({ isArray: true, type: 'string', nullable: true })
+  allowUnit: string[];
 
   @Column({ name: 'currency', nullable: true, default: 'VND' })
   @ApiProperty({ example: 'VND' })
