@@ -297,6 +297,7 @@ export class ProductService {
         tags: true,
         supplier: true,
         elements: true,
+        options: true,
       },
     });
 
