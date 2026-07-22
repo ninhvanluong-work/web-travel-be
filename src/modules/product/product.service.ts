@@ -13,7 +13,7 @@ import {
   In,
   FindOneOptions,
 } from 'typeorm';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Product } from 'src/modules/product/entities/product.entity';
@@ -30,9 +30,14 @@ import { Video } from 'src/modules/video/entities/video.entity';
 import { VideoType } from 'src/modules/video/video.type';
 import { ElementService } from 'src/modules/element/element.service';
 import { HeroVideoDto } from 'src/modules/product/dto/product-detail.dto';
+import ELEMENT_KEY from 'src/modules/element/element.type';
+import { OptionService } from 'src/modules/option/option.service';
+import { OptionStatus } from 'src/modules/option/entities/option.entity';
 
 @Injectable()
 export class ProductService {
+  private logger = new Logger(ProductService.name);
+
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
@@ -50,9 +55,14 @@ export class ProductService {
     private readonly tourGuideRepository: Repository<TourGuide>,
 
     private readonly elementService: ElementService,
+    private readonly optionService: OptionService,
   ) {}
 
   async create(payload: CreateProductDto) {
+    const prefixLog = `[create] `;
+
+    this.logger.debug(`${prefixLog} ${JSON.stringify(payload)}`);
+
     const {
       name,
       destinationId,
@@ -66,6 +76,7 @@ export class ProductService {
     const code = generateRandomCode(8);
 
     if (destinationId) {
+      this.logger.log(`${prefixLog} checking destination: ${destinationId}`);
       const destination = await this.destinationRepository.findOne({
         where: { id: destinationId },
       });
@@ -75,6 +86,8 @@ export class ProductService {
     }
 
     if (supplierId) {
+      this.logger.log(`${prefixLog} checking supplier: ${supplierId}`);
+
       const supplier = await this.supplierRepository.findOne({
         where: { id: supplierId },
       });
@@ -92,6 +105,8 @@ export class ProductService {
     const result = await this.productRepository.save(newProduct);
 
     if (heroVideoId) {
+      this.logger.log(`${prefixLog} checking heroVideoId: ${heroVideoId}`);
+
       const video = await this.videoRepository.findOne({
         where: { id: heroVideoId },
       });
@@ -110,6 +125,10 @@ export class ProductService {
     }
 
     if (tagIds && tagIds.length > 0) {
+      this.logger.log(
+        `${prefixLog} checking tagIds: ${JSON.stringify(tagIds)}`,
+      );
+
       const tags = await this.tagRepository.find({
         where: {
           id: In(tagIds),
@@ -122,6 +141,10 @@ export class ProductService {
     }
 
     if (tourGuideIds && tourGuideIds.length > 0) {
+      this.logger.log(
+        `${prefixLog} checking tour guide: ${JSON.stringify(tourGuideIds)}`,
+      );
+
       const tourGuides = await this.tourGuideRepository.find({
         where: {
           id: In(tourGuideIds),
@@ -133,17 +156,43 @@ export class ProductService {
       }
     }
 
+    let day = 1;
+    let night = 1;
+
     if (elementIds && elementIds.length > 0) {
+      this.logger.log(
+        `${prefixLog} checking elementIds: ${JSON.stringify(elementIds)}`,
+      );
+
       const elements = await this.elementService.find({
         where: {
           id: In(elementIds),
         },
       });
+
       if (elements.length > 0) {
         result.elements = elements;
         await this.productRepository.save(result);
+        //find day night element
+        const dayElem = elements.find((e) => e.key === ELEMENT_KEY.DAY);
+        const nightElem = elements.find((e) => e.key === ELEMENT_KEY.NIGHT);
+        day = dayElem ? parseInt(dayElem.name) : 0;
+        night = nightElem ? parseInt(nightElem.name) : 0;
       }
     }
+
+    this.logger.log(
+      `${prefixLog} creating default option for product: ${result.id}`,
+    );
+    await this.optionService.create({
+      productId: result.id,
+      title: name,
+      description: payload.description,
+      day,
+      night,
+      status: OptionStatus.ACTIVE,
+      isDefault: true,
+    });
 
     return result;
   }

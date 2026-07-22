@@ -15,6 +15,7 @@ import { Video } from 'src/modules/video/entities/video.entity';
 import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 import { ReviewModule } from 'src/modules/review/review.module';
 import { ElementModule } from 'src/modules/element/element.module';
+import { OptionModule } from 'src/modules/option/option.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ElementModule } from 'src/modules/element/element.module';
     ]),
     ReviewModule,
     ElementModule,
+    OptionModule,
   ],
   controllers: [ProductController],
   providers: [ProductService],

@@ -3,12 +3,13 @@ import { BaseEntity } from 'src/database/base.entity';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Product } from 'src/modules/product/entities/product.entity';
+import ELEMENT_KEY from 'src/modules/element/element.type';
 
 @Entity('element')
 export class Element extends BaseEntity {
   @ApiProperty({ example: 'key_01', description: 'Unique key of the element' })
   @Column({ length: 255 })
-  key: string;
+  key: ELEMENT_KEY | string;
 
   @ApiProperty({ example: 'Main Element', description: 'Name of the element' })
   @Column({ length: 255 })

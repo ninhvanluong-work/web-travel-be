@@ -20,6 +20,8 @@ import { SearchingModule } from 'src/modules/searching/searching.module';
 import { Tag } from 'src/modules/product/entities/tag.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { ElementModule } from 'src/modules/element/element.module';
+import { OptionService } from 'src/modules/option/option.service';
+import { Option } from 'src/modules/option/entities/option.entity';
 @Module({
   controllers: [VideoController],
   imports: [
@@ -31,6 +33,7 @@ import { ElementModule } from 'src/modules/element/element.module';
       Itinerary,
       Tag,
       TourGuide,
+      Option,
     ]),
     EmbeddingModule,
     ConfigModule,
@@ -39,7 +42,7 @@ import { ElementModule } from 'src/modules/element/element.module';
     SearchingModule,
     ElementModule,
   ],
-  providers: [VideoService, VideoEditorService, ProductService],
+  providers: [VideoService, VideoEditorService, ProductService, OptionService],
   exports: [VideoService, VideoEditorService],
 })
 export class VideoModule {}

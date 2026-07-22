@@ -57,6 +57,10 @@ export class Option extends BaseEntity {
   @ApiProperty({ example: 'VND' })
   currency: string;
 
+  @Column({ type: 'uuid', name: 'product_id', nullable: true })
+  @ApiProperty({ type: 'string', format: 'uuid', nullable: true })
+  productId: string;
+
   @ManyToOne(() => Product, (product) => product.options)
   @JoinColumn({
     name: 'product_id',
