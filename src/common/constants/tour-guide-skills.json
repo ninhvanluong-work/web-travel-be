@@ -1,0 +1,127 @@
+{
+  "skillCategories": [
+    {
+      "code": "communication_language",
+      "name": "Communication & Language",
+      "displayOrder": 1,
+      "skills": [
+        {
+          "code": "presentation_storytelling",
+          "name": "Presentation & storytelling"
+        },
+        {
+          "code": "foreign_languages",
+          "name": "Foreign languages (English, Chinese, Korean, etc.)"
+        },
+        {
+          "code": "active_listening_questioning",
+          "name": "Active listening & questioning"
+        },
+        {
+          "code": "non_verbal_communication",
+          "name": "Non-verbal communication (body language)"
+        },
+        {
+          "code": "adapting_tone_to_audience",
+          "name": "Adapting tone to audience"
+        }
+      ]
+    },
+    {
+      "code": "professional_knowledge",
+      "name": "Professional Knowledge",
+      "displayOrder": 2,
+      "skills": [
+        {
+          "code": "history_culture_geography",
+          "name": "History, culture & geography of destinations"
+        },
+        { "code": "local_cuisine", "name": "Local cuisine knowledge" },
+        {
+          "code": "customs_religion",
+          "name": "Understanding of customs & religion"
+        },
+        {
+          "code": "flora_fauna",
+          "name": "Flora & fauna knowledge (nature tours)"
+        },
+        {
+          "code": "destination_updates",
+          "name": "Up-to-date destination information"
+        }
+      ]
+    },
+    {
+      "code": "organization_management",
+      "name": "Organization & Management",
+      "displayOrder": 3,
+      "skills": [
+        {
+          "code": "itinerary_planning",
+          "name": "Itinerary planning & scheduling"
+        },
+        { "code": "time_management", "name": "Time management" },
+        { "code": "group_management", "name": "Group management" },
+        {
+          "code": "logistics_handling",
+          "name": "Handling logistics (tickets, hotels, transport)"
+        },
+        { "code": "budget_management", "name": "Tour budget management" }
+      ]
+    },
+    {
+      "code": "problem_solving_safety",
+      "name": "Problem-Solving & Safety",
+      "displayOrder": 4,
+      "skills": [
+        {
+          "code": "crisis_incident_handling",
+          "name": "Crisis & incident handling"
+        },
+        { "code": "basic_first_aid", "name": "Basic first aid" },
+        { "code": "guest_safety", "name": "Ensuring guest safety" },
+        { "code": "complaint_resolution", "name": "Complaint resolution" },
+        {
+          "code": "flexibility_improvisation",
+          "name": "Flexibility & improvisation"
+        }
+      ]
+    },
+    {
+      "code": "customer_service",
+      "name": "Customer Service",
+      "displayOrder": 5,
+      "skills": [
+        {
+          "code": "friendly_hospitable",
+          "name": "Friendly & hospitable attitude"
+        },
+        { "code": "empathy_guest_care", "name": "Empathy & guest care" },
+        {
+          "code": "patience_emotional_control",
+          "name": "Patience & emotional control"
+        },
+        {
+          "code": "personalized_experience",
+          "name": "Personalizing the experience"
+        },
+        { "code": "relationship_building", "name": "Relationship building" }
+      ]
+    },
+    {
+      "code": "supporting_skills",
+      "name": "Supporting Skills",
+      "displayOrder": 6,
+      "skills": [
+        { "code": "health_stamina", "name": "Good health & physical stamina" },
+        { "code": "tech_use", "name": "Tech use (apps, GPS, social media)" },
+        { "code": "sales_upselling", "name": "Sales & upselling skills" },
+        { "code": "basic_photography", "name": "Basic photography" },
+        {
+          "code": "teamwork_with_partners",
+          "name": "Teamwork with drivers & partners"
+        }
+      ]
+    }
+  ]
+}

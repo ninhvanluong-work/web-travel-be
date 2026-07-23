@@ -42,6 +42,7 @@ import {
 import { UpdateTourGuideMomentParamsDto } from 'src/modules/tour-guide/dto/update-tour-guide-moment.dto';
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
+import tourGuideSkills from 'src/common/constants/tour-guide-skills.json';
 import { TourGuide, TourGuideId } from 'src/common/decorators';
 
 @Controller('tour-guide')
@@ -106,6 +107,27 @@ export class TourGuideController {
       result,
       HttpStatus.OK,
       'get tour guide successfully',
+    );
+  }
+
+  @Get('skills')
+  @ApiResponse({
+    status: 200,
+    description: 'get tour guide skill categories',
+    schema: {
+      properties: {
+        data: { type: 'object' },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  getSkills() {
+    return formatApiResponse(
+      tourGuideSkills,
+      HttpStatus.OK,
+      'get tour guide skills successfully',
     );
   }
 
