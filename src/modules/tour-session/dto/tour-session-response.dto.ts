@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TourSessionStatus } from '../entities/tour-session.entity';
+import { UnitReferenceDto } from 'src/modules/unit-reference/dto/unit-reference-response.dto';
 
 export class TourSessionDto {
   @ApiProperty({
@@ -14,20 +15,11 @@ export class TourSessionDto {
   @ApiProperty({ type: 'string', format: 'date-time', nullable: true })
   travelDate: Date;
 
-  @ApiProperty({ type: 'string', format: 'date-time', nullable: true })
-  departureTime: Date;
-
-  @ApiProperty({ example: 20 })
-  capacity: number;
-
   @ApiProperty({ example: 20 })
   remainingSlot: number;
 
-  @ApiProperty({ type: 'string', format: 'uuid', nullable: true })
-  unitRefId: string;
-
-  @ApiProperty({ example: 1500000 })
-  price: number;
+  @ApiProperty({ type: [UnitReferenceDto] })
+  unitReferences: UnitReferenceDto[];
 
   @ApiProperty({ enum: TourSessionStatus })
   status: TourSessionStatus;

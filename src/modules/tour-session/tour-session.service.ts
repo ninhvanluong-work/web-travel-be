@@ -12,7 +12,6 @@ import {
 
 import { TourSession } from './entities/tour-session.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
-import { UnitReference } from 'src/modules/unit-reference/entities/unit-reference.entity';
 import { CreateTourSessionDto } from './dto/create-tour-session.dto';
 import { UpdateTourSessionDto } from './dto/update-tour-session.dto';
 import { GetTourSessionDto } from './dto/get-tour-session.dto';
@@ -29,8 +28,6 @@ export class TourSessionService {
     private readonly tourSessionRepository: Repository<TourSession>,
     @InjectRepository(Option)
     private readonly optionRepository: Repository<Option>,
-    @InjectRepository(UnitReference)
-    private readonly unitReferenceRepository: Repository<UnitReference>,
   ) {}
 
   async create(payload: CreateTourSessionDto) {
@@ -39,16 +36,9 @@ export class TourSessionService {
     });
     if (!option) throw new NotFoundException('Option Not Found');
 
-    if (payload.unitRefId) {
-      const unitRef = await this.unitReferenceRepository.findOne({
-        where: { id: payload.unitRefId },
-      });
-      if (!unitRef) throw new NotFoundException('Unit Reference Not Found');
-    }
-
     const newTourSession = this.tourSessionRepository.create({
       ...payload,
-      remainingSlot: payload.remainingSlot ?? payload.capacity,
+      remainingSlot: payload.remainingSlot ?? 0,
     });
 
     return this.tourSessionRepository.save(newTourSession);
@@ -57,13 +47,6 @@ export class TourSessionService {
   async update(id: string, payload: UpdateTourSessionDto) {
     const tourSession = await this.findOneById(id);
     if (!tourSession) throw new NotFoundException('Tour Session not found');
-
-    if (payload.unitRefId) {
-      const unitRef = await this.unitReferenceRepository.findOne({
-        where: { id: payload.unitRefId },
-      });
-      if (!unitRef) throw new NotFoundException('Unit Reference Not Found');
-    }
 
     Object.assign(tourSession, payload);
     return this.tourSessionRepository.save(tourSession);
@@ -119,7 +102,7 @@ export class TourSessionService {
         take: pageSize,
         skip,
         relations: {
-          unitRef: true,
+          unitReferences: true,
         },
         order: { travelDate: 'ASC' },
       },

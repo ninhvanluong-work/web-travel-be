@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { BaseEntity } from 'src/database/base.entity';
@@ -20,30 +20,9 @@ export class TourSession extends BaseEntity {
   @ApiProperty()
   travelDate: Date;
 
-  @Column({ name: 'departure_time', type: 'timestamptz', nullable: true })
-  @ApiProperty()
-  departureTime: Date;
-
-  @Column({ type: 'int', default: 0 })
-  @ApiProperty({ description: 'số lượng khách', default: 0 })
-  capacity: number;
-
   @Column({ name: 'remaining_slot', type: 'int', default: 0 })
   @ApiProperty({ description: 'số khả dụng cho phép book', default: 0 })
   remainingSlot: number;
-
-  @Column({ name: 'unit_ref_id', type: 'uuid', nullable: true })
-  @ApiProperty({ type: 'string', format: 'uuid', nullable: true })
-  unitRefId: string;
-
-  @Column({
-    type: 'decimal',
-    precision: 12,
-    scale: 2,
-    default: 0,
-  })
-  @ApiProperty({ description: 'giá từng slot', default: 0 })
-  price: number;
 
   @Column({
     type: 'varchar',
@@ -60,10 +39,6 @@ export class TourSession extends BaseEntity {
   })
   option: Option;
 
-  @ManyToOne(() => UnitReference)
-  @JoinColumn({
-    name: 'unit_ref_id',
-    foreignKeyConstraintName: 'FK_TourSession_UnitReference',
-  })
-  unitRef: UnitReference;
+  @OneToMany(() => UnitReference, (unitReference) => unitReference.tourSession)
+  unitReferences: UnitReference[];
 }

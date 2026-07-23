@@ -22,6 +22,7 @@ import { TagModule } from './modules/tag/tag.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TourSessionModule } from './modules/tour-session/tour-session.module';
 import { UnitReferenceModule } from './modules/unit-reference/unit-reference.module';
+import { DepartureTimeModule } from './modules/departure-time/departure-time.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { UnitReferenceModule } from './modules/unit-reference/unit-reference.mod
     AuthModule,
     TourSessionModule,
     UnitReferenceModule,
+    DepartureTimeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
