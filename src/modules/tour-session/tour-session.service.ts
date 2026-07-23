@@ -20,6 +20,7 @@ import {
   ListItemsResponse,
   PaginationResponse,
 } from 'src/types/pagination.dto';
+import { endOfDay, startOfDay } from 'src/common/utils/date';
 
 @Injectable()
 export class TourSessionService {
@@ -102,11 +103,14 @@ export class TourSessionService {
     }
 
     if (fromDate && toDate) {
-      condition.travelDate = Between(new Date(fromDate), new Date(toDate));
+      condition.travelDate = Between(
+        startOfDay(new Date(fromDate)),
+        endOfDay(new Date(toDate)),
+      );
     } else if (fromDate) {
-      condition.travelDate = MoreThanOrEqual(new Date(fromDate));
+      condition.travelDate = MoreThanOrEqual(startOfDay(new Date(fromDate)));
     } else if (toDate) {
-      condition.travelDate = LessThanOrEqual(new Date(toDate));
+      condition.travelDate = LessThanOrEqual(endOfDay(new Date(toDate)));
     }
 
     const [tourSessions, total] = await this.tourSessionRepository.findAndCount(
