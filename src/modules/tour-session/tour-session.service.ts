@@ -125,6 +125,9 @@ export class TourSessionService {
     return this.tourSessionRepository.findOne({
       where: { id },
       withDeleted,
+      relations: {
+        unitReferences: true,
+      },
     });
   }
 

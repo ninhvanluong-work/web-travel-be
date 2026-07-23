@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { OptionStatus } from '../entities/option.entity';
+import { PickupLocationDto } from 'src/modules/pickup-location/dto/pickup-location-response.dto';
+import { DepartureTimeDto } from 'src/modules/departure-time/dto/departure-time-response.dto';
 
 export class OptionDto {
   @ApiProperty({
@@ -37,6 +39,12 @@ export class OptionDto {
 
   @ApiProperty({ type: 'string', format: 'uuid', nullable: true })
   productId: string;
+
+  @ApiProperty({ type: [PickupLocationDto] })
+  pickupLocations: PickupLocationDto[];
+
+  @ApiProperty({ type: [DepartureTimeDto] })
+  departureTimes: DepartureTimeDto[];
 
   @ApiProperty({ type: 'string', format: 'date-time' })
   createdAt: Date;
