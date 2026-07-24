@@ -6,11 +6,19 @@ import { Product } from 'src/modules/product/entities/product.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
 import { TourSession } from 'src/modules/tour-session/entities/tour-session.entity';
+import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
 
 export enum BookingStatus {
   PAID = 'paid',
   PENDING = 'pending',
   CANCEL = 'cancel',
+}
+
+export interface BookingPassenger {
+  unitId: string;
+  unitName: string;
+  price: number;
+  count: number;
 }
 
 @Entity('booking')
@@ -24,8 +32,8 @@ export class Booking extends BaseEntity {
   @Column({ name: 'booking_code', nullable: true, length: 50, unique: true })
   bookingCode: string;
 
-  //@Column({ name: 'option_id', type: 'uuid', nullable: true })
-  //optionId: string;
+  @Column({ name: 'option_id', type: 'uuid', nullable: true })
+  optionId: string;
 
   @Column({ name: 'tour_session_id', type: 'uuid', nullable: true })
   tourSessionId: string;
@@ -33,41 +41,11 @@ export class Booking extends BaseEntity {
   @Column({ name: 'pickup_location_id', type: 'uuid', nullable: true })
   pickupLocationId: string;
 
-  @Column({ name: 'adult_count', type: 'int', default: 0 })
-  adultCount: number;
+  @Column({ name: 'departure_id', type: 'uuid', nullable: true })
+  departureId: string;
 
-  @Column({ name: 'child_count', type: 'int', default: 0 })
-  childCount: number;
-
-  @Column({ name: 'infant_count', type: 'int', default: 0 })
-  infantCount: number;
-
-  @Column({
-    name: 'adult_price',
-    type: 'decimal',
-    precision: 12,
-    scale: 2,
-    default: 0,
-  })
-  adultPrice: number;
-
-  @Column({
-    name: 'child_price',
-    type: 'decimal',
-    precision: 12,
-    scale: 2,
-    default: 0,
-  })
-  childPrice: number;
-
-  @Column({
-    name: 'infant_price',
-    type: 'decimal',
-    precision: 12,
-    scale: 2,
-    default: 0,
-  })
-  infantPrice: number;
+  @Column({ type: 'jsonb', default: () => "'[]'" })
+  passengers: BookingPassenger[];
 
   @Column({
     name: 'total_price',
@@ -77,6 +55,18 @@ export class Booking extends BaseEntity {
     default: 0,
   })
   totalPrice: number;
+
+  @Column({ name: 'product_name', nullable: true, length: 500 })
+  productName: string;
+
+  @Column({ name: 'departure_time', type: 'time', nullable: true })
+  departureTime: string;
+
+  @Column({ name: 'departure_label', nullable: true, length: 255 })
+  departureLabel: string;
+
+  @Column({ name: 'pickup_location_name', nullable: true, length: 500 })
+  pickupLocationName: string;
 
   @Column({
     type: 'varchar',
@@ -90,6 +80,12 @@ export class Booking extends BaseEntity {
 
   @Column({ nullable: true, length: 255 })
   phone?: string;
+
+  @Column({ name: 'user_id', type: 'uuid', nullable: true })
+  userId: string;
+
+  @Column({ name: 'product_id', type: 'uuid', nullable: true })
+  productId: string;
 
   @ManyToOne(() => User, (user) => user.bookings)
   @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'Fk_Booking_User' })
@@ -122,4 +118,11 @@ export class Booking extends BaseEntity {
     foreignKeyConstraintName: 'Fk_Booking_TourSession',
   })
   tourSession: TourSession;
+
+  @ManyToOne(() => DepartureTime)
+  @JoinColumn({
+    name: 'departure_id',
+    foreignKeyConstraintName: 'Fk_Booking_DepartureTime',
+  })
+  departure: DepartureTime;
 }

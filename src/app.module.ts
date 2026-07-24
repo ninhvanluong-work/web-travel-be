@@ -23,6 +23,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { TourSessionModule } from './modules/tour-session/tour-session.module';
 import { UnitReferenceModule } from './modules/unit-reference/unit-reference.module';
 import { DepartureTimeModule } from './modules/departure-time/departure-time.module';
+import { BookingModule } from './modules/booking/booking.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { DepartureTimeModule } from './modules/departure-time/departure-time.mod
     TourSessionModule,
     UnitReferenceModule,
     DepartureTimeModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
