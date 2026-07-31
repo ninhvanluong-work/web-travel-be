@@ -99,7 +99,6 @@ export class OptionService {
       withDeleted,
       relations: {
         pickupLocations: true,
-        departureTimes: true,
       },
     });
   }

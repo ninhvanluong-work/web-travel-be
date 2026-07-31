@@ -13,7 +13,7 @@ import { Type } from 'class-transformer';
 export class CreateDepartureTimeDto {
   @ApiProperty({ example: '42b1a09c-6fcb-4826-ba50-dfa24330c4f0' })
   @IsUUID()
-  optionId: string;
+  productId: string;
 
   @ApiProperty({ example: '07:30:00', description: 'giờ khởi hành' })
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/, {

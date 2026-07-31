@@ -4,7 +4,6 @@ import { BaseEntity } from 'src/database/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
-import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
 
 export enum OptionStatus {
   ACTIVE = 'active',
@@ -72,7 +71,4 @@ export class Option extends BaseEntity {
 
   @OneToMany(() => PickupLocation, (pickupLocation) => pickupLocation.option)
   pickupLocations: PickupLocation[];
-
-  @OneToMany(() => DepartureTime, (departureTime) => departureTime.option)
-  departureTimes: DepartureTime[];
 }

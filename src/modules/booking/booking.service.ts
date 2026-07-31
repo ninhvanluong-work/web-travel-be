@@ -116,11 +116,11 @@ export class BookingService {
     let departure: DepartureTime | null = null;
     if (payload.departureId) {
       departure = await this.departureTimeRepository.findOne({
-        where: { id: payload.departureId, optionId: payload.optionId },
+        where: { id: payload.departureId, productId: payload.productId },
       });
       if (!departure) {
         this.logger.warn(
-          `${prefix} rejected: departure time ${payload.departureId} not found for option ${payload.optionId}`,
+          `${prefix} rejected: departure time ${payload.departureId} not found for product ${payload.productId}`,
         );
         throw new NotFoundException('Departure time not found');
       }

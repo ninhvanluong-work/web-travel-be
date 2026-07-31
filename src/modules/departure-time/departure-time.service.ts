@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { DepartureTime } from './entities/departure-time.entity';
-import { Option } from 'src/modules/option/entities/option.entity';
+import { Product } from 'src/modules/product/entities/product.entity';
 import { CreateDepartureTimeDto } from './dto/create-departure-time.dto';
 import { UpdateDepartureTimeDto } from './dto/update-departure-time.dto';
 
@@ -12,15 +12,15 @@ export class DepartureTimeService {
   constructor(
     @InjectRepository(DepartureTime)
     private readonly departureTimeRepository: Repository<DepartureTime>,
-    @InjectRepository(Option)
-    private readonly optionRepository: Repository<Option>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
   ) {}
 
   async create(payload: CreateDepartureTimeDto) {
-    const option = await this.optionRepository.findOne({
-      where: { id: payload.optionId },
+    const product = await this.productRepository.findOne({
+      where: { id: payload.productId },
     });
-    if (!option) throw new NotFoundException('Option Not Found');
+    if (!product) throw new NotFoundException('Product Not Found');
 
     const newDepartureTime = this.departureTimeRepository.create(payload);
     return this.departureTimeRepository.save(newDepartureTime);
@@ -44,9 +44,9 @@ export class DepartureTimeService {
     return removed;
   }
 
-  async findByOption(optionId: string) {
+  async findByProduct(productId: string) {
     return this.departureTimeRepository.find({
-      where: { optionId },
+      where: { productId },
       order: { order: 'ASC' },
     });
   }
