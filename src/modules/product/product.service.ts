@@ -178,26 +178,8 @@ export class ProductService {
       if (elements.length > 0) {
         result.elements = elements;
         await this.productRepository.save(result);
-        //find day night element
-        const dayElem = elements.find((e) => e.key === ELEMENT_KEY.DAY);
-        const nightElem = elements.find((e) => e.key === ELEMENT_KEY.NIGHT);
-        day = dayElem ? parseInt(dayElem.name) : 0;
-        night = nightElem ? parseInt(nightElem.name) : 0;
       }
     }
-
-    this.logger.log(
-      `${prefixLog} creating default option for product: ${result.id}`,
-    );
-    await this.optionService.create({
-      productId: result.id,
-      title: name,
-      description: payload.description,
-      day,
-      night,
-      status: OptionStatus.ACTIVE,
-      isDefault: true,
-    });
 
     return result;
   }
