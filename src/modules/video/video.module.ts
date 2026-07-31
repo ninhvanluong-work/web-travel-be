@@ -22,6 +22,8 @@ import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { ElementModule } from 'src/modules/element/element.module';
 import { OptionService } from 'src/modules/option/option.service';
 import { Option } from 'src/modules/option/entities/option.entity';
+import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
+import { DepartureTimeModule } from 'src/modules/departure-time/departure-time.module';
 @Module({
   controllers: [VideoController],
   imports: [
@@ -34,6 +36,7 @@ import { Option } from 'src/modules/option/entities/option.entity';
       Tag,
       TourGuide,
       Option,
+      PickupLocation,
     ]),
     EmbeddingModule,
     ConfigModule,
@@ -41,6 +44,7 @@ import { Option } from 'src/modules/option/entities/option.entity';
     UploadModule,
     SearchingModule,
     ElementModule,
+    DepartureTimeModule,
   ],
   providers: [VideoService, VideoEditorService, ProductService, OptionService],
   exports: [VideoService, VideoEditorService],

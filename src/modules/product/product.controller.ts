@@ -19,6 +19,7 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductDetailDto } from './dto/product-detail.dto';
+import { ProductBookingInfoDto } from './dto/product-booking.dto';
 import { IdDto } from 'src/types/common.dto';
 import {
   GetProductDto,
@@ -38,6 +39,7 @@ import { UpdateProductStatusDto } from 'src/modules/product/dto/update-product-s
 @ApiExtraModels(
   Product,
   ProductDetailDto,
+  ProductBookingInfoDto,
   GetProductsResponseDto,
   ProductShortResponseDto,
   GetReviewsResponseDto,
@@ -118,6 +120,28 @@ export class ProductController {
   async findOne(@Param() param: IdDto) {
     const { id } = param;
     const result = await this.productService.getProductDetail(id);
+    return formatApiResponse(result, HttpStatus.OK, 'ok');
+  }
+
+  @Get(':id/booking')
+  @ApiResponse({
+    status: 200,
+    description:
+      'get product booking info (departure time, pickup location, option)',
+    schema: {
+      properties: {
+        data: {
+          $ref: getSchemaPath('ProductBookingInfoDto'),
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async findBookingInfo(@Param() param: IdDto) {
+    const { id } = param;
+    const result = await this.productService.getProductBookingInfo(id);
     return formatApiResponse(result, HttpStatus.OK, 'ok');
   }
 
