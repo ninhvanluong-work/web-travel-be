@@ -97,6 +97,9 @@ export class SessionService {
     const [sessions, total] = await this.sessionRepository.findAndCount({
       where: condition,
       take: pageSize,
+      relations: {
+        sessionUnits: true,
+      },
       skip,
       order: { travelDate: 'ASC' },
     });
@@ -117,6 +120,9 @@ export class SessionService {
   async findOneById(id: string, withDeleted = false) {
     return this.sessionRepository.findOne({
       where: { id },
+      relations: {
+        sessionUnits: true,
+      },
       withDeleted,
     });
   }

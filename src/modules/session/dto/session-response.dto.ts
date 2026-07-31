@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { SessionStatus } from '../entities/session.entity';
+import { SessionUnitDto } from 'src/modules/session-unit/dto/session-unit-response.dto';
 
 export class SessionDto {
   @ApiProperty({
@@ -19,6 +20,9 @@ export class SessionDto {
 
   @ApiProperty({ enum: SessionStatus })
   status: SessionStatus;
+
+  @ApiProperty({ type: () => [SessionUnitDto] })
+  sessionUnits: SessionUnitDto[];
 
   @ApiProperty({ type: 'string', format: 'date-time' })
   createdAt: Date;
