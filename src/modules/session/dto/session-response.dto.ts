@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TourSessionStatus } from '../entities/tour-session.entity';
+import { SessionStatus } from '../entities/session.entity';
 
-export class TourSessionDto {
+export class SessionDto {
   @ApiProperty({
     type: 'string',
     example: '0df1ec7e-166e-4209-810a-23156b3b0489',
@@ -9,16 +9,16 @@ export class TourSessionDto {
   id: string;
 
   @ApiProperty({ type: 'string', format: 'uuid', nullable: true })
-  optionId: string;
+  productId: string;
 
   @ApiProperty({ type: 'string', format: 'date-time', nullable: true })
   travelDate: Date;
 
   @ApiProperty({ example: 20 })
-  remainingSlot: number;
+  capacity: number;
 
-  @ApiProperty({ enum: TourSessionStatus })
-  status: TourSessionStatus;
+  @ApiProperty({ enum: SessionStatus })
+  status: SessionStatus;
 
   @ApiProperty({ type: 'string', format: 'date-time' })
   createdAt: Date;

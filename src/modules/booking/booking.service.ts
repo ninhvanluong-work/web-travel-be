@@ -17,9 +17,9 @@ import { CreateBookingDto } from 'src/modules/booking/dto/create-booking.dto';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
 import {
-  TourSession,
-  TourSessionStatus,
-} from 'src/modules/tour-session/entities/tour-session.entity';
+  Session,
+  SessionStatus,
+} from 'src/modules/session/entities/session.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
 import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
@@ -39,8 +39,8 @@ export class BookingService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Option)
     private readonly optionRepository: Repository<Option>,
-    @InjectRepository(TourSession)
-    private readonly tourSessionRepository: Repository<TourSession>,
+    @InjectRepository(Session)
+    private readonly sessionRepository: Repository<Session>,
     @InjectRepository(PickupLocation)
     private readonly pickupLocationRepository: Repository<PickupLocation>,
     @InjectRepository(Unit)
@@ -84,20 +84,20 @@ export class BookingService {
       throw new NotFoundException('Option not found');
     }
 
-    const tourSession = await this.tourSessionRepository.findOne({
-      where: { id: payload.tourSessionId, optionId: payload.optionId },
+    const session = await this.sessionRepository.findOne({
+      where: { id: payload.tourSessionId, productId: payload.productId },
     });
-    if (!tourSession) {
+    if (!session) {
       this.logger.warn(
-        `${prefix} rejected: tour session ${payload.tourSessionId} not found for option ${payload.optionId}`,
+        `${prefix} rejected: session ${payload.tourSessionId} not found for product ${payload.productId}`,
       );
-      throw new NotFoundException('Tour session not found');
+      throw new NotFoundException('Session not found');
     }
-    if (tourSession.status !== TourSessionStatus.ACTIVE) {
+    if (session.status !== SessionStatus.ACTIVE) {
       this.logger.warn(
-        `${prefix} rejected: tour session ${tourSession.id} status is ${tourSession.status}`,
+        `${prefix} rejected: session ${session.id} status is ${session.status}`,
       );
-      throw new BadRequestException('Tour session is not active');
+      throw new BadRequestException('Session is not active');
     }
 
     let pickupLocation: PickupLocation | null = null;
@@ -159,9 +159,9 @@ export class BookingService {
       `${prefix} snapshot passengers=${JSON.stringify(passengers)} totalCount=${totalCount} totalPrice=${totalPrice}`,
     );
 
-    if (tourSession.remainingSlot < totalCount) {
+    if (session.capacity < totalCount) {
       this.logger.warn(
-        `${prefix} rejected: not enough remaining slot (remaining=${tourSession.remainingSlot}, requested=${totalCount})`,
+        `${prefix} rejected: not enough capacity (remaining=${session.capacity}, requested=${totalCount})`,
       );
       throw new BadRequestException('Not enough remaining slot');
     }
@@ -175,7 +175,7 @@ export class BookingService {
       departureId: payload.departureId,
       bookingCode: this.generateBookingCode(),
       bookingDate: new Date(),
-      travelDate: tourSession.travelDate,
+      travelDate: session.travelDate,
       passengers,
       totalPrice,
       status: BookingStatus.PENDING,
@@ -192,10 +192,10 @@ export class BookingService {
       `${prefix} created booking ${savedBooking.id} (${savedBooking.bookingCode}) totalPrice=${totalPrice}`,
     );
 
-    tourSession.remainingSlot -= totalCount;
-    await this.tourSessionRepository.save(tourSession);
+    session.capacity -= totalCount;
+    await this.sessionRepository.save(session);
     this.logger.debug(
-      `${this.prefix('create', tourSession.id)} remainingSlot ${tourSession.remainingSlot + totalCount} -> ${tourSession.remainingSlot}`,
+      `${this.prefix('create', session.id)} capacity ${session.capacity + totalCount} -> ${session.capacity}`,
     );
 
     return savedBooking;

@@ -1,20 +1,20 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsUUID, IsEnum, IsDateString } from 'class-validator';
 
-import { TourSessionStatus } from '../entities/tour-session.entity';
+import { SessionStatus } from '../entities/session.entity';
 import { ListItemsResponse, PaginationDto } from 'src/types/pagination.dto';
-import { TourSessionDto } from './tour-session-response.dto';
+import { SessionDto } from './session-response.dto';
 
-export class GetTourSessionDto extends PaginationDto {
+export class GetSessionDto extends PaginationDto {
   @ApiPropertyOptional({ example: '42b1a09c-6fcb-4826-ba50-dfa24330c4f0' })
   @IsOptional()
   @IsUUID()
-  optionId?: string;
+  productId?: string;
 
-  @ApiPropertyOptional({ enum: TourSessionStatus })
+  @ApiPropertyOptional({ enum: SessionStatus })
   @IsOptional()
-  @IsEnum(TourSessionStatus)
-  status?: TourSessionStatus;
+  @IsEnum(SessionStatus)
+  status?: SessionStatus;
 
   @ApiPropertyOptional({
     description: 'Từ ngày (ISO 8601)',
@@ -33,7 +33,7 @@ export class GetTourSessionDto extends PaginationDto {
   toDate?: string;
 }
 
-export class GetTourSessionsResponseDto extends ListItemsResponse<TourSessionDto> {
-  @ApiProperty({ type: [TourSessionDto] })
-  declare items: TourSessionDto[];
+export class GetSessionsResponseDto extends ListItemsResponse<SessionDto> {
+  @ApiProperty({ type: [SessionDto] })
+  declare items: SessionDto[];
 }

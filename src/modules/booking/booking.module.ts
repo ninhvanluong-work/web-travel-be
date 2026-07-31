@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Booking } from 'src/modules/booking/entities/booking.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
-import { TourSession } from 'src/modules/tour-session/entities/tour-session.entity';
+import { Session } from 'src/modules/session/entities/session.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
 import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
@@ -18,7 +18,7 @@ import { BookingController } from './booking.controller';
       Booking,
       Product,
       Option,
-      TourSession,
+      Session,
       PickupLocation,
       Unit,
       DepartureTime,

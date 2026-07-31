@@ -23,6 +23,7 @@ import { Element } from 'src/modules/element/entities/element.entity';
 import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
+import { Session } from 'src/modules/session/entities/session.entity';
 import { HeroVideoDto } from 'src/modules/product/dto/product-detail.dto';
 
 export enum ProductStatus {
@@ -205,6 +206,9 @@ export class Product extends BaseEntity {
     (pickupLocation: PickupLocation) => pickupLocation.product,
   )
   pickupLocations: PickupLocation[];
+
+  @OneToMany(() => Session, (session: Session) => session.product)
+  sessions: Session[];
 
   @OneToMany(() => Review, (review: Review) => review.product)
   reviews: Review[];
