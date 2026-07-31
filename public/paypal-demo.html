@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<title>PayPal Payment Demo</title>
+<style>
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    max-width: 480px;
+    margin: 48px auto;
+    padding: 0 16px;
+    color: #1a1a1a;
+  }
+  h1 {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  p.hint {
+    color: #666;
+    font-size: 13px;
+    margin-top: 0;
+  }
+  .card {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 16px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  #paypal-buttons {
+    min-height: 45px;
+  }
+  #log {
+    margin-top: 16px;
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: Consolas, Menlo, monospace;
+    font-size: 12px;
+    border-radius: 8px;
+    padding: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge.ok { background: #dafbe1; color: #116329; }
+  .badge.err { background: #ffebe9; color: #82071e; }
+  .badge.pending { background: #fff8c5; color: #7d4e00; }
+</style>
+</head>
+<body>
+  <h1>PayPal Payment Demo</h1>
+  <p class="hint">Standalone demo — creates &amp; captures a PayPal sandbox order via the backend API (không gắn với booking thật).</p>
+
+  <div class="card">
+    <label for="amount">Amount (USD)</label>
+    <input type="number" id="amount" value="10" min="1" step="0.01" />
+    <div id="status"></div>
+    <div id="paypal-buttons"></div>
+  </div>
+
+  <div id="log">Đang tải cấu hình PayPal...</div>
+
+  <script>
+    const logEl = document.getElementById('log');
+    const statusEl = document.getElementById('status');
+
+    function log(msg, obj) {
+      const line = obj ? `${msg}\n${JSON.stringify(obj, null, 2)}` : msg;
+      logEl.textContent += `\n\n${line}`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function setStatus(text, kind) {
+      statusEl.innerHTML = `<span class="badge ${kind}">${text}</span>`;
+    }
+
+    async function api(path, options) {
+      const res = await fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        ...options,
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json?.message || `Request to ${path} failed`);
+      }
+      return json.data;
+    }
+
+    async function init() {
+      try {
+        const configRes = await fetch('/payment/paypal/config');
+        const configJson = await configRes.json();
+        const { clientId, currency } = configJson.data;
+
+        if (!clientId) {
+          setStatus('Missing PAYPAL_CLIENT_ID', 'err');
+          log('Backend chưa cấu hình PAYPAL_CLIENT_ID trong .env');
+          return;
+        }
+
+        log('Config loaded', { clientId, currency });
+
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(currency)}`;
+        script.onload = renderButtons;
+        script.onerror = () => {
+          setStatus('Failed to load PayPal SDK', 'err');
+          log('Không load được PayPal SDK script');
+        };
+        document.body.appendChild(script);
+      } catch (err) {
+        setStatus('Config error', 'err');
+        log('Lỗi lấy config: ' + err.message);
+      }
+    }
+
+    function renderButtons() {
+      window.paypal
+        .Buttons({
+          style: { layout: 'vertical', label: 'pay' },
+
+          createOrder: async () => {
+            setStatus('Creating order...', 'pending');
+            const amount = Number(document.getElementById('amount').value) || 10;
+            const data = await api('/payment/paypal/demo/create-order', {
+              body: JSON.stringify({ amount }),
+            });
+            log('Order created', data);
+            return data.orderId;
+          },
+
+          onApprove: async (data) => {
+            setStatus('Capturing payment...', 'pending');
+            const result = await api('/payment/paypal/demo/capture-order', {
+              body: JSON.stringify({ orderId: data.orderID }),
+            });
+            log('Order captured', result);
+            if (result.status === 'COMPLETED') {
+              setStatus('Payment completed ✔', 'ok');
+            } else {
+              setStatus(`Status: ${result.status}`, 'err');
+            }
+          },
+
+          onCancel: () => {
+            setStatus('Cancelled by buyer', 'err');
+            log('Buyer cancelled the approval popup');
+          },
+
+          onError: (err) => {
+            setStatus('PayPal error', 'err');
+            log('PayPal Buttons error: ' + err);
+          },
+        })
+        .render('#paypal-buttons');
+
+      setStatus('Ready', 'ok');
+      log('PayPal buttons rendered. Click "Pay" and login with a sandbox buyer account.');
+    }
+
+    init();
+  </script>
+</body>
+</html>

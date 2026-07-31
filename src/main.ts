@@ -1,4 +1,6 @@
+import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import { ConfigService } from '@nestjs/config';
@@ -8,7 +10,8 @@ import { setupSwagger } from 'src/config/swagger.config';
 import { TelegramExceptionFilter } from './common/filters/telegram-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.useStaticAssets(join(__dirname, '..', 'public'));
   const configService = app.get(ConfigService);
   app.useGlobalFilters(new TelegramExceptionFilter(configService));
 
