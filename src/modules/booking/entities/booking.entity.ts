@@ -23,9 +23,6 @@ export interface BookingPassenger {
 
 @Entity('booking')
 export class Booking extends BaseEntity {
-  @Column({ name: 'booking_date', type: 'timestamptz', nullable: true })
-  bookingDate: Date;
-
   @Column({ name: 'travel_date', type: 'timestamptz', nullable: true })
   travelDate: Date;
 
@@ -55,6 +52,9 @@ export class Booking extends BaseEntity {
     default: 0,
   })
   totalPrice: number;
+
+  @Column({ nullable: true, default: 'VND', length: 10 })
+  currency: string;
 
   @Column({ name: 'product_name', nullable: true, length: 500 })
   productName: string;

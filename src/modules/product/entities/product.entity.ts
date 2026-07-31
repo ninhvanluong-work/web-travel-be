@@ -163,6 +163,10 @@ export class Product extends BaseEntity {
   @Column({ type: 'int', name: 'review_count', default: 0 })
   reviewCount: number;
 
+  @ApiProperty({ example: 'VND' })
+  @Column({ name: 'currency', nullable: true, default: 'VND' })
+  currency: string;
+
   @Column({ type: 'uuid', name: 'destination_id' })
   destinationId: string;
 
