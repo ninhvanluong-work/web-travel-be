@@ -101,9 +101,6 @@ export class TourSessionService {
         where: condition,
         take: pageSize,
         skip,
-        relations: {
-          unitReferences: true,
-        },
         order: { travelDate: 'ASC' },
       },
     );
@@ -125,9 +122,6 @@ export class TourSessionService {
     return this.tourSessionRepository.findOne({
       where: { id },
       withDeleted,
-      relations: {
-        unitReferences: true,
-      },
     });
   }
 

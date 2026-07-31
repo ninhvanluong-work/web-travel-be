@@ -6,7 +6,7 @@ import { Product } from 'src/modules/product/entities/product.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
 import { TourSession } from 'src/modules/tour-session/entities/tour-session.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
-import { UnitReference } from 'src/modules/unit-reference/entities/unit-reference.entity';
+import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
 
 import { BookingService } from './booking.service';
@@ -20,7 +20,7 @@ import { BookingController } from './booking.controller';
       Option,
       TourSession,
       PickupLocation,
-      UnitReference,
+      Unit,
       DepartureTime,
     ]),
   ],

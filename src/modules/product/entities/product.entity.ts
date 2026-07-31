@@ -20,6 +20,7 @@ import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 import { Tag } from 'src/modules/product/entities/tag.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { Element } from 'src/modules/element/entities/element.entity';
+import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { HeroVideoDto } from 'src/modules/product/dto/product-detail.dto';
 
 export enum ProductStatus {
@@ -187,6 +188,9 @@ export class Product extends BaseEntity {
 
   @OneToMany(() => Option, (option: Option) => option.product)
   options: Option[];
+
+  @OneToMany(() => Unit, (unit: Unit) => unit.product)
+  units: Unit[];
 
   @OneToMany(() => Review, (review: Review) => review.product)
   reviews: Review[];

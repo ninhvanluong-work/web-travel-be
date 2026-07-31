@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { randomBytes } from 'crypto';
 
 import {
@@ -21,7 +21,7 @@ import {
   TourSessionStatus,
 } from 'src/modules/tour-session/entities/tour-session.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
-import { UnitReference } from 'src/modules/unit-reference/entities/unit-reference.entity';
+import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
 
 @Injectable()
@@ -43,8 +43,8 @@ export class BookingService {
     private readonly tourSessionRepository: Repository<TourSession>,
     @InjectRepository(PickupLocation)
     private readonly pickupLocationRepository: Repository<PickupLocation>,
-    @InjectRepository(UnitReference)
-    private readonly unitReferenceRepository: Repository<UnitReference>,
+    @InjectRepository(Unit)
+    private readonly unitRepository: Repository<Unit>,
     @InjectRepository(DepartureTime)
     private readonly departureTimeRepository: Repository<DepartureTime>,
   ) {}
@@ -126,32 +126,30 @@ export class BookingService {
       }
     }
 
-    const unitReferences = await this.unitReferenceRepository.find({
-      where: { tourSessionId: payload.tourSessionId },
+    const unitIds = payload.passengers.map((passenger) => passenger.unitId);
+    const units = await this.unitRepository.find({
+      where: { id: In(unitIds), productId: payload.productId },
     });
-    const unitReferenceMap = new Map(
-      unitReferences.map((unit) => [unit.id, unit]),
-    );
+    const unitMap = new Map(units.map((unit) => [unit.id, unit]));
 
     let totalCount = 0;
-    let totalPrice = 0;
+    // price is not sourced from Unit anymore (unit no longer carries price/capacity);
+    // pricing design is pending, so snapshot price stays 0 for now.
+    const totalPrice = 0;
     const passengers: BookingPassenger[] = payload.passengers.map(
       (passenger) => {
-        const unit = unitReferenceMap.get(passenger.unitId);
+        const unit = unitMap.get(passenger.unitId);
         if (!unit) {
           this.logger.warn(
-            `${prefix} rejected: unit ${passenger.unitId} not available for tour session ${tourSession.id}`,
+            `${prefix} rejected: unit ${passenger.unitId} not found`,
           );
-          throw new BadRequestException(
-            `Unit ${passenger.unitId} is not available for this tour session`,
-          );
+          throw new BadRequestException(`Unit ${passenger.unitId} not found`);
         }
         totalCount += passenger.count;
-        totalPrice += Number(unit.price) * passenger.count;
         return {
           unitId: unit.id,
           unitName: unit.name,
-          price: Number(unit.price),
+          price: 0,
           count: passenger.count,
         };
       },

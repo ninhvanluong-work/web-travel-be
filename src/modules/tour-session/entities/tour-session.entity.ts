@@ -1,9 +1,8 @@
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { BaseEntity } from 'src/database/base.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
-import { UnitReference } from 'src/modules/unit-reference/entities/unit-reference.entity';
 
 export enum TourSessionStatus {
   INACTIVE = 'inactive',
@@ -38,7 +37,4 @@ export class TourSession extends BaseEntity {
     foreignKeyConstraintName: 'FK_TourSession_Option',
   })
   option: Option;
-
-  @OneToMany(() => UnitReference, (unitReference) => unitReference.tourSession)
-  unitReferences: UnitReference[];
 }
