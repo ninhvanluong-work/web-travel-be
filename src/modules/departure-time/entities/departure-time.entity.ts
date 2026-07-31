@@ -2,13 +2,13 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { BaseEntity } from 'src/database/base.entity';
-import { Option } from 'src/modules/option/entities/option.entity';
+import { Product } from 'src/modules/product/entities/product.entity';
 
 @Entity('departure_time')
 export class DepartureTime extends BaseEntity {
-  @Column({ name: 'option_id' })
+  @Column({ name: 'product_id' })
   @ApiProperty({ type: 'string', format: 'uuid' })
-  optionId: string;
+  productId: string;
 
   @Column({ type: 'time' })
   @ApiProperty({ example: '07:30:00', description: 'giờ khởi hành' })
@@ -30,10 +30,10 @@ export class DepartureTime extends BaseEntity {
   @ApiProperty({ nullable: true })
   note: string;
 
-  @ManyToOne(() => Option)
+  @ManyToOne(() => Product, (product) => product.departureTimes)
   @JoinColumn({
-    name: 'option_id',
-    foreignKeyConstraintName: 'FK_DepartureTime_Option',
+    name: 'product_id',
+    foreignKeyConstraintName: 'FK_DepartureTime_Product',
   })
-  option: Option;
+  product: Product;
 }

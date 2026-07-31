@@ -2,13 +2,13 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { BaseEntity } from 'src/database/base.entity';
-import { Option } from 'src/modules/option/entities/option.entity';
+import { Product } from 'src/modules/product/entities/product.entity';
 
 @Entity('pickup_location')
 export class PickupLocation extends BaseEntity {
-  @Column({ name: 'option_id' })
+  @Column({ name: 'product_id' })
   @ApiProperty({ type: 'string', format: 'uuid' })
-  optionId: string;
+  productId: string;
 
   @Column({ length: 500 })
   @ApiProperty({ example: 'pickup location name' })
@@ -30,10 +30,10 @@ export class PickupLocation extends BaseEntity {
   @ApiProperty({ default: 0 })
   order: number;
 
-  @ManyToOne(() => Option)
+  @ManyToOne(() => Product, (product) => product.pickupLocations)
   @JoinColumn({
-    name: 'option_id',
-    foreignKeyConstraintName: 'FK_PickupLocation_Option',
+    name: 'product_id',
+    foreignKeyConstraintName: 'FK_PickupLocation_Product',
   })
-  option: Option;
+  product: Product;
 }

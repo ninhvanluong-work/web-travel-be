@@ -3,7 +3,6 @@ import { BaseEntity } from 'src/database/base.entity';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Product } from 'src/modules/product/entities/product.entity';
-import { Option } from 'src/modules/option/entities/option.entity';
 
 @Entity('itinerary')
 export class Itinerary extends BaseEntity {
@@ -27,10 +26,6 @@ export class Itinerary extends BaseEntity {
   @ApiProperty({ type: 'string', format: 'uuid' })
   productId: string;
 
-  @Column({ name: 'option_id', nullable: true })
-  @ApiProperty({ type: 'string', format: 'uuid', nullable: true })
-  optionId: string;
-
   @Column({ name: 'is_default', type: 'boolean', default: false })
   @ApiProperty({ default: false })
   isDefault: boolean;
@@ -41,11 +36,4 @@ export class Itinerary extends BaseEntity {
     foreignKeyConstraintName: 'FK_Itinerary_Product',
   })
   product: Product;
-
-  @ManyToOne(() => Option)
-  @JoinColumn({
-    name: 'option_id',
-    foreignKeyConstraintName: 'FK_Itinerary_Option',
-  })
-  option: Option;
 }

@@ -8,7 +8,7 @@ export class DepartureTimeDto {
   id: string;
 
   @ApiProperty({ type: 'string', format: 'uuid' })
-  optionId: string;
+  productId: string;
 
   @ApiProperty({ example: '07:30:00' })
   time: string;

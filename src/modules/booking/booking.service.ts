@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { randomBytes } from 'crypto';
 
 import {
@@ -17,11 +17,11 @@ import { CreateBookingDto } from 'src/modules/booking/dto/create-booking.dto';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
 import {
-  TourSession,
-  TourSessionStatus,
-} from 'src/modules/tour-session/entities/tour-session.entity';
+  Session,
+  SessionStatus,
+} from 'src/modules/session/entities/session.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
-import { UnitReference } from 'src/modules/unit-reference/entities/unit-reference.entity';
+import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
 
 @Injectable()
@@ -39,12 +39,12 @@ export class BookingService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Option)
     private readonly optionRepository: Repository<Option>,
-    @InjectRepository(TourSession)
-    private readonly tourSessionRepository: Repository<TourSession>,
+    @InjectRepository(Session)
+    private readonly sessionRepository: Repository<Session>,
     @InjectRepository(PickupLocation)
     private readonly pickupLocationRepository: Repository<PickupLocation>,
-    @InjectRepository(UnitReference)
-    private readonly unitReferenceRepository: Repository<UnitReference>,
+    @InjectRepository(Unit)
+    private readonly unitRepository: Repository<Unit>,
     @InjectRepository(DepartureTime)
     private readonly departureTimeRepository: Repository<DepartureTime>,
   ) {}
@@ -84,30 +84,30 @@ export class BookingService {
       throw new NotFoundException('Option not found');
     }
 
-    const tourSession = await this.tourSessionRepository.findOne({
-      where: { id: payload.tourSessionId, optionId: payload.optionId },
+    const session = await this.sessionRepository.findOne({
+      where: { id: payload.tourSessionId, productId: payload.productId },
     });
-    if (!tourSession) {
+    if (!session) {
       this.logger.warn(
-        `${prefix} rejected: tour session ${payload.tourSessionId} not found for option ${payload.optionId}`,
+        `${prefix} rejected: session ${payload.tourSessionId} not found for product ${payload.productId}`,
       );
-      throw new NotFoundException('Tour session not found');
+      throw new NotFoundException('Session not found');
     }
-    if (tourSession.status !== TourSessionStatus.ACTIVE) {
+    if (session.status !== SessionStatus.ACTIVE) {
       this.logger.warn(
-        `${prefix} rejected: tour session ${tourSession.id} status is ${tourSession.status}`,
+        `${prefix} rejected: session ${session.id} status is ${session.status}`,
       );
-      throw new BadRequestException('Tour session is not active');
+      throw new BadRequestException('Session is not active');
     }
 
     let pickupLocation: PickupLocation | null = null;
     if (payload.pickupLocationId) {
       pickupLocation = await this.pickupLocationRepository.findOne({
-        where: { id: payload.pickupLocationId, optionId: payload.optionId },
+        where: { id: payload.pickupLocationId, productId: payload.productId },
       });
       if (!pickupLocation) {
         this.logger.warn(
-          `${prefix} rejected: pickup location ${payload.pickupLocationId} not found for option ${payload.optionId}`,
+          `${prefix} rejected: pickup location ${payload.pickupLocationId} not found for product ${payload.productId}`,
         );
         throw new NotFoundException('Pickup location not found');
       }
@@ -116,42 +116,40 @@ export class BookingService {
     let departure: DepartureTime | null = null;
     if (payload.departureId) {
       departure = await this.departureTimeRepository.findOne({
-        where: { id: payload.departureId, optionId: payload.optionId },
+        where: { id: payload.departureId, productId: payload.productId },
       });
       if (!departure) {
         this.logger.warn(
-          `${prefix} rejected: departure time ${payload.departureId} not found for option ${payload.optionId}`,
+          `${prefix} rejected: departure time ${payload.departureId} not found for product ${payload.productId}`,
         );
         throw new NotFoundException('Departure time not found');
       }
     }
 
-    const unitReferences = await this.unitReferenceRepository.find({
-      where: { tourSessionId: payload.tourSessionId },
+    const unitIds = payload.passengers.map((passenger) => passenger.unitId);
+    const units = await this.unitRepository.find({
+      where: { id: In(unitIds), productId: payload.productId },
     });
-    const unitReferenceMap = new Map(
-      unitReferences.map((unit) => [unit.id, unit]),
-    );
+    const unitMap = new Map(units.map((unit) => [unit.id, unit]));
 
     let totalCount = 0;
-    let totalPrice = 0;
+    // price is not sourced from Unit anymore (unit no longer carries price/capacity);
+    // pricing design is pending, so snapshot price stays 0 for now.
+    const totalPrice = 0;
     const passengers: BookingPassenger[] = payload.passengers.map(
       (passenger) => {
-        const unit = unitReferenceMap.get(passenger.unitId);
+        const unit = unitMap.get(passenger.unitId);
         if (!unit) {
           this.logger.warn(
-            `${prefix} rejected: unit ${passenger.unitId} not available for tour session ${tourSession.id}`,
+            `${prefix} rejected: unit ${passenger.unitId} not found`,
           );
-          throw new BadRequestException(
-            `Unit ${passenger.unitId} is not available for this tour session`,
-          );
+          throw new BadRequestException(`Unit ${passenger.unitId} not found`);
         }
         totalCount += passenger.count;
-        totalPrice += Number(unit.price) * passenger.count;
         return {
           unitId: unit.id,
           unitName: unit.name,
-          price: Number(unit.price),
+          price: 0,
           count: passenger.count,
         };
       },
@@ -161,9 +159,9 @@ export class BookingService {
       `${prefix} snapshot passengers=${JSON.stringify(passengers)} totalCount=${totalCount} totalPrice=${totalPrice}`,
     );
 
-    if (tourSession.remainingSlot < totalCount) {
+    if (session.capacity < totalCount) {
       this.logger.warn(
-        `${prefix} rejected: not enough remaining slot (remaining=${tourSession.remainingSlot}, requested=${totalCount})`,
+        `${prefix} rejected: not enough capacity (remaining=${session.capacity}, requested=${totalCount})`,
       );
       throw new BadRequestException('Not enough remaining slot');
     }
@@ -176,10 +174,10 @@ export class BookingService {
       pickupLocationId: payload.pickupLocationId,
       departureId: payload.departureId,
       bookingCode: this.generateBookingCode(),
-      bookingDate: new Date(),
-      travelDate: tourSession.travelDate,
+      travelDate: session.travelDate,
       passengers,
       totalPrice,
+      currency: product.currency,
       status: BookingStatus.PENDING,
       email: payload.email,
       phone: payload.phone,
@@ -194,10 +192,10 @@ export class BookingService {
       `${prefix} created booking ${savedBooking.id} (${savedBooking.bookingCode}) totalPrice=${totalPrice}`,
     );
 
-    tourSession.remainingSlot -= totalCount;
-    await this.tourSessionRepository.save(tourSession);
+    session.capacity -= totalCount;
+    await this.sessionRepository.save(session);
     this.logger.debug(
-      `${this.prefix('create', tourSession.id)} remainingSlot ${tourSession.remainingSlot + totalCount} -> ${tourSession.remainingSlot}`,
+      `${this.prefix('create', session.id)} capacity ${session.capacity + totalCount} -> ${session.capacity}`,
     );
 
     return savedBooking;
