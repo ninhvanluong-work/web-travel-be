@@ -1,8 +1,9 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { BaseEntity } from 'src/database/base.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
+import { SessionUnit } from 'src/modules/session-unit/entities/session-unit.entity';
 
 export enum SessionStatus {
   INACTIVE = 'inactive',
@@ -37,4 +38,7 @@ export class Session extends BaseEntity {
     foreignKeyConstraintName: 'FK_Session_Product',
   })
   product: Product;
+
+  @OneToMany(() => SessionUnit, (sessionUnit) => sessionUnit.session)
+  sessionUnits: SessionUnit[];
 }
