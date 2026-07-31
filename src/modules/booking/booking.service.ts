@@ -103,11 +103,11 @@ export class BookingService {
     let pickupLocation: PickupLocation | null = null;
     if (payload.pickupLocationId) {
       pickupLocation = await this.pickupLocationRepository.findOne({
-        where: { id: payload.pickupLocationId, optionId: payload.optionId },
+        where: { id: payload.pickupLocationId, productId: payload.productId },
       });
       if (!pickupLocation) {
         this.logger.warn(
-          `${prefix} rejected: pickup location ${payload.pickupLocationId} not found for option ${payload.optionId}`,
+          `${prefix} rejected: pickup location ${payload.pickupLocationId} not found for product ${payload.productId}`,
         );
         throw new NotFoundException('Pickup location not found');
       }

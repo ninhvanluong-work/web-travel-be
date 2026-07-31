@@ -1,9 +1,8 @@
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from 'src/database/base.entity';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Product } from 'src/modules/product/entities/product.entity';
-import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
 
 export enum OptionStatus {
   ACTIVE = 'active',
@@ -68,7 +67,4 @@ export class Option extends BaseEntity {
     foreignKeyConstraintName: 'FK_Option_Product',
   })
   product: Product;
-
-  @OneToMany(() => PickupLocation, (pickupLocation) => pickupLocation.option)
-  pickupLocations: PickupLocation[];
 }

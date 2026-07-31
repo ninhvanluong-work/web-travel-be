@@ -97,9 +97,6 @@ export class OptionService {
     return this.optionRepository.findOne({
       where: { id },
       withDeleted,
-      relations: {
-        pickupLocations: true,
-      },
     });
   }
 

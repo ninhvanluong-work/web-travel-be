@@ -22,6 +22,7 @@ import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { Element } from 'src/modules/element/entities/element.entity';
 import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
+import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
 import { HeroVideoDto } from 'src/modules/product/dto/product-detail.dto';
 
 export enum ProductStatus {
@@ -193,8 +194,17 @@ export class Product extends BaseEntity {
   @OneToMany(() => Unit, (unit: Unit) => unit.product)
   units: Unit[];
 
-  @OneToMany(() => DepartureTime, (departureTime: DepartureTime) => departureTime.product)
+  @OneToMany(
+    () => DepartureTime,
+    (departureTime: DepartureTime) => departureTime.product,
+  )
   departureTimes: DepartureTime[];
+
+  @OneToMany(
+    () => PickupLocation,
+    (pickupLocation: PickupLocation) => pickupLocation.product,
+  )
+  pickupLocations: PickupLocation[];
 
   @OneToMany(() => Review, (review: Review) => review.product)
   reviews: Review[];

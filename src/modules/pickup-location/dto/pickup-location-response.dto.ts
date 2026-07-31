@@ -8,7 +8,7 @@ export class PickupLocationDto {
   id: string;
 
   @ApiProperty({ type: 'string', format: 'uuid' })
-  optionId: string;
+  productId: string;
 
   @ApiProperty({ example: 'pickup location name' })
   name: string;
