@@ -98,7 +98,9 @@ export class SessionService {
       where: condition,
       take: pageSize,
       relations: {
-        sessionUnits: true,
+        sessionUnits: {
+          unit: true,
+        },
       },
       skip,
       order: { travelDate: 'ASC' },
@@ -121,7 +123,9 @@ export class SessionService {
     return this.sessionRepository.findOne({
       where: { id },
       relations: {
-        sessionUnits: true,
+        sessionUnits: {
+          unit: true,
+        },
       },
       withDeleted,
     });

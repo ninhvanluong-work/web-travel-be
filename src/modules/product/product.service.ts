@@ -161,9 +161,6 @@ export class ProductService {
       }
     }
 
-    let day = 1;
-    let night = 1;
-
     if (elementIds && elementIds.length > 0) {
       this.logger.log(
         `${prefixLog} checking elementIds: ${JSON.stringify(elementIds)}`,
