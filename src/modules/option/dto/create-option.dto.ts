@@ -72,4 +72,14 @@ export class CreateOptionDto {
   @IsOptional()
   @IsString()
   currency?: string;
+
+  @ApiPropertyOptional({
+    isArray: true,
+    type: 'string',
+    description: 'Array of included items',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  include?: string[];
 }

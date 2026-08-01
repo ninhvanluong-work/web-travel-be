@@ -57,6 +57,15 @@ export class Option extends BaseEntity {
   @ApiProperty({ example: 'VND' })
   currency: string;
 
+  @Column({
+    type: 'varchar',
+    array: true,
+    nullable: true,
+    comment: 'array of included items',
+  })
+  @ApiProperty({ isArray: true, type: 'string', nullable: true })
+  include: string[];
+
   @Column({ type: 'uuid', name: 'product_id', nullable: true })
   @ApiProperty({ type: 'string', format: 'uuid', nullable: true })
   productId: string;

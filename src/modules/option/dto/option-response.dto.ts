@@ -35,6 +35,9 @@ export class OptionDto {
   @ApiProperty({ example: 'VND' })
   currency: string;
 
+  @ApiProperty({ isArray: true, type: 'string', nullable: true })
+  include: string[];
+
   @ApiProperty({ type: 'string', format: 'uuid', nullable: true })
   productId: string;
 
