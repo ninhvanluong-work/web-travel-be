@@ -55,9 +55,13 @@ export class PaymentService {
 
   async createPaypalOrder(userId: string, bookingId: string) {
     const prefix = this.prefix('createPaypalOrder', bookingId);
+
     const booking = await this.getPayableBooking(userId, bookingId);
 
-    const currency = this.configService.get<string>('PAYPAL_CURRENCY') || 'USD';
+    const currency =
+      booking.currency ||
+      this.configService.get<string>('PAYPAL_CURRENCY') ||
+      'USD';
 
     const order = await this.paypalService.createOrder({
       bookingCode: booking.bookingCode,
@@ -187,8 +191,7 @@ export class PaymentService {
   }
 
   async createDemoOrder(amount: number) {
-    const currency =
-      this.configService.get<string>('PAYPAL_CURRENCY') || 'USD';
+    const currency = this.configService.get<string>('PAYPAL_CURRENCY') || 'USD';
     const order = await this.paypalService.createOrder({
       bookingCode: `DEMO-${Date.now()}`,
       amount,

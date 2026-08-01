@@ -16,7 +16,7 @@ import { CreateDemoOrderDto } from 'src/modules/payment/dto/create-demo-order.dt
 
 import { formatApiResponse } from 'src/common/utils/format';
 import { UserId } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
+import { OptionalUserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
 class BookingIdParam {
@@ -34,9 +34,10 @@ export class PaymentController {
   @Get('config')
   @ApiResponse({
     status: 200,
-    description: 'public paypal config (client id + currency) for the demo page',
+    description:
+      'public paypal config (client id + currency) for the demo page',
   })
-  async getConfig() {
+  getConfig() {
     const result = this.paymentService.getPaypalPublicConfig();
     return formatApiResponse(result, HttpStatus.OK, 'paypal config');
   }
@@ -48,9 +49,7 @@ export class PaymentController {
       'DEMO ONLY: create a paypal order for a fixed amount, not tied to any booking',
   })
   async createDemoOrder(@Body() dto: CreateDemoOrderDto) {
-    const result = await this.paymentService.createDemoOrder(
-      dto.amount ?? 10,
-    );
+    const result = await this.paymentService.createDemoOrder(dto.amount ?? 10);
     return formatApiResponse(result, HttpStatus.OK, 'demo order created');
   }
 
@@ -66,7 +65,7 @@ export class PaymentController {
 
   @Post(':bookingId/create-order')
   @ApiBearerAuth(USER_TOKEN)
-  @UseGuards(UserGuard)
+  @UseGuards(OptionalUserGuard)
   @ApiResponse({
     status: 200,
     description:
@@ -74,7 +73,7 @@ export class PaymentController {
   })
   async createOrder(
     @UserId() userId: string,
-    @Param() { bookingId }: BookingIdParam,
+    @Param('bookingId') bookingId: string,
   ) {
     const result = await this.paymentService.createPaypalOrder(
       userId,
@@ -89,7 +88,7 @@ export class PaymentController {
 
   @Post(':bookingId/capture-order')
   @ApiBearerAuth(USER_TOKEN)
-  @UseGuards(UserGuard)
+  @UseGuards(OptionalUserGuard)
   @ApiResponse({
     status: 200,
     description:
@@ -97,7 +96,7 @@ export class PaymentController {
   })
   async captureOrder(
     @UserId() userId: string,
-    @Param() { bookingId }: BookingIdParam,
+    @Param('bookingId') bookingId: string,
     @Body() dto: CapturePaymentDto,
   ) {
     const result = await this.paymentService.capturePaypalOrder(
