@@ -20,7 +20,6 @@ import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 import { Tag } from 'src/modules/product/entities/tag.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { Element } from 'src/modules/element/entities/element.entity';
-import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
 import { Session } from 'src/modules/session/entities/session.entity';
@@ -195,9 +194,6 @@ export class Product extends BaseEntity {
 
   @OneToMany(() => Option, (option: Option) => option.product)
   options: Option[];
-
-  @OneToMany(() => Unit, (unit: Unit) => unit.product)
-  units: Unit[];
 
   @OneToMany(
     () => DepartureTime,

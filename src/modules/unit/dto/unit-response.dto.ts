@@ -7,9 +7,6 @@ export class UnitDto {
   })
   id: string;
 
-  @ApiProperty({ type: 'string', format: 'uuid' })
-  productId: string;
-
   @ApiProperty({ example: 'Adult' })
   name: string;
 

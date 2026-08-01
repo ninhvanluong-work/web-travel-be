@@ -128,7 +128,7 @@ export class BookingService {
 
     const unitIds = payload.passengers.map((passenger) => passenger.unitId);
     const units = await this.unitRepository.find({
-      where: { id: In(unitIds), productId: payload.productId },
+      where: { id: In(unitIds) },
     });
     const unitMap = new Map(units.map((unit) => [unit.id, unit]));
 
