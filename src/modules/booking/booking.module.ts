@@ -7,6 +7,7 @@ import { Option } from 'src/modules/option/entities/option.entity';
 import { Session } from 'src/modules/session/entities/session.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
 import { Unit } from 'src/modules/unit/entities/unit.entity';
+import { SessionUnit } from 'src/modules/session-unit/entities/session-unit.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
 
 import { BookingService } from './booking.service';
@@ -21,6 +22,7 @@ import { BookingController } from './booking.controller';
       Session,
       PickupLocation,
       Unit,
+      SessionUnit,
       DepartureTime,
     ]),
   ],

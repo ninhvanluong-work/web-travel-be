@@ -22,6 +22,7 @@ import {
 } from 'src/modules/session/entities/session.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
 import { Unit } from 'src/modules/unit/entities/unit.entity';
+import { SessionUnit } from 'src/modules/session-unit/entities/session-unit.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
 
 @Injectable()
@@ -45,6 +46,8 @@ export class BookingService {
     private readonly pickupLocationRepository: Repository<PickupLocation>,
     @InjectRepository(Unit)
     private readonly unitRepository: Repository<Unit>,
+    @InjectRepository(SessionUnit)
+    private readonly sessionUnitRepository: Repository<SessionUnit>,
     @InjectRepository(DepartureTime)
     private readonly departureTimeRepository: Repository<DepartureTime>,
   ) {}
@@ -132,10 +135,15 @@ export class BookingService {
     });
     const unitMap = new Map(units.map((unit) => [unit.id, unit]));
 
+    const sessionUnits = await this.sessionUnitRepository.find({
+      where: { sessionId: payload.tourSessionId, unitId: In(unitIds) },
+    });
+    const sessionUnitMap = new Map(
+      sessionUnits.map((sessionUnit) => [sessionUnit.unitId, sessionUnit]),
+    );
+
     let totalCount = 0;
-    // price is not sourced from Unit anymore (unit no longer carries price/capacity);
-    // pricing design is pending, so snapshot price stays 0 for now.
-    const totalPrice = 0;
+    let totalPrice = 0;
     const passengers: BookingPassenger[] = payload.passengers.map(
       (passenger) => {
         const unit = unitMap.get(passenger.unitId);
@@ -145,11 +153,22 @@ export class BookingService {
           );
           throw new BadRequestException(`Unit ${passenger.unitId} not found`);
         }
+        const sessionUnit = sessionUnitMap.get(passenger.unitId);
+        if (!sessionUnit) {
+          this.logger.warn(
+            `${prefix} rejected: unit ${passenger.unitId} not available for session ${session.id}`,
+          );
+          throw new BadRequestException(
+            `Unit ${passenger.unitId} not available for this session`,
+          );
+        }
+        const price = Number(sessionUnit.price);
         totalCount += passenger.count;
+        totalPrice += price * passenger.count;
         return {
           unitId: unit.id,
           unitName: unit.name,
-          price: 0,
+          price,
           count: passenger.count,
         };
       },
