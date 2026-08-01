@@ -20,8 +20,8 @@ import { SearchingModule } from './modules/searching/searching.module';
 import { TourGuideModule } from './modules/tour-guide/tour-guide.module';
 import { TagModule } from './modules/tag/tag.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { TourSessionModule } from './modules/tour-session/tour-session.module';
-import { UnitReferenceModule } from './modules/unit-reference/unit-reference.module';
+import { SessionModule } from './modules/session/session.module';
+import { UnitModule } from './modules/unit/unit.module';
 import { DepartureTimeModule } from './modules/departure-time/departure-time.module';
 import { BookingModule } from './modules/booking/booking.module';
 import { PaymentModule } from './modules/payment/payment.module';
@@ -49,8 +49,8 @@ import { PaymentModule } from './modules/payment/payment.module';
     TourGuideModule,
     TagModule,
     AuthModule,
-    TourSessionModule,
-    UnitReferenceModule,
+    SessionModule,
+    UnitModule,
     DepartureTimeModule,
     BookingModule,
     PaymentModule,

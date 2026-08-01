@@ -5,7 +5,7 @@ import { User } from 'src/modules/user/entities/user.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
-import { TourSession } from 'src/modules/tour-session/entities/tour-session.entity';
+import { Session } from 'src/modules/session/entities/session.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
 
 export enum BookingStatus {
@@ -21,11 +21,13 @@ export interface BookingPassenger {
   count: number;
 }
 
+export interface BookingMessengerApp {
+  name: string;
+  username: string;
+}
+
 @Entity('booking')
 export class Booking extends BaseEntity {
-  @Column({ name: 'booking_date', type: 'timestamptz', nullable: true })
-  bookingDate: Date;
-
   @Column({ name: 'travel_date', type: 'timestamptz', nullable: true })
   travelDate: Date;
 
@@ -56,6 +58,9 @@ export class Booking extends BaseEntity {
   })
   totalPrice: number;
 
+  @Column({ nullable: true, default: 'VND', length: 10 })
+  currency: string;
+
   @Column({ name: 'product_name', nullable: true, length: 500 })
   productName: string;
 
@@ -80,6 +85,15 @@ export class Booking extends BaseEntity {
 
   @Column({ nullable: true, length: 255 })
   phone?: string;
+
+  @Column({ nullable: true, length: 255 })
+  username?: string;
+
+  @Column({ name: 'messenger_app', type: 'jsonb', default: () => "'[]'" })
+  messengerApp: BookingMessengerApp[];
+
+  @Column({ name: 'option_name', nullable: true, length: 500 })
+  optionName: string;
 
   @Column({ name: 'user_id', type: 'uuid', nullable: true })
   userId: string;
@@ -112,12 +126,12 @@ export class Booking extends BaseEntity {
   })
   pickupLocation: PickupLocation;
 
-  @ManyToOne(() => TourSession)
+  @ManyToOne(() => Session)
   @JoinColumn({
     name: 'tour_session_id',
     foreignKeyConstraintName: 'Fk_Booking_TourSession',
   })
-  tourSession: TourSession;
+  tourSession: Session;
 
   @ManyToOne(() => DepartureTime)
   @JoinColumn({

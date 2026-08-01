@@ -49,7 +49,7 @@ export class DepartureTimeController {
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'list departure times of an option',
+    description: 'list departure times of a product',
     schema: {
       properties: {
         data: {
@@ -63,7 +63,9 @@ export class DepartureTimeController {
     },
   })
   async list(@Query() query: GetDepartureTimeDto) {
-    const result = await this.departureTimeService.findByOption(query.optionId);
+    const result = await this.departureTimeService.findByProduct(
+      query.productId,
+    );
     return formatApiResponse(result, HttpStatus.OK, 'ok');
   }
 

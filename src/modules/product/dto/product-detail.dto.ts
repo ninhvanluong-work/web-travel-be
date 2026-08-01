@@ -131,6 +131,9 @@ export class ProductDetailDto {
   @ApiProperty({ example: 1500000 })
   minPrice: number;
 
+  @ApiProperty({ example: 'VND' })
+  currency: string;
+
   @ApiProperty({ example: 4.5 })
   reviewPoint: number;
 

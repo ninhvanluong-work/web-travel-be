@@ -9,12 +9,12 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { TourSessionStatus } from '../entities/tour-session.entity';
+import { SessionStatus } from '../entities/session.entity';
 
-export class CreateTourSessionDto {
+export class CreateSessionDto {
   @ApiProperty({ example: '42b1a09c-6fcb-4826-ba50-dfa24330c4f0' })
   @IsUUID()
-  optionId: string;
+  productId: string;
 
   @ApiProperty({ example: '2026-08-01T00:00:00.000Z' })
   @IsDateString()
@@ -28,13 +28,13 @@ export class CreateTourSessionDto {
   @Type(() => Number)
   @IsInt()
   @Min(0)
-  remainingSlot?: number;
+  capacity?: number;
 
   @ApiPropertyOptional({
-    enum: TourSessionStatus,
-    default: TourSessionStatus.INACTIVE,
+    enum: SessionStatus,
+    default: SessionStatus.INACTIVE,
   })
   @IsOptional()
-  @IsEnum(TourSessionStatus)
-  status?: TourSessionStatus;
+  @IsEnum(SessionStatus)
+  status?: SessionStatus;
 }

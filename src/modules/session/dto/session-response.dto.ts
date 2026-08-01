@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TourSessionStatus } from '../entities/tour-session.entity';
-import { UnitReferenceDto } from 'src/modules/unit-reference/dto/unit-reference-response.dto';
+import { SessionStatus } from '../entities/session.entity';
+import { SessionUnitDto } from 'src/modules/session-unit/dto/session-unit-response.dto';
 
-export class TourSessionDto {
+export class SessionDto {
   @ApiProperty({
     type: 'string',
     example: '0df1ec7e-166e-4209-810a-23156b3b0489',
@@ -10,19 +10,19 @@ export class TourSessionDto {
   id: string;
 
   @ApiProperty({ type: 'string', format: 'uuid', nullable: true })
-  optionId: string;
+  productId: string;
 
   @ApiProperty({ type: 'string', format: 'date-time', nullable: true })
   travelDate: Date;
 
   @ApiProperty({ example: 20 })
-  remainingSlot: number;
+  capacity: number;
 
-  @ApiProperty({ type: [UnitReferenceDto] })
-  unitReferences: UnitReferenceDto[];
+  @ApiProperty({ enum: SessionStatus })
+  status: SessionStatus;
 
-  @ApiProperty({ enum: TourSessionStatus })
-  status: TourSessionStatus;
+  @ApiProperty({ type: () => [SessionUnitDto] })
+  sessionUnits: SessionUnitDto[];
 
   @ApiProperty({ type: 'string', format: 'date-time' })
   createdAt: Date;

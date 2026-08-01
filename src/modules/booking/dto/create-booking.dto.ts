@@ -23,6 +23,16 @@ export class BookingPassengerInputDto {
   count: number;
 }
 
+export class BookingMessengerAppInputDto {
+  @ApiProperty({ example: "What's app" })
+  @IsString()
+  name: string;
+
+  @ApiProperty({ example: 'sdgsdg' })
+  @IsString()
+  username: string;
+}
+
 export class CreateBookingDto {
   @ApiProperty({ example: '42b1a09c-6fcb-4826-ba50-dfa24330c4f0' })
   @IsUUID()
@@ -61,4 +71,16 @@ export class CreateBookingDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @ApiPropertyOptional({ example: 'johndoe' })
+  @IsOptional()
+  @IsString()
+  username?: string;
+
+  @ApiPropertyOptional({ type: [BookingMessengerAppInputDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BookingMessengerAppInputDto)
+  messengerApp?: BookingMessengerAppInputDto[];
 }

@@ -98,6 +98,11 @@ export class CreateProductDto {
   @IsNumber()
   minPrice?: number;
 
+  @ApiPropertyOptional({ example: 'VND' })
+  @IsOptional()
+  @IsString()
+  currency?: string;
+
   @ApiPropertyOptional({ example: '42b1a09c-6fcb-4826-ba50-dfa24330c4f0' })
   @IsOptional()
   @IsUUID()

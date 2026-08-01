@@ -20,6 +20,9 @@ import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 import { Tag } from 'src/modules/product/entities/tag.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { Element } from 'src/modules/element/entities/element.entity';
+import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
+import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
+import { Session } from 'src/modules/session/entities/session.entity';
 import { HeroVideoDto } from 'src/modules/product/dto/product-detail.dto';
 
 export enum ProductStatus {
@@ -159,6 +162,10 @@ export class Product extends BaseEntity {
   @Column({ type: 'int', name: 'review_count', default: 0 })
   reviewCount: number;
 
+  @ApiProperty({ example: 'VND' })
+  @Column({ name: 'currency', nullable: true, default: 'VND' })
+  currency: string;
+
   @Column({ type: 'uuid', name: 'destination_id' })
   destinationId: string;
 
@@ -187,6 +194,21 @@ export class Product extends BaseEntity {
 
   @OneToMany(() => Option, (option: Option) => option.product)
   options: Option[];
+
+  @OneToMany(
+    () => DepartureTime,
+    (departureTime: DepartureTime) => departureTime.product,
+  )
+  departureTimes: DepartureTime[];
+
+  @OneToMany(
+    () => PickupLocation,
+    (pickupLocation: PickupLocation) => pickupLocation.product,
+  )
+  pickupLocations: PickupLocation[];
+
+  @OneToMany(() => Session, (session: Session) => session.product)
+  sessions: Session[];
 
   @OneToMany(() => Review, (review: Review) => review.product)
   reviews: Review[];

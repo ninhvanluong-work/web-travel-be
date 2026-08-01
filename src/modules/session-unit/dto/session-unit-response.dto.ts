@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class PickupLocationDto {
+export class SessionUnitDto {
   @ApiProperty({
     type: 'string',
     example: '0df1ec7e-166e-4209-810a-23156b3b0489',
@@ -8,22 +8,13 @@ export class PickupLocationDto {
   id: string;
 
   @ApiProperty({ type: 'string', format: 'uuid' })
-  productId: string;
+  sessionId: string;
 
-  @ApiProperty({ example: 'pickup location name' })
-  name: string;
+  @ApiProperty({ type: 'string', format: 'uuid' })
+  unitId: string;
 
-  @ApiProperty({ nullable: true })
-  address: string;
-
-  @ApiProperty({ default: false })
-  isPopular: boolean;
-
-  @ApiProperty({ nullable: true })
-  mapUrl: string;
-
-  @ApiProperty({ default: 0 })
-  order: number;
+  @ApiProperty({ example: 1500000, description: 'giá của unit trong session này' })
+  price: number;
 
   @ApiProperty({ type: 'string', format: 'date-time' })
   createdAt: Date;

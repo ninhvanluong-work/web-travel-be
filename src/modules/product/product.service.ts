@@ -33,6 +33,8 @@ import { HeroVideoDto } from 'src/modules/product/dto/product-detail.dto';
 import ELEMENT_KEY from 'src/modules/element/element.type';
 import { OptionService } from 'src/modules/option/option.service';
 import { OptionStatus } from 'src/modules/option/entities/option.entity';
+import { DepartureTimeService } from 'src/modules/departure-time/departure-time.service';
+import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
 
 @Injectable()
 export class ProductService {
@@ -53,9 +55,12 @@ export class ProductService {
     private readonly tagRepository: Repository<Tag>,
     @InjectRepository(TourGuide)
     private readonly tourGuideRepository: Repository<TourGuide>,
+    @InjectRepository(PickupLocation)
+    private readonly pickupLocationRepository: Repository<PickupLocation>,
 
     private readonly elementService: ElementService,
     private readonly optionService: OptionService,
+    private readonly departureTimeService: DepartureTimeService,
   ) {}
 
   async create(payload: CreateProductDto) {
@@ -156,9 +161,6 @@ export class ProductService {
       }
     }
 
-    let day = 1;
-    let night = 1;
-
     if (elementIds && elementIds.length > 0) {
       this.logger.log(
         `${prefixLog} checking elementIds: ${JSON.stringify(elementIds)}`,
@@ -173,26 +175,8 @@ export class ProductService {
       if (elements.length > 0) {
         result.elements = elements;
         await this.productRepository.save(result);
-        //find day night element
-        const dayElem = elements.find((e) => e.key === ELEMENT_KEY.DAY);
-        const nightElem = elements.find((e) => e.key === ELEMENT_KEY.NIGHT);
-        day = dayElem ? parseInt(dayElem.name) : 0;
-        night = nightElem ? parseInt(nightElem.name) : 0;
       }
     }
-
-    this.logger.log(
-      `${prefixLog} creating default option for product: ${result.id}`,
-    );
-    await this.optionService.create({
-      productId: result.id,
-      title: name,
-      description: payload.description,
-      day,
-      night,
-      status: OptionStatus.ACTIVE,
-      isDefault: true,
-    });
 
     return result;
   }
@@ -297,7 +281,6 @@ export class ProductService {
         tags: true,
         supplier: true,
         elements: true,
-        options: true,
       },
     });
 
@@ -324,6 +307,25 @@ export class ProductService {
     }
 
     return product;
+  }
+
+  async getProductBookingInfo(id: string) {
+    const product = await this.findByPk(id);
+    if (!product) throw new NotFoundException('Product Not Found');
+
+    const [departureTimes, pickupLocations, options] = await Promise.all([
+      this.departureTimeService.findByProduct(id),
+      this.pickupLocationRepository.find({
+        where: { productId: id },
+        order: { order: 'ASC' },
+      }),
+      this.optionService.find({
+        where: { productId: id, status: OptionStatus.ACTIVE },
+        order: { order: 'ASC' },
+      }),
+    ]);
+
+    return { departureTimes, pickupLocations, options };
   }
 
   async findOne(options: FindOneOptions<Product>) {

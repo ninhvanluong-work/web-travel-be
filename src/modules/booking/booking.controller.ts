@@ -12,7 +12,7 @@ import { BookingService } from 'src/modules/booking/booking.service';
 
 import { formatApiResponse } from 'src/common/utils/format';
 import { UserId } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
+import { OptionalUserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('booking')
@@ -22,7 +22,7 @@ export class BookingController {
 
   @Post()
   @ApiBearerAuth(USER_TOKEN)
-  @UseGuards(UserGuard)
+  @UseGuards(OptionalUserGuard)
   @ApiResponse({
     status: 200,
     description: 'create booking',
