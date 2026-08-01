@@ -21,6 +21,11 @@ export interface BookingPassenger {
   count: number;
 }
 
+export interface BookingMessengerApp {
+  name: string;
+  username: string;
+}
+
 @Entity('booking')
 export class Booking extends BaseEntity {
   @Column({ name: 'travel_date', type: 'timestamptz', nullable: true })
@@ -80,6 +85,15 @@ export class Booking extends BaseEntity {
 
   @Column({ nullable: true, length: 255 })
   phone?: string;
+
+  @Column({ nullable: true, length: 255 })
+  username?: string;
+
+  @Column({ name: 'messenger_app', type: 'jsonb', default: () => "'[]'" })
+  messengerApp: BookingMessengerApp[];
+
+  @Column({ name: 'option_name', nullable: true, length: 500 })
+  optionName: string;
 
   @Column({ name: 'user_id', type: 'uuid', nullable: true })
   userId: string;
