@@ -178,12 +178,12 @@ export class BookingService {
       `${prefix} snapshot passengers=${JSON.stringify(passengers)} totalCount=${totalCount} totalPrice=${totalPrice}`,
     );
 
-    if (session.capacity < totalCount) {
-      this.logger.warn(
-        `${prefix} rejected: not enough capacity (remaining=${session.capacity}, requested=${totalCount})`,
-      );
-      throw new BadRequestException('Not enough remaining slot');
-    }
+    //if (session.capacity < totalCount) {
+    //  this.logger.warn(
+    //    `${prefix} rejected: not enough capacity (remaining=${session.capacity}, requested=${totalCount})`,
+    //  );
+    //  throw new BadRequestException('Not enough remaining slot');
+    //}
 
     const booking = this.bookingRepository.create({
       userId,
