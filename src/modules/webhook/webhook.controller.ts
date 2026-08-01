@@ -11,12 +11,15 @@ import { ConfigService } from '@nestjs/config';
 
 import { WebhookService } from './webhook.service';
 import { BunnyWebhookPayload } from 'src/modules/webhook/types/bunny-webhook.type';
+import { PaypalWebhookEvent } from 'src/modules/payment/types/paypal.type';
+import { PaypalService } from 'src/modules/payment/paypal.service';
 
 @Controller('webhook')
 export class WebhookController {
   constructor(
     private readonly webhookService: WebhookService,
     private readonly configService: ConfigService,
+    private readonly paypalService: PaypalService,
   ) {}
 
   validateWebhookSignature(
@@ -89,6 +92,52 @@ export class WebhookController {
 
     const data = JSON.parse(rawBody) as BunnyWebhookPayload;
     await this.webhookService.handleBunnyWebhook(data);
+
+    return { success: true };
+  }
+
+  @Post('/paypal')
+  async handlePaypalWebhook(
+    @Req() req: Request & { rawBody?: Buffer },
+    @Headers('paypal-auth-algo') authAlgo: string,
+    @Headers('paypal-cert-url') certUrl: string,
+    @Headers('paypal-transmission-id') transmissionId: string,
+    @Headers('paypal-transmission-sig') transmissionSig: string,
+    @Headers('paypal-transmission-time') transmissionTime: string,
+  ) {
+    if (
+      !authAlgo ||
+      !certUrl ||
+      !transmissionId ||
+      !transmissionSig ||
+      !transmissionTime
+    ) {
+      throw new UnauthorizedException('Missing paypal signature headers');
+    }
+
+    const rawBody = req.rawBody?.toString('utf8');
+    if (!rawBody) {
+      throw new UnauthorizedException('Missing body');
+    }
+
+    const event = JSON.parse(rawBody) as PaypalWebhookEvent;
+
+    const isValid = await this.paypalService.verifyWebhookSignature(
+      {
+        'paypal-auth-algo': authAlgo,
+        'paypal-cert-url': certUrl,
+        'paypal-transmission-id': transmissionId,
+        'paypal-transmission-sig': transmissionSig,
+        'paypal-transmission-time': transmissionTime,
+      },
+      event,
+    );
+
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid paypal webhook signature');
+    }
+
+    await this.webhookService.handlePaypalWebhook(event);
 
     return { success: true };
   }

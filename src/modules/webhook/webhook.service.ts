@@ -6,6 +6,8 @@ import {
   BunnyVideoStatus,
   BunnyWebhookPayload,
 } from 'src/modules/webhook/types/bunny-webhook.type';
+import { PaymentService } from 'src/modules/payment/payment.service';
+import { PaypalWebhookEvent } from 'src/modules/payment/types/paypal.type';
 
 @Injectable()
 export class WebhookService {
@@ -16,6 +18,7 @@ export class WebhookService {
   constructor(
     private readonly videoService: VideoService,
     private readonly configService: ConfigService,
+    private readonly paymentService: PaymentService,
   ) {
     this.bunnyApiKey = this.configService.get<'string'>(
       'BUNNY_API_KEY',
@@ -43,5 +46,31 @@ export class WebhookService {
       });
     }
     this.logger.log(`${prefixLog} update status successfully!`);
+  }
+
+  async handlePaypalWebhook(event: PaypalWebhookEvent) {
+    const prefixLog = `[handlePaypalWebhook] eventId=${event.id} type=${event.event_type}`;
+    this.logger.log(prefixLog);
+
+    if (event.event_type !== 'PAYMENT.CAPTURE.COMPLETED') {
+      this.logger.debug(`${prefixLog} ignored (unhandled event type)`);
+      return;
+    }
+
+    const orderId = event.resource?.supplementary_data?.related_ids
+      ?.order_id as string | undefined;
+    const captureId = event.resource?.id as string | undefined;
+
+    if (!orderId || !captureId) {
+      this.logger.warn(`${prefixLog} missing orderId/captureId in resource`);
+      return;
+    }
+
+    await this.paymentService.markPaymentSucceededByOrderId(
+      orderId,
+      captureId,
+      event.resource,
+    );
+    this.logger.log(`${prefixLog} orderId=${orderId} marked as succeeded`);
   }
 }
