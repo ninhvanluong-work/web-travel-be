@@ -13,7 +13,12 @@ import {
   In,
   FindOneOptions,
 } from 'typeorm';
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Product } from 'src/modules/product/entities/product.entity';
@@ -87,6 +92,7 @@ export class ProductService {
     const slug = generateSlug(name);
     const code = generateRandomCode(8);
 
+    // destination/supplier phải tồn tại trước khi tạo product
     if (destinationId) {
       this.logger.log(`${prefixLog} checking destination: ${destinationId}`);
       const destination = await this.destinationRepository.findOne({
@@ -116,6 +122,7 @@ export class ProductService {
 
     const result = await this.productRepository.save(newProduct);
 
+    // gán video được chọn làm hero video của product vừa tạo
     if (heroVideoId) {
       this.logger.log(`${prefixLog} checking heroVideoId: ${heroVideoId}`);
 
@@ -136,6 +143,7 @@ export class ProductService {
       );
     }
 
+    // gắn danh sách tag (quan hệ nhiều-nhiều) cho product
     if (tagIds && tagIds.length > 0) {
       this.logger.log(
         `${prefixLog} checking tagIds: ${JSON.stringify(tagIds)}`,
@@ -152,6 +160,7 @@ export class ProductService {
       }
     }
 
+    // gắn danh sách tour guide (quan hệ nhiều-nhiều) cho product
     if (tourGuideIds && tourGuideIds.length > 0) {
       this.logger.log(
         `${prefixLog} checking tour guide: ${JSON.stringify(tourGuideIds)}`,
@@ -168,6 +177,7 @@ export class ProductService {
       }
     }
 
+    // gắn danh sách element (quan hệ nhiều-nhiều) cho product
     if (elementIds && elementIds.length > 0) {
       this.logger.log(
         `${prefixLog} checking elementIds: ${JSON.stringify(elementIds)}`,
@@ -185,6 +195,7 @@ export class ProductService {
       }
     }
 
+    // tạo option cho product, chưa cần id vì đây là tạo mới
     if (options && options.length > 0) {
       this.logger.log(`${prefixLog} creating options: ${options.length}`);
 
@@ -195,6 +206,7 @@ export class ProductService {
       );
     }
 
+    // tạo departure time cho product
     if (departureTimes && departureTimes.length > 0) {
       this.logger.log(
         `${prefixLog} creating departure times: ${departureTimes.length}`,
@@ -210,6 +222,7 @@ export class ProductService {
       );
     }
 
+    // tạo pickup location cho product
     if (pickupLocations && pickupLocations.length > 0) {
       this.logger.log(
         `${prefixLog} creating pickup locations: ${pickupLocations.length}`,
@@ -225,6 +238,7 @@ export class ProductService {
         await this.pickupLocationRepository.save(newPickupLocations);
     }
 
+    // tạo unit cho product
     if (units && units.length > 0) {
       this.logger.log(`${prefixLog} creating units: ${units.length}`);
 
@@ -344,10 +358,12 @@ export class ProductService {
       },
     });
 
+    // chỉ trả về các element đang active
     if (product?.elements) {
       product.elements = product?.elements.filter((e) => e.isActive);
     }
 
+    // lấy hero video riêng vì Video không có quan hệ trực tiếp trong relations ở trên
     if (product) {
       const productHeroVideo = await this.videoRepository.findOne({
         select: {
@@ -431,6 +447,7 @@ export class ProductService {
       }
     }
 
+    // đổi hero video: bỏ hero video cũ (nếu có) rồi gán video mới làm hero
     if (heroVideoId) {
       const video = await this.videoRepository.findOne({
         where: { id: heroVideoId },
@@ -452,6 +469,7 @@ export class ProductService {
       delete updateProductDto.heroVideoId;
     }
 
+    // itinerary: xoá hết bản ghi cũ và tạo lại toàn bộ từ danh sách mới (không cần theo id)
     if (itineraries) {
       await this.itineraryRepository.softDelete({ productId: id });
       const newItins = itineraries.map((itinerary) =>
@@ -467,6 +485,7 @@ export class ProductService {
       delete updateProductDto.itineraries;
     }
 
+    // gán lại danh sách tag (quan hệ nhiều-nhiều) cho product
     if (tagIds && tagIds?.length > 0) {
       const tags = await this.tagRepository.find({
         where: {
@@ -478,6 +497,7 @@ export class ProductService {
       delete updateProductDto.tagIds;
     }
 
+    // gán lại danh sách tour guide (quan hệ nhiều-nhiều) cho product
     if (tourGuideIds && tourGuideIds?.length > 0) {
       const tourGuides = await this.tourGuideRepository.find({
         where: {
@@ -489,6 +509,7 @@ export class ProductService {
       delete updateProductDto.tourGuideIds;
     }
 
+    // gán lại danh sách element (quan hệ nhiều-nhiều) cho product
     if (elementIds && elementIds?.length > 0) {
       const elements = await this.elementService.find({
         where: {
@@ -500,66 +521,191 @@ export class ProductService {
       delete updateProductDto.elementIds;
     }
 
-    if (options && options.length > 0) {
+    // đồng bộ danh sách option theo id: có id -> update phần được gửi lên,
+    // không có id -> tạo mới, id cũ của product mà không còn trong danh sách -> xoá (soft delete)
+    if (options !== undefined) {
+      const existingOptions = await this.optionService.find({
+        where: { productId: id },
+      });
+      const existingIds = new Set(existingOptions.map((o) => o.id));
+      const keepIds = new Set<string>();
+
       for (const option of options) {
         const { id: optionId, ...fields } = option;
-        const existingOption = await this.optionService.findOneById(optionId);
-        if (!existingOption || existingOption.productId !== id) {
-          throw new NotFoundException(`Option ${optionId} Not Found`);
+        if (optionId) {
+          // có id -> update option đã tồn tại, phải thuộc đúng product này
+          if (!existingIds.has(optionId)) {
+            throw new NotFoundException(`Option ${optionId} Not Found`);
+          }
+          keepIds.add(optionId);
+          await this.optionService.update(optionId, fields);
+        } else {
+          // không có id -> tạo option mới, title là field bắt buộc khi tạo
+          const { title, ...restFields } = fields;
+          if (!title) {
+            throw new BadRequestException(
+              'title is required to create a new option',
+            );
+          }
+          await this.optionService.create({
+            ...restFields,
+            title,
+            productId: id,
+          });
         }
-        await this.optionService.update(optionId, fields);
       }
+
+      // option cũ của product mà không nằm trong danh sách gửi lên -> xoá
+      const optionsToRemove = existingOptions.filter((o) => !keepIds.has(o.id));
+      for (const option of optionsToRemove) {
+        await this.optionService.remove(option.id);
+      }
+
       delete updateProductDto.options;
     }
 
-    if (departureTimes && departureTimes.length > 0) {
+    // đồng bộ danh sách departure time theo id, cùng logic như option ở trên
+    if (departureTimes !== undefined) {
+      const existingDepartureTimes =
+        await this.departureTimeService.findByProduct(id);
+      const existingIds = new Set(existingDepartureTimes.map((d) => d.id));
+      const keepIds = new Set<string>();
+
       for (const departureTime of departureTimes) {
         const { id: departureTimeId, ...fields } = departureTime;
-        const existingDepartureTime =
-          await this.departureTimeService.findOneById(departureTimeId);
-        if (!existingDepartureTime || existingDepartureTime.productId !== id) {
-          throw new NotFoundException(
-            `Departure Time ${departureTimeId} Not Found`,
-          );
+        if (departureTimeId) {
+          // có id -> update, phải thuộc đúng product này
+          if (!existingIds.has(departureTimeId)) {
+            throw new NotFoundException(
+              `Departure Time ${departureTimeId} Not Found`,
+            );
+          }
+          keepIds.add(departureTimeId);
+          await this.departureTimeService.update(departureTimeId, fields);
+        } else {
+          // không có id -> tạo mới, time là field bắt buộc khi tạo
+          const { time, ...restFields } = fields;
+          if (!time) {
+            throw new BadRequestException(
+              'time is required to create a new departure time',
+            );
+          }
+          await this.departureTimeService.create({
+            ...restFields,
+            time,
+            productId: id,
+          });
         }
-        await this.departureTimeService.update(departureTimeId, fields);
       }
+
+      // departure time cũ không còn trong danh sách gửi lên -> xoá
+      const departureTimesToRemove = existingDepartureTimes.filter(
+        (d) => !keepIds.has(d.id),
+      );
+      for (const departureTime of departureTimesToRemove) {
+        await this.departureTimeService.remove(departureTime.id);
+      }
+
       delete updateProductDto.departureTimes;
     }
 
-    if (pickupLocations && pickupLocations.length > 0) {
+    // đồng bộ danh sách pickup location theo id, cùng logic như option ở trên.
+    // pickupLocation không có service riêng nên thao tác thẳng qua repository
+    if (pickupLocations !== undefined) {
+      const existingPickupLocations = await this.pickupLocationRepository.find({
+        where: { productId: id },
+      });
+      const keepIds = new Set<string>();
+
       for (const pickupLocation of pickupLocations) {
         const { id: pickupLocationId, ...fields } = pickupLocation;
-        const existingPickupLocation =
-          await this.pickupLocationRepository.findOne({
-            where: { id: pickupLocationId },
-          });
-        if (
-          !existingPickupLocation ||
-          existingPickupLocation.productId !== id
-        ) {
-          throw new NotFoundException(
-            `Pickup Location ${pickupLocationId} Not Found`,
+        if (pickupLocationId) {
+          // có id -> update, phải thuộc đúng product này
+          const existing = existingPickupLocations.find(
+            (p) => p.id === pickupLocationId,
           );
+          if (!existing) {
+            throw new NotFoundException(
+              `Pickup Location ${pickupLocationId} Not Found`,
+            );
+          }
+          keepIds.add(pickupLocationId);
+          Object.assign(existing, fields);
+          await this.pickupLocationRepository.save(existing);
+        } else {
+          // không có id -> tạo mới, name là field bắt buộc khi tạo
+          const { name, ...restFields } = fields;
+          if (!name) {
+            throw new BadRequestException(
+              'name is required to create a new pickup location',
+            );
+          }
+          const newPickupLocation = this.pickupLocationRepository.create({
+            ...restFields,
+            name,
+            productId: id,
+          });
+          await this.pickupLocationRepository.save(newPickupLocation);
         }
-        Object.assign(existingPickupLocation, fields);
-        await this.pickupLocationRepository.save(existingPickupLocation);
       }
+
+      // pickup location cũ không còn trong danh sách gửi lên -> xoá
+      const pickupLocationIdsToRemove = existingPickupLocations
+        .filter((p) => !keepIds.has(p.id))
+        .map((p) => p.id);
+      if (pickupLocationIdsToRemove.length > 0) {
+        await this.pickupLocationRepository.softDelete(
+          pickupLocationIdsToRemove,
+        );
+      }
+
       delete updateProductDto.pickupLocations;
     }
 
-    if (units && units.length > 0) {
+    // đồng bộ danh sách unit theo id, cùng logic như option ở trên.
+    // unit không có service riêng nên thao tác thẳng qua repository
+    if (units !== undefined) {
+      const existingUnits = await this.unitRepository.find({
+        where: { productId: id },
+      });
+      const keepIds = new Set<string>();
+
       for (const unit of units) {
         const { id: unitId, ...fields } = unit;
-        const existingUnit = await this.unitRepository.findOne({
-          where: { id: unitId },
-        });
-        if (!existingUnit || existingUnit.productId !== id) {
-          throw new NotFoundException(`Unit ${unitId} Not Found`);
+        if (unitId) {
+          // có id -> update, phải thuộc đúng product này
+          const existing = existingUnits.find((u) => u.id === unitId);
+          if (!existing) {
+            throw new NotFoundException(`Unit ${unitId} Not Found`);
+          }
+          keepIds.add(unitId);
+          Object.assign(existing, fields);
+          await this.unitRepository.save(existing);
+        } else {
+          // không có id -> tạo mới, name là field bắt buộc khi tạo
+          const { name, ...restFields } = fields;
+          if (!name) {
+            throw new BadRequestException(
+              'name is required to create a new unit',
+            );
+          }
+          const newUnit = this.unitRepository.create({
+            ...restFields,
+            name,
+            productId: id,
+          });
+          await this.unitRepository.save(newUnit);
         }
-        Object.assign(existingUnit, fields);
-        await this.unitRepository.save(existingUnit);
       }
+
+      // unit cũ không còn trong danh sách gửi lên -> xoá
+      const unitIdsToRemove = existingUnits
+        .filter((u) => !keepIds.has(u.id))
+        .map((u) => u.id);
+      if (unitIdsToRemove.length > 0) {
+        await this.unitRepository.softDelete(unitIdsToRemove);
+      }
+
       delete updateProductDto.units;
     }
 
