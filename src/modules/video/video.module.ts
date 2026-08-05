@@ -24,6 +24,7 @@ import { OptionService } from 'src/modules/option/option.service';
 import { Option } from 'src/modules/option/entities/option.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
 import { DepartureTimeModule } from 'src/modules/departure-time/departure-time.module';
+import { Unit } from 'src/modules/unit/entities/unit.entity';
 @Module({
   controllers: [VideoController],
   imports: [
@@ -37,6 +38,7 @@ import { DepartureTimeModule } from 'src/modules/departure-time/departure-time.m
       TourGuide,
       Option,
       PickupLocation,
+      Unit,
     ]),
     EmbeddingModule,
     ConfigModule,

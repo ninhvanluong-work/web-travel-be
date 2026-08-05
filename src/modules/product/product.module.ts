@@ -14,6 +14,7 @@ import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 import { Video } from 'src/modules/video/entities/video.entity';
 import { Itinerary } from 'src/modules/Itinerary/entities/itinerary.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
+import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { ReviewModule } from 'src/modules/review/review.module';
 import { ElementModule } from 'src/modules/element/element.module';
 import { OptionModule } from 'src/modules/option/option.module';
@@ -31,6 +32,7 @@ import { DepartureTimeModule } from 'src/modules/departure-time/departure-time.m
       Video,
       Itinerary,
       PickupLocation,
+      Unit,
     ]),
     ReviewModule,
     ElementModule,

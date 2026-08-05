@@ -21,6 +21,7 @@ import {
 import { CreateOptionDto } from 'src/modules/option/dto/create-option.dto';
 import { CreateDepartureTimeDto } from 'src/modules/departure-time/dto/create-departure-time.dto';
 import { CreatePickupLocationDto } from 'src/modules/pickup-location/dto/create-pickup-location.dto';
+import { CreateUnitDto } from 'src/modules/unit/dto/create-unit.dto';
 
 export class ItineraryDto {
   @ApiProperty({ example: 'itinerary title' })
@@ -51,6 +52,10 @@ export class ProductPickupLocationItemDto extends OmitType(
   CreatePickupLocationDto,
   ['productId'] as const,
 ) {}
+
+export class ProductUnitItemDto extends OmitType(CreateUnitDto, [
+  'productId',
+] as const) {}
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Hạ Long Bay Tour' })
@@ -246,4 +251,11 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => ProductPickupLocationItemDto)
   pickupLocations?: ProductPickupLocationItemDto[];
+
+  @ApiPropertyOptional({ isArray: true, type: ProductUnitItemDto })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductUnitItemDto)
+  units?: ProductUnitItemDto[];
 }

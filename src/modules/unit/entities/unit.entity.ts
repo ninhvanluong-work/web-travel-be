@@ -15,8 +15,8 @@ export class Unit extends BaseEntity {
   @ApiProperty({ nullable: true })
   note: string;
 
-  @Column({ type: 'uuid', name: 'product_id' })
-  @ApiProperty({ type: 'string', format: 'uuid' })
+  @Column({ type: 'uuid', name: 'product_id', nullable: true })
+  @ApiProperty({ type: 'string', format: 'uuid', nullable: true })
   productId: string;
 
   @ManyToOne(() => Product, (product: Product) => product.units)

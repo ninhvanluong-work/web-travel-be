@@ -12,6 +12,7 @@ import {
   ProductOptionItemDto,
   ProductDepartureTimeItemDto,
   ProductPickupLocationItemDto,
+  ProductUnitItemDto,
 } from './create-product.dto';
 
 export class UpdateProductOptionItemDto extends PartialType(
@@ -38,11 +39,18 @@ export class UpdateProductPickupLocationItemDto extends PartialType(
   id: string;
 }
 
+export class UpdateProductUnitItemDto extends PartialType(ProductUnitItemDto) {
+  @ApiProperty({ example: '42b1a09c-6fcb-4826-ba50-dfa24330c4f0' })
+  @IsUUID()
+  id: string;
+}
+
 export class UpdateProductDto extends PartialType(
   OmitType(CreateProductDto, [
     'options',
     'departureTimes',
     'pickupLocations',
+    'units',
   ] as const),
 ) {
   @ApiPropertyOptional({ isArray: true, type: UpdateProductOptionItemDto })
@@ -71,4 +79,11 @@ export class UpdateProductDto extends PartialType(
   @ValidateNested({ each: true })
   @Type(() => UpdateProductPickupLocationItemDto)
   pickupLocations?: UpdateProductPickupLocationItemDto[];
+
+  @ApiPropertyOptional({ isArray: true, type: UpdateProductUnitItemDto })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateProductUnitItemDto)
+  units?: UpdateProductUnitItemDto[];
 }

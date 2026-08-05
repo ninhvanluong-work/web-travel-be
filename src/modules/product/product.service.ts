@@ -35,6 +35,7 @@ import { OptionService } from 'src/modules/option/option.service';
 import { OptionStatus } from 'src/modules/option/entities/option.entity';
 import { DepartureTimeService } from 'src/modules/departure-time/departure-time.service';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
+import { Unit } from 'src/modules/unit/entities/unit.entity';
 
 @Injectable()
 export class ProductService {
@@ -57,6 +58,8 @@ export class ProductService {
     private readonly tourGuideRepository: Repository<TourGuide>,
     @InjectRepository(PickupLocation)
     private readonly pickupLocationRepository: Repository<PickupLocation>,
+    @InjectRepository(Unit)
+    private readonly unitRepository: Repository<Unit>,
 
     private readonly elementService: ElementService,
     private readonly optionService: OptionService,
@@ -79,6 +82,7 @@ export class ProductService {
       options,
       departureTimes,
       pickupLocations,
+      units,
     } = payload;
     const slug = generateSlug(name);
     const code = generateRandomCode(8);
@@ -221,6 +225,15 @@ export class ProductService {
         await this.pickupLocationRepository.save(newPickupLocations);
     }
 
+    if (units && units.length > 0) {
+      this.logger.log(`${prefixLog} creating units: ${units.length}`);
+
+      const newUnits = units.map((unit) =>
+        this.unitRepository.create({ ...unit, productId: result.id }),
+      );
+      result.units = await this.unitRepository.save(newUnits);
+    }
+
     return result;
   }
 
@@ -327,6 +340,7 @@ export class ProductService {
         options: true,
         departureTimes: true,
         pickupLocations: true,
+        units: true,
       },
     });
 
@@ -394,6 +408,7 @@ export class ProductService {
       options,
       departureTimes,
       pickupLocations,
+      units,
     } = updateProductDto;
     const product = await this.findByPk(id);
     if (!product) throw new NotFoundException('Product Not Found');
@@ -531,6 +546,21 @@ export class ProductService {
         await this.pickupLocationRepository.save(existingPickupLocation);
       }
       delete updateProductDto.pickupLocations;
+    }
+
+    if (units && units.length > 0) {
+      for (const unit of units) {
+        const { id: unitId, ...fields } = unit;
+        const existingUnit = await this.unitRepository.findOne({
+          where: { id: unitId },
+        });
+        if (!existingUnit || existingUnit.productId !== id) {
+          throw new NotFoundException(`Unit ${unitId} Not Found`);
+        }
+        Object.assign(existingUnit, fields);
+        await this.unitRepository.save(existingUnit);
+      }
+      delete updateProductDto.units;
     }
 
     await this.productRepository.update(id, updateProductDto);
