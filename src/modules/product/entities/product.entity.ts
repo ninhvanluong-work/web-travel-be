@@ -22,6 +22,7 @@ import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { Element } from 'src/modules/element/entities/element.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
+import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { Session } from 'src/modules/session/entities/session.entity';
 import { HeroVideoDto } from 'src/modules/product/dto/product-detail.dto';
 
@@ -206,6 +207,9 @@ export class Product extends BaseEntity {
     (pickupLocation: PickupLocation) => pickupLocation.product,
   )
   pickupLocations: PickupLocation[];
+
+  @OneToMany(() => Unit, (unit: Unit) => unit.product)
+  units: Unit[];
 
   @OneToMany(() => Session, (session: Session) => session.product)
   sessions: Session[];
