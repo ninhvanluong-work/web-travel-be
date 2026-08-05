@@ -76,6 +76,9 @@ export class ProductService {
       tagIds,
       tourGuideIds,
       elementIds,
+      options,
+      departureTimes,
+      pickupLocations,
     } = payload;
     const slug = generateSlug(name);
     const code = generateRandomCode(8);
@@ -176,6 +179,46 @@ export class ProductService {
         result.elements = elements;
         await this.productRepository.save(result);
       }
+    }
+
+    if (options && options.length > 0) {
+      this.logger.log(`${prefixLog} creating options: ${options.length}`);
+
+      result.options = await Promise.all(
+        options.map((option) =>
+          this.optionService.create({ ...option, productId: result.id }),
+        ),
+      );
+    }
+
+    if (departureTimes && departureTimes.length > 0) {
+      this.logger.log(
+        `${prefixLog} creating departure times: ${departureTimes.length}`,
+      );
+
+      result.departureTimes = await Promise.all(
+        departureTimes.map((departureTime) =>
+          this.departureTimeService.create({
+            ...departureTime,
+            productId: result.id,
+          }),
+        ),
+      );
+    }
+
+    if (pickupLocations && pickupLocations.length > 0) {
+      this.logger.log(
+        `${prefixLog} creating pickup locations: ${pickupLocations.length}`,
+      );
+
+      const newPickupLocations = pickupLocations.map((pickupLocation) =>
+        this.pickupLocationRepository.create({
+          ...pickupLocation,
+          productId: result.id,
+        }),
+      );
+      result.pickupLocations =
+        await this.pickupLocationRepository.save(newPickupLocations);
     }
 
     return result;
@@ -281,6 +324,9 @@ export class ProductService {
         tags: true,
         supplier: true,
         elements: true,
+        options: true,
+        departureTimes: true,
+        pickupLocations: true,
       },
     });
 
@@ -345,6 +391,9 @@ export class ProductService {
       tagIds,
       tourGuideIds,
       elementIds,
+      options,
+      departureTimes,
+      pickupLocations,
     } = updateProductDto;
     const product = await this.findByPk(id);
     if (!product) throw new NotFoundException('Product Not Found');
@@ -434,6 +483,54 @@ export class ProductService {
       product.elements = elements;
       await this.productRepository.save(product);
       delete updateProductDto.elementIds;
+    }
+
+    if (options && options.length > 0) {
+      for (const option of options) {
+        const { id: optionId, ...fields } = option;
+        const existingOption = await this.optionService.findOneById(optionId);
+        if (!existingOption || existingOption.productId !== id) {
+          throw new NotFoundException(`Option ${optionId} Not Found`);
+        }
+        await this.optionService.update(optionId, fields);
+      }
+      delete updateProductDto.options;
+    }
+
+    if (departureTimes && departureTimes.length > 0) {
+      for (const departureTime of departureTimes) {
+        const { id: departureTimeId, ...fields } = departureTime;
+        const existingDepartureTime =
+          await this.departureTimeService.findOneById(departureTimeId);
+        if (!existingDepartureTime || existingDepartureTime.productId !== id) {
+          throw new NotFoundException(
+            `Departure Time ${departureTimeId} Not Found`,
+          );
+        }
+        await this.departureTimeService.update(departureTimeId, fields);
+      }
+      delete updateProductDto.departureTimes;
+    }
+
+    if (pickupLocations && pickupLocations.length > 0) {
+      for (const pickupLocation of pickupLocations) {
+        const { id: pickupLocationId, ...fields } = pickupLocation;
+        const existingPickupLocation =
+          await this.pickupLocationRepository.findOne({
+            where: { id: pickupLocationId },
+          });
+        if (
+          !existingPickupLocation ||
+          existingPickupLocation.productId !== id
+        ) {
+          throw new NotFoundException(
+            `Pickup Location ${pickupLocationId} Not Found`,
+          );
+        }
+        Object.assign(existingPickupLocation, fields);
+        await this.pickupLocationRepository.save(existingPickupLocation);
+      }
+      delete updateProductDto.pickupLocations;
     }
 
     await this.productRepository.update(id, updateProductDto);

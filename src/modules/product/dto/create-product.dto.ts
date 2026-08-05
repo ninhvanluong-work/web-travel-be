@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 import {
   IsString,
   IsOptional,
@@ -18,6 +18,9 @@ import {
   ReadBefore,
   ExperienceItem,
 } from '../entities/product.entity';
+import { CreateOptionDto } from 'src/modules/option/dto/create-option.dto';
+import { CreateDepartureTimeDto } from 'src/modules/departure-time/dto/create-departure-time.dto';
+import { CreatePickupLocationDto } from 'src/modules/pickup-location/dto/create-pickup-location.dto';
 
 export class ItineraryDto {
   @ApiProperty({ example: 'itinerary title' })
@@ -32,6 +35,24 @@ export class ItineraryDto {
   @ApiProperty({ type: 'string', example: 'description...' })
   description: string;
 }
+
+export class ProductOptionItemDto extends OmitType(CreateOptionDto, [
+  'productId',
+  'day',
+  'night',
+  'isDefault',
+  'allowUnit',
+] as const) {}
+
+export class ProductDepartureTimeItemDto extends OmitType(
+  CreateDepartureTimeDto,
+  ['productId'] as const,
+) {}
+
+export class ProductPickupLocationItemDto extends OmitType(
+  CreatePickupLocationDto,
+  ['productId'] as const,
+) {}
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Hạ Long Bay Tour' })
@@ -206,4 +227,25 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => ExperienceItem)
   experience?: ExperienceItem[];
+
+  @ApiPropertyOptional({ isArray: true, type: ProductOptionItemDto })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductOptionItemDto)
+  options?: ProductOptionItemDto[];
+
+  @ApiPropertyOptional({ isArray: true, type: ProductDepartureTimeItemDto })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductDepartureTimeItemDto)
+  departureTimes?: ProductDepartureTimeItemDto[];
+
+  @ApiPropertyOptional({ isArray: true, type: ProductPickupLocationItemDto })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductPickupLocationItemDto)
+  pickupLocations?: ProductPickupLocationItemDto[];
 }
