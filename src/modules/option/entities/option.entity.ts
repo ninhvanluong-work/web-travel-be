@@ -27,10 +27,6 @@ export class Option extends BaseEntity {
   @ApiProperty({})
   night: number;
 
-  @Column({ name: 'is_default', type: 'boolean', default: false })
-  @ApiProperty({})
-  isDefault: boolean;
-
   @Column({
     type: 'varchar',
     length: 50,
@@ -42,20 +38,6 @@ export class Option extends BaseEntity {
   @Column({ type: 'int', default: 0 })
   @ApiProperty({})
   order: number;
-
-  @Column({
-    name: 'allow_unit',
-    type: 'uuid',
-    array: true,
-    nullable: true,
-    comment: 'array of unit id',
-  })
-  @ApiProperty({ isArray: true, type: 'string', nullable: true })
-  allowUnit: string[];
-
-  @Column({ name: 'currency', nullable: true, default: 'VND' })
-  @ApiProperty({ example: 'VND' })
-  currency: string;
 
   @Column({
     type: 'varchar',

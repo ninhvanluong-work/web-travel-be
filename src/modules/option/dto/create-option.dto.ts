@@ -4,7 +4,6 @@ import {
   IsOptional,
   IsEnum,
   IsInt,
-  IsBoolean,
   IsArray,
   IsUUID,
   Min,
@@ -41,11 +40,6 @@ export class CreateOptionDto {
   @Min(0)
   night?: number;
 
-  @ApiPropertyOptional({ example: false })
-  @IsOptional()
-  @IsBoolean()
-  isDefault?: boolean;
-
   @ApiPropertyOptional({ enum: OptionStatus, default: OptionStatus.ACTIVE })
   @IsOptional()
   @IsEnum(OptionStatus)
@@ -56,22 +50,6 @@ export class CreateOptionDto {
   @Type(() => Number)
   @IsInt()
   order?: number;
-
-  @ApiPropertyOptional({
-    isArray: true,
-    type: 'string',
-    format: 'uuid',
-    description: 'Array of allowed unit reference IDs',
-  })
-  @IsOptional()
-  @IsArray()
-  @IsUUID('all', { each: true })
-  allowUnit?: string[];
-
-  @ApiPropertyOptional({ example: 'VND' })
-  @IsOptional()
-  @IsString()
-  currency?: string;
 
   @ApiPropertyOptional({
     isArray: true,

@@ -40,8 +40,6 @@ export class ProductOptionItemDto extends OmitType(CreateOptionDto, [
   'productId',
   'day',
   'night',
-  'isDefault',
-  'allowUnit',
 ] as const) {}
 
 export class ProductDepartureTimeItemDto extends OmitType(

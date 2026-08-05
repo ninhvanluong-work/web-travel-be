@@ -20,20 +20,11 @@ export class OptionDto {
   @ApiProperty({ example: 2, nullable: true })
   night: number;
 
-  @ApiProperty({ example: false })
-  isDefault: boolean;
-
   @ApiProperty({ enum: OptionStatus })
   status: OptionStatus;
 
   @ApiProperty({ example: 0 })
   order: number;
-
-  @ApiProperty({ isArray: true, type: 'string', nullable: true })
-  allowUnit: string[];
-
-  @ApiProperty({ example: 'VND' })
-  currency: string;
 
   @ApiProperty({ isArray: true, type: 'string', nullable: true })
   include: string[];
