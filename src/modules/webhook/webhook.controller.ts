@@ -1,7 +1,9 @@
 import crypto from 'crypto';
 import {
   Controller,
+  Get,
   Post,
+  Query,
   Req,
   Res,
   Headers,
@@ -13,6 +15,7 @@ import { WebhookService } from './webhook.service';
 import { BunnyWebhookPayload } from 'src/modules/webhook/types/bunny-webhook.type';
 import { PaypalWebhookEvent } from 'src/modules/payment/types/paypal.type';
 import { PaypalService } from 'src/modules/payment/paypal.service';
+import type { VnpayCallbackQuery } from 'src/modules/payment/types/vnpay.type';
 
 @Controller('webhook')
 export class WebhookController {
@@ -140,5 +143,25 @@ export class WebhookController {
     await this.webhookService.handlePaypalWebhook(event);
 
     return { success: true };
+  }
+
+  // VNPAY calls this server-to-server (GET) after processing a payment.
+  // This is the authoritative source for marking a booking as paid; the
+  // payment/vnpay/return endpoint only reflects the browser redirect.
+  @Get('/vnpay/ipn')
+  async handleVnpayIpn(@Query() query: VnpayCallbackQuery) {
+    const result = await this.webhookService.handleVnpayIpn(query);
+
+    if (!result.isValid) {
+      return { RspCode: '97', Message: 'Invalid signature' };
+    }
+    if (!result.paymentFound) {
+      return { RspCode: '01', Message: 'Order not found' };
+    }
+    if (!result.amountMatches) {
+      return { RspCode: '04', Message: 'Invalid amount' };
+    }
+
+    return { RspCode: '00', Message: 'Confirm Success' };
   }
 }

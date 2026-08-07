@@ -44,6 +44,9 @@ export class BookingPayment extends BaseEntity {
   @Column({ name: 'raw_response', type: 'jsonb', nullable: true })
   rawResponse: Record<string, any>;
 
+  @Column({ type: 'uuid', name: 'booking_id', nullable: true })
+  bookingId: string;
+
   @ManyToOne(() => Booking)
   @JoinColumn({
     name: 'booking_id',

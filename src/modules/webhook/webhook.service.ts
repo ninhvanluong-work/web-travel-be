@@ -8,6 +8,7 @@ import {
 } from 'src/modules/webhook/types/bunny-webhook.type';
 import { PaymentService } from 'src/modules/payment/payment.service';
 import { PaypalWebhookEvent } from 'src/modules/payment/types/paypal.type';
+import { VnpayCallbackQuery } from 'src/modules/payment/types/vnpay.type';
 
 @Injectable()
 export class WebhookService {
@@ -72,5 +73,11 @@ export class WebhookService {
       event.resource,
     );
     this.logger.log(`${prefixLog} orderId=${orderId} marked as succeeded`);
+  }
+
+  async handleVnpayIpn(query: VnpayCallbackQuery) {
+    const result = await this.paymentService.handleVnpayCallback(query);
+    this.logger.log(`[handleVnpayIpn] txnRef=${result.txnRef}`);
+    return result;
   }
 }

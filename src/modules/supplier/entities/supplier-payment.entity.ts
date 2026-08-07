@@ -7,6 +7,7 @@ import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 export enum SupplierPaymentMethod {
   BANK = 'bank',
   PAYPAL = 'paypal',
+  VNPAY = 'vnpay',
 }
 
 @Entity('supplier_payment')

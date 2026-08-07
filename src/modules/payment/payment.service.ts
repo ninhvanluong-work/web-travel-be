@@ -17,6 +17,13 @@ import {
   BookingPaymentStatus,
 } from 'src/modules/booking/entities/booking-payment.entity';
 import { PaypalService } from 'src/modules/payment/paypal.service';
+import { VnpayService } from 'src/modules/payment/vnpay.service';
+import {
+  VnpayCallbackQuery,
+  VnpayCallbackResult,
+} from 'src/modules/payment/types/vnpay.type';
+import { generateRandomCode } from 'src/common/utils/gen-code';
+import { SupplierPaymentMethod } from 'src/modules/supplier/entities/supplier-payment.entity';
 
 @Injectable()
 export class PaymentService {
@@ -32,6 +39,7 @@ export class PaymentService {
     @InjectRepository(BookingPayment)
     private readonly bookingPaymentRepository: Repository<BookingPayment>,
     private readonly paypalService: PaypalService,
+    private readonly vnpayService: VnpayService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -155,6 +163,161 @@ export class PaymentService {
       return;
     }
     await this.markPaymentSucceeded(payment, providerTxId, rawResponse);
+  }
+
+  async markPaymentFailedByIntentId(
+    intentId: string,
+    reason: string,
+    rawResponse: Record<string, any>,
+  ): Promise<void> {
+    const payment = await this.bookingPaymentRepository.findOne({
+      where: { providerIntentId: intentId },
+      relations: ['booking'],
+    });
+    if (!payment) {
+      this.logger.warn(
+        `[markPaymentFailedByIntentId] no payment found for intentId=${intentId}`,
+      );
+      return;
+    }
+    if (payment.status !== BookingPaymentStatus.PENDING) {
+      return;
+    }
+    await this.markPaymentFailed(payment, reason, rawResponse);
+  }
+
+  async createVnpayPaymentUrl(
+    userId: string,
+    bookingId: string,
+    ipAddr: string,
+  ) {
+    const prefix = this.prefix('createVnpayPaymentUrl', bookingId);
+
+    const booking = await this.getPayableBooking(userId, bookingId);
+
+    const txnRef = generateRandomCode(12);
+    const paymentUrl = this.vnpayService.buildPaymentUrl({
+      txnRef,
+      amount: Number(booking.totalPrice),
+      orderInfo: `Thanh toan booking ${booking.bookingCode}`,
+      ipAddr,
+    });
+
+    const payment = this.bookingPaymentRepository.create({
+      bookingId: booking.id,
+      provider: SupplierPaymentMethod.VNPAY,
+      providerIntentId: txnRef,
+      price: booking.totalPrice,
+      currency: booking.currency || 'VND',
+      status: BookingPaymentStatus.PENDING,
+    });
+    await this.bookingPaymentRepository.save(payment);
+
+    this.logger.log(`${prefix} txnRef=${txnRef}`);
+
+    return { txnRef, paymentUrl };
+  }
+
+  async handleVnpayCallback(
+    query: VnpayCallbackQuery,
+  ): Promise<VnpayCallbackResult> {
+    const result = this.vnpayService.verifyCallback(query);
+    const prefix = this.prefix('handleVnpayCallback', result.txnRef);
+
+    if (!result.isValid || !result.txnRef) {
+      this.logger.warn(`${prefix} invalid signature`);
+      return {
+        ...result,
+        isValid: false,
+        paymentFound: false,
+        amountMatches: false,
+      };
+    }
+
+    const payment = await this.bookingPaymentRepository.findOne({
+      where: { providerIntentId: result.txnRef },
+      relations: ['booking'],
+    });
+
+    if (!payment) {
+      this.logger.warn(`${prefix} no payment found`);
+      return { ...result, paymentFound: false, amountMatches: false };
+    }
+
+    const bookingId = payment.booking.id;
+
+    if (payment.status !== BookingPaymentStatus.PENDING) {
+      this.logger.log(`${prefix} already processed (status=${payment.status})`);
+      return { ...result, paymentFound: true, amountMatches: true, bookingId };
+    }
+
+    const amountMatches = Number(payment.price) === result.amount;
+    if (!amountMatches) {
+      this.logger.warn(
+        `${prefix} amount mismatch expected=${payment.price} actual=${result.amount}`,
+      );
+      await this.markPaymentFailed(payment, 'Amount mismatch', query);
+      return {
+        ...result,
+        isSuccess: false,
+        paymentFound: true,
+        amountMatches: false,
+        bookingId,
+      };
+    }
+
+    if (result.isSuccess && result.transactionNo) {
+      await this.markPaymentSucceeded(payment, result.transactionNo, query);
+      this.logger.log(`${prefix} marked as succeeded`);
+    } else {
+      await this.markPaymentFailed(
+        payment,
+        `Vnpay responseCode: ${result.responseCode}`,
+        query,
+      );
+      this.logger.warn(`${prefix} marked as failed`);
+    }
+
+    return { ...result, paymentFound: true, amountMatches: true, bookingId };
+  }
+
+  buildVnpayReturnRedirectUrl(result: VnpayCallbackResult): string {
+    const frontendUrl = this.configService.get<string>(
+      'FRONTEND_URL',
+    ) as string;
+    const redirectUrl = new URL('/payment/vnpay/return', frontendUrl);
+
+    const status =
+      result.isValid &&
+      result.paymentFound &&
+      result.amountMatches &&
+      result.isSuccess
+        ? 'success'
+        : 'failed';
+    redirectUrl.searchParams.set('status', status);
+
+    if (result.txnRef) {
+      redirectUrl.searchParams.set('txnRef', result.txnRef);
+    }
+    if (result.bookingId) {
+      redirectUrl.searchParams.set('bookingId', result.bookingId);
+    }
+    if (result.amount !== undefined) {
+      redirectUrl.searchParams.set('amount', String(result.amount));
+    }
+
+    if (status === 'failed') {
+      redirectUrl.searchParams.set('reason', this.vnpayFailureReason(result));
+    }
+
+    return redirectUrl.toString();
+  }
+
+  private vnpayFailureReason(result: VnpayCallbackResult): string {
+    if (!result.isValid) return 'invalid_signature';
+    if (!result.paymentFound) return 'order_not_found';
+    if (!result.amountMatches) return 'amount_mismatch';
+    return 'declined';
   }
 
   private async markPaymentSucceeded(
