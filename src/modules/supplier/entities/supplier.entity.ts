@@ -1,12 +1,12 @@
 import { Entity, Column, OneToMany } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { BaseEntity } from 'src/database/base.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 
 @Entity('supplier')
 export class Supplier extends BaseEntity {
   @Column({ length: 255 })
-  @ApiProperty()
+  @ApiProperty({ example: 'supplierA' })
   name: string;
 
   @Column({ nullable: true })
@@ -42,5 +42,6 @@ export class Supplier extends BaseEntity {
   expYears: number;
 
   @OneToMany(() => Product, (product) => product.supplier)
+  @ApiHideProperty()
   products: Product[];
 }

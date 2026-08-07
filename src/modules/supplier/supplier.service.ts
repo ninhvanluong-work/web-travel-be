@@ -1,26 +1,74 @@
-import { Injectable } from '@nestjs/common';
-import { CreateSupplierDto } from './dto/create-supplier.dto';
-import { UpdateSupplierDto } from './dto/update-supplier.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ILike, Repository } from 'typeorm';
+
+import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
+import { CreateSupplierDto } from 'src/modules/supplier/dto/create-supplier.dto';
+import { UpdateSupplierDto } from 'src/modules/supplier/dto/update-supplier.dto';
+import { GetSuppliersDto } from 'src/modules/supplier/dto/get-supplier.dto';
+import {
+  ListItemsResponse,
+  PaginationResponse,
+} from 'src/types/pagination.dto';
 
 @Injectable()
 export class SupplierService {
-  create(createSupplierDto: CreateSupplierDto) {
-    return 'This action adds a new supplier';
+  constructor(
+    @InjectRepository(Supplier)
+    private readonly supplierRepository: Repository<Supplier>,
+  ) {}
+
+  create(payload: CreateSupplierDto) {
+    const supplier = this.supplierRepository.create(payload);
+    return this.supplierRepository.save(supplier);
   }
 
-  findAll() {
-    return `This action returns all supplier`;
+  async findAll(query: GetSuppliersDto): Promise<ListItemsResponse<Supplier>> {
+    const { page = 1, pageSize = 10, keyword = '' } = query;
+    const skip = (page - 1) * pageSize;
+
+    const [suppliers, total] = await this.supplierRepository.findAndCount({
+      where: {
+        name: ILike(`%${keyword}%`),
+      },
+      take: pageSize,
+      skip,
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    const pagination: PaginationResponse = {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    };
+
+    return {
+      items: suppliers,
+      pagination,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} supplier`;
+  async findOneById(id: string) {
+    const supplier = await this.supplierRepository.findOne({
+      where: { id },
+    });
+    if (!supplier) {
+      throw new NotFoundException('Supplier not found');
+    }
+    return supplier;
   }
 
-  update(id: number, updateSupplierDto: UpdateSupplierDto) {
-    return `This action updates a #${id} supplier`;
+  async update(id: string, payload: UpdateSupplierDto) {
+    const supplier = await this.findOneById(id);
+    Object.assign(supplier, payload);
+    return this.supplierRepository.save(supplier);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} supplier`;
+  async remove(id: string) {
+    await this.findOneById(id);
+    await this.supplierRepository.softDelete(id);
   }
 }

@@ -25,6 +25,7 @@ import { UnitModule } from './modules/unit/unit.module';
 import { DepartureTimeModule } from './modules/departure-time/departure-time.module';
 import { BookingModule } from './modules/booking/booking.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { SupplierModule } from './modules/supplier/supplier.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     DepartureTimeModule,
     BookingModule,
     PaymentModule,
+    SupplierModule,
   ],
   controllers: [AppController],
   providers: [AppService],

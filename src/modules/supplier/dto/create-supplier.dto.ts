@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 
 export class CreateSupplierDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'supplierA' })
   @IsString()
   name: string;
 
@@ -23,34 +23,35 @@ export class CreateSupplierDto {
   @IsString()
   avatar?: string;
 
-  @ApiProperty({ default: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  ratingCount?: number = 0;
 
-  @ApiProperty({ default: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(5)
-  ratingRate?: number = 0;
+  //@ApiProperty({ default: 0 })
+  //@IsOptional()
+  //@IsNumber()
+  //@Min(0)
+  //ratingCount?: number = 0;
 
-  @ApiProperty({ default: false })
-  @IsOptional()
-  @IsBoolean()
-  isVerified?: boolean = false;
+  //@ApiProperty({ default: 0 })
+  //@IsOptional()
+  //@IsNumber()
+  //@Min(0)
+  //@Max(5)
+  //ratingRate?: number = 0;
 
-  @ApiProperty({ default: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  tourOffered?: number = 0;
+  //@ApiProperty({ default: false })
+  //@IsOptional()
+  //@IsBoolean()
+  //isVerified?: boolean = false;
 
-  @ApiProperty({ default: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  responseRate?: number = 0;
+  //@ApiProperty({ default: 0 })
+  //@IsOptional()
+  //@IsNumber()
+  //@Min(0)
+  //tourOffered?: number = 0;
+
+  //@ApiProperty({ default: 0 })
+  //@IsOptional()
+  //@IsNumber()
+  //@Min(0)
+  //@Max(100)
+  //responseRate?: number = 0;
 }
