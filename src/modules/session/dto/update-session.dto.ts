@@ -2,5 +2,5 @@ import { PartialType, OmitType } from '@nestjs/swagger';
 import { CreateSessionDto } from './create-session.dto';
 
 export class UpdateSessionDto extends PartialType(
-  OmitType(CreateSessionDto, ['productId'] as const),
+  OmitType(CreateSessionDto, ['productId', 'travelDate'] as const),
 ) {}

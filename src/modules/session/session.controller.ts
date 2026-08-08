@@ -13,6 +13,7 @@ import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
 import { SessionService } from './session.service';
 import { CreateSessionDto } from './dto/create-session.dto';
+import { CreateSessionRangeDto } from './dto/create-session-range.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { GetSessionDto, GetSessionsResponseDto } from './dto/get-session.dto';
 import { SessionDto } from './dto/session-response.dto';
@@ -43,6 +44,28 @@ export class SessionController {
       result,
       HttpStatus.OK,
       'created session successfully',
+    );
+  }
+
+  @Post('range')
+  @ApiResponse({
+    status: 200,
+    description: 'create sessions for 1 or multiple consecutive days',
+    schema: {
+      properties: {
+        data: { type: 'array', items: { $ref: getSchemaPath('SessionDto') } },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async createRange(@Body() dto: CreateSessionRangeDto) {
+    const result = await this.sessionService.createRange(dto);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'created sessions successfully',
     );
   }
 
