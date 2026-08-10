@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
   ConflictException,
@@ -44,6 +45,8 @@ function formatDateSpan(start: Date, end: Date): string {
 
 @Injectable()
 export class SessionService {
+  private readonly logger = new Logger(SessionService.name);
+
   constructor(
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
@@ -56,10 +59,17 @@ export class SessionService {
   ) {}
 
   async create(payload: CreateSessionDto) {
+    this.logger.debug(`create() payload=${JSON.stringify(payload)}`);
+
     const product = await this.productRepository.findOne({
       where: { id: payload.productId },
     });
-    if (!product) throw new NotFoundException('Product Not Found');
+    if (!product) {
+      this.logger.warn(
+        `create() rejected: product ${payload.productId} not found`,
+      );
+      throw new NotFoundException('Product Not Found');
+    }
 
     const travelDate = startOfDay(new Date(payload.travelDate));
     const existing = await this.sessionRepository.findOne({
@@ -69,14 +79,18 @@ export class SessionService {
       },
     });
     if (existing) {
-      throw new ConflictException(
-        'Session already exists for this product on this date',
+      this.logger.warn(
+        `create() skipped: session already exists for product ${payload.productId} on ${formatDateOnly(travelDate)}`,
       );
+      return this.findOneById(existing.id);
     }
 
     if (payload.sessionUnits?.length) {
       const unitIds = payload.sessionUnits.map((su) => su.unitId);
       if (new Set(unitIds).size !== unitIds.length) {
+        this.logger.warn(
+          `create() rejected: duplicate unitId in sessionUnits for product ${payload.productId}`,
+        );
         throw new BadRequestException('Duplicate unitId in sessionUnits');
       }
 
@@ -84,6 +98,9 @@ export class SessionService {
         where: { id: In(unitIds), productId: payload.productId },
       });
       if (units.length !== unitIds.length) {
+        this.logger.warn(
+          `create() rejected: one or more units not found for product ${payload.productId}, requested=${unitIds.join(',')}`,
+        );
         throw new NotFoundException(
           'One or more units not found for this product',
         );
@@ -109,19 +126,33 @@ export class SessionService {
       await this.sessionUnitRepository.save(sessionUnits);
     }
 
+    this.logger.log(
+      `create() session ${newSession.id} created for product ${payload.productId} on ${formatDateOnly(travelDate)}`,
+    );
+
     return this.findOneById(newSession.id);
   }
 
   async createRange(payload: CreateSessionRangeDto) {
+    this.logger.debug(`createRange() payload=${JSON.stringify(payload)}`);
+
     const product = await this.productRepository.findOne({
       where: { id: payload.productId },
     });
-    if (!product) throw new NotFoundException('Product Not Found');
+    if (!product) {
+      this.logger.warn(
+        `createRange() rejected: product ${payload.productId} not found`,
+      );
+      throw new NotFoundException('Product Not Found');
+    }
 
     const start = startOfDay(new Date(payload.fromDate));
     const end = payload.toDate ? startOfDay(new Date(payload.toDate)) : start;
 
     if (end < start) {
+      this.logger.warn(
+        `createRange() rejected: toDate ${payload.toDate} before fromDate ${payload.fromDate}`,
+      );
       throw new BadRequestException(
         'toDate must be greater than or equal to fromDate',
       );
@@ -130,9 +161,34 @@ export class SessionService {
     const days =
       Math.round((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000)) + 1;
     if (days > MAX_RANGE_DAYS) {
+      this.logger.warn(
+        `createRange() rejected: range of ${days} days exceeds max ${MAX_RANGE_DAYS}`,
+      );
       throw new BadRequestException(
         `date range must not exceed ${MAX_RANGE_DAYS} days`,
       );
+    }
+
+    if (payload.sessionUnits?.length) {
+      const unitIds = payload.sessionUnits.map((su) => su.unitId);
+      if (new Set(unitIds).size !== unitIds.length) {
+        this.logger.warn(
+          `createRange() rejected: duplicate unitId in sessionUnits for product ${payload.productId}`,
+        );
+        throw new BadRequestException('Duplicate unitId in sessionUnits');
+      }
+
+      const units = await this.unitRepository.find({
+        where: { id: In(unitIds), productId: payload.productId },
+      });
+      if (units.length !== unitIds.length) {
+        this.logger.warn(
+          `createRange() rejected: one or more units not found for product ${payload.productId}, requested=${unitIds.join(',')}`,
+        );
+        throw new NotFoundException(
+          'One or more units not found for this product',
+        );
+      }
     }
 
     const existingSessions = await this.sessionRepository.find({
@@ -155,30 +211,64 @@ export class SessionService {
         this.sessionRepository.create({
           productId: payload.productId,
           travelDate,
-          status: SessionStatus.ACTIVE,
+
           //capacity: payload.capacity ?? 0,
-          //status: payload.status,
+          status: payload.status ?? SessionStatus.ACTIVE,
         }),
       );
 
     if (newSessions.length === 0) {
+      this.logger.warn(
+        `createRange() rejected: session already exists for product ${payload.productId} on ${formatDateSpan(start, end)}`,
+      );
       throw new ConflictException(
         `Session already exists for this product on ${formatDateSpan(start, end)}`,
       );
     }
 
-    return this.sessionRepository.save(newSessions);
+    await this.sessionRepository.save(newSessions);
+
+    if (payload.sessionUnits?.length) {
+      const sessionUnits = newSessions.flatMap((session) =>
+        payload.sessionUnits!.map((su) =>
+          this.sessionUnitRepository.create({
+            sessionId: session.id,
+            unitId: su.unitId,
+            price: su.price,
+          }),
+        ),
+      );
+      await this.sessionUnitRepository.save(sessionUnits);
+    }
+
+    this.logger.log(
+      `createRange() created ${newSessions.length} session(s) for product ${payload.productId} on ${formatDateSpan(start, end)}`,
+    );
+
+    return this.find({
+      where: { id: In(newSessions.map((s) => s.id)) },
+      relations: { sessionUnits: { unit: true } },
+      order: { travelDate: 'ASC' },
+    });
   }
 
   async update(id: string, payload: UpdateSessionDto) {
+    this.logger.debug(`update() id=${id} payload=${JSON.stringify(payload)}`);
+
     const session = await this.findOneById(id);
-    if (!session) throw new NotFoundException('Session not found');
+    if (!session) {
+      this.logger.warn(`update() rejected: session ${id} not found`);
+      throw new NotFoundException('Session not found');
+    }
 
     const { sessionUnits: sessionUnitsInput, ...sessionFields } = payload;
 
     if (sessionUnitsInput !== undefined) {
       const unitIds = sessionUnitsInput.map((su) => su.unitId);
       if (new Set(unitIds).size !== unitIds.length) {
+        this.logger.warn(
+          `update() rejected: duplicate unitId in sessionUnits for session ${id}`,
+        );
         throw new BadRequestException('Duplicate unitId in sessionUnits');
       }
 
@@ -187,6 +277,9 @@ export class SessionService {
           where: { id: In(unitIds), productId: session.productId },
         });
         if (units.length !== unitIds.length) {
+          this.logger.warn(
+            `update() rejected: one or more units not found for session ${id}, requested=${unitIds.join(',')}`,
+          );
           throw new NotFoundException(
             'One or more units not found for this product',
           );
@@ -224,16 +317,29 @@ export class SessionService {
     Object.assign(session, sessionFields);
     await this.sessionRepository.save(session);
 
+    this.logger.log(`update() session ${id} updated`);
+
     return this.findOneById(id);
   }
 
   async remove(id: string) {
+    this.logger.debug(`remove() id=${id}`);
+
     const found = await this.findOneById(id);
-    if (!found) throw new NotFoundException('Session not found');
+    if (!found) {
+      this.logger.warn(`remove() rejected: session ${id} not found`);
+      throw new NotFoundException('Session not found');
+    }
 
     await this.sessionRepository.softDelete(id);
     const removed = await this.findOneById(id, true);
-    if (!removed) throw new NotFoundException('Session not found');
+    if (!removed) {
+      this.logger.warn(`remove() session ${id} not found after soft delete`);
+      throw new NotFoundException('Session not found');
+    }
+
+    this.logger.log(`remove() session ${id} soft deleted`);
+
     return removed;
   }
 
