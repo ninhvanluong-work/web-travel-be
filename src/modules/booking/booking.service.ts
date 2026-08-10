@@ -69,6 +69,7 @@ export class BookingService {
 
     const product = await this.productRepository.findOne({
       where: { id: payload.productId },
+      relations: ['supplier'],
     });
     if (!product) {
       this.logger.warn(
@@ -188,6 +189,8 @@ export class BookingService {
     const booking = this.bookingRepository.create({
       userId,
       productId: payload.productId,
+      supplierId: product.supplierId,
+      supplierName: product.supplier?.name,
       optionId: payload.optionId,
       tourSessionId: payload.tourSessionId,
       pickupLocationId: payload.pickupLocationId,

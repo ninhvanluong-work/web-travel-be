@@ -7,6 +7,7 @@ import { Option } from 'src/modules/option/entities/option.entity';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
 import { Session } from 'src/modules/session/entities/session.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
+import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 
 export enum BookingStatus {
   PAID = 'paid',
@@ -101,6 +102,12 @@ export class Booking extends BaseEntity {
   @Column({ name: 'product_id', type: 'uuid', nullable: true })
   productId: string;
 
+  @Column({ name: 'supplier_id', type: 'uuid', nullable: true })
+  supplierId: string;
+
+  @Column({ name: 'supplier_name', nullable: true, length: 255 })
+  supplierName: string;
+
   @ManyToOne(() => User, (user) => user.bookings)
   @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'Fk_Booking_User' })
   user: User;
@@ -139,4 +146,11 @@ export class Booking extends BaseEntity {
     foreignKeyConstraintName: 'Fk_Booking_DepartureTime',
   })
   departure: DepartureTime;
+
+  @ManyToOne(() => Supplier)
+  @JoinColumn({
+    name: 'supplier_id',
+    foreignKeyConstraintName: 'Fk_Booking_Supplier',
+  })
+  supplier: Supplier;
 }
