@@ -5,7 +5,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import {
+  Between,
+  FindOptionsWhere,
+  ILike,
+  In,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { randomBytes } from 'crypto';
 
 import {
@@ -14,6 +22,11 @@ import {
   BookingStatus,
 } from 'src/modules/booking/entities/booking.entity';
 import { CreateBookingDto } from 'src/modules/booking/dto/create-booking.dto';
+import { GetBookingDto } from 'src/modules/booking/dto/get-booking.dto';
+import {
+  ListItemsResponse,
+  PaginationResponse,
+} from 'src/types/pagination.dto';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
 import {
@@ -224,5 +237,81 @@ export class BookingService {
     );
 
     return savedBooking;
+  }
+
+  buildQueryCondition(
+    query: GetBookingDto,
+  ): FindOptionsWhere<Booking> | FindOptionsWhere<Booking>[] {
+    const condition: FindOptionsWhere<Booking> = {};
+
+    if (query.supplierId) {
+      condition.supplierId = query.supplierId;
+    }
+
+    if (query.productId) {
+      condition.productId = query.productId;
+    }
+
+    if (query.status) {
+      condition.status = query.status;
+    }
+
+    if (query.fromDate && query.toDate) {
+      condition.travelDate = Between(
+        new Date(query.fromDate),
+        new Date(query.toDate),
+      );
+    } else if (query.fromDate) {
+      condition.travelDate = MoreThanOrEqual(new Date(query.fromDate));
+    } else if (query.toDate) {
+      condition.travelDate = LessThanOrEqual(new Date(query.toDate));
+    }
+
+    if (!query.keyword) {
+      return condition;
+    }
+
+    const keyword = ILike(`%${query.keyword}%`);
+    const searchableFields: (keyof Booking)[] = [
+      'phone',
+      'email',
+      'productName',
+      'optionName',
+      'username',
+      'bookingCode',
+    ];
+
+    return searchableFields.map((field) => ({
+      ...condition,
+      [field]: keyword,
+    }));
+  }
+
+  async findAll(query: GetBookingDto): Promise<ListItemsResponse<Booking>> {
+    const { page = 1, pageSize = 10 } = query;
+
+    const where = this.buildQueryCondition(query);
+    const skip = (page - 1) * pageSize;
+
+    const [bookings, total] = await this.bookingRepository.findAndCount({
+      where,
+      take: pageSize,
+      skip,
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    const pagination: PaginationResponse = {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    };
+
+    return {
+      items: bookings,
+      pagination,
+    };
   }
 }

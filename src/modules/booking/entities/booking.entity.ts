@@ -8,6 +8,7 @@ import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-loca
 import { Session } from 'src/modules/session/entities/session.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
 export enum BookingStatus {
   PAID = 'paid',
@@ -15,10 +16,17 @@ export enum BookingStatus {
   CANCEL = 'cancel',
 }
 
-export interface BookingPassenger {
+export class BookingPassenger {
+  @ApiProperty({ type: 'string', format: 'uuid' })
   unitId: string;
+
+  @ApiProperty({ example: 'children' })
   unitName: string;
+
+  @ApiProperty({ type: 'number', example: 10000 })
   price: number;
+
+  @ApiProperty({ type: 'number', example: 3 })
   count: number;
 }
 
@@ -108,10 +116,12 @@ export class Booking extends BaseEntity {
   @Column({ name: 'supplier_name', nullable: true, length: 255 })
   supplierName: string;
 
+  @ApiHideProperty()
   @ManyToOne(() => User, (user) => user.bookings)
   @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'Fk_Booking_User' })
   user: User;
 
+  @ApiHideProperty()
   @ManyToOne(() => Product, (product) => product.bookings)
   @JoinColumn({
     name: 'product_id',
@@ -119,6 +129,7 @@ export class Booking extends BaseEntity {
   })
   product: Product;
 
+  @ApiHideProperty()
   @ManyToOne(() => Option)
   @JoinColumn({
     name: 'option_id',
@@ -126,6 +137,7 @@ export class Booking extends BaseEntity {
   })
   option: Option;
 
+  @ApiHideProperty()
   @ManyToOne(() => PickupLocation)
   @JoinColumn({
     name: 'pickup_location_id',
@@ -133,6 +145,7 @@ export class Booking extends BaseEntity {
   })
   pickupLocation: PickupLocation;
 
+  @ApiHideProperty()
   @ManyToOne(() => Session)
   @JoinColumn({
     name: 'tour_session_id',
@@ -140,6 +153,7 @@ export class Booking extends BaseEntity {
   })
   tourSession: Session;
 
+  @ApiHideProperty()
   @ManyToOne(() => DepartureTime)
   @JoinColumn({
     name: 'departure_id',
@@ -147,6 +161,7 @@ export class Booking extends BaseEntity {
   })
   departure: DepartureTime;
 
+  @ApiHideProperty()
   @ManyToOne(() => Supplier)
   @JoinColumn({
     name: 'supplier_id',

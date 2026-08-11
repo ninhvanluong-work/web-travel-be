@@ -1,4 +1,12 @@
-import { Body, Controller, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiExtraModels,
@@ -8,6 +16,10 @@ import {
 
 import { Booking } from 'src/modules/booking/entities/booking.entity';
 import { CreateBookingDto } from 'src/modules/booking/dto/create-booking.dto';
+import {
+  GetBookingDto,
+  GetBookingsResponseDto,
+} from 'src/modules/booking/dto/get-booking.dto';
 import { BookingService } from 'src/modules/booking/booking.service';
 
 import { formatApiResponse } from 'src/common/utils/format';
@@ -16,7 +28,7 @@ import { OptionalUserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('booking')
-@ApiExtraModels(Booking, CreateBookingDto)
+@ApiExtraModels(Booking, CreateBookingDto, GetBookingsResponseDto)
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
 
@@ -41,6 +53,28 @@ export class BookingController {
       result,
       HttpStatus.OK,
       'created booking successfully',
+    );
+  }
+
+  @Get()
+  @ApiResponse({
+    status: 200,
+    description: 'get booking list',
+    schema: {
+      properties: {
+        data: { $ref: getSchemaPath(GetBookingsResponseDto) },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async findAll(@Query() query: GetBookingDto) {
+    const result = await this.bookingService.findAll(query);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'Get bookings successfully!',
     );
   }
 }
