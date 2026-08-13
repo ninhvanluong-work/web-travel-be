@@ -22,7 +22,11 @@ import {
   BookingStatus,
 } from 'src/modules/booking/entities/booking.entity';
 import { CreateBookingDto } from 'src/modules/booking/dto/create-booking.dto';
-import { GetBookingDto } from 'src/modules/booking/dto/get-booking.dto';
+import {
+  BookingStatDto,
+  BookingStatItemDto,
+  GetBookingDto,
+} from 'src/modules/booking/dto/get-booking.dto';
 import {
   ListItemsResponse,
   PaginationResponse,
@@ -287,7 +291,9 @@ export class BookingService {
     }));
   }
 
-  async findAll(query: GetBookingDto): Promise<ListItemsResponse<Booking>> {
+  async findAll(
+    query: GetBookingDto,
+  ): Promise<ListItemsResponse<Booking, BookingStatDto>> {
     const { page = 1, pageSize = 10 } = query;
 
     const where = this.buildQueryCondition(query);
@@ -309,9 +315,53 @@ export class BookingService {
       totalPages: Math.ceil(total / pageSize),
     };
 
+    const stats = await this.buildStats(where);
+
     return {
       items: bookings,
       pagination,
+      stats,
+    };
+  }
+
+  private async buildStats(
+    where: FindOptionsWhere<Booking> | FindOptionsWhere<Booking>[],
+  ): Promise<BookingStatDto> {
+    const rows = await this.bookingRepository
+      .createQueryBuilder('booking')
+      .select('booking.status', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .addSelect('SUM(booking.totalPrice)', 'totalPrice')
+      .setFindOptions({ where })
+      .groupBy('booking.status')
+      .getRawMany<{
+        status: BookingStatus;
+        count: string;
+        totalPrice: string;
+      }>();
+
+    const byStatus: Record<BookingStatus, BookingStatItemDto> = {
+      [BookingStatus.PENDING]: { count: 0, totalPrice: 0 },
+      [BookingStatus.PAID]: { count: 0, totalPrice: 0 },
+      [BookingStatus.CANCEL]: { count: 0, totalPrice: 0 },
+    };
+    const total: BookingStatItemDto = { count: 0, totalPrice: 0 };
+
+    for (const row of rows) {
+      const count = Number(row.count) || 0;
+      const totalPrice = Number(row.totalPrice) || 0;
+      if (byStatus[row.status]) {
+        byStatus[row.status] = { count, totalPrice };
+      }
+      total.count += count;
+      total.totalPrice += totalPrice;
+    }
+
+    return {
+      pending: byStatus[BookingStatus.PENDING],
+      paid: byStatus[BookingStatus.PAID],
+      cancel: byStatus[BookingStatus.CANCEL],
+      total,
     };
   }
 }

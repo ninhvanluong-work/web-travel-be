@@ -50,7 +50,38 @@ export class GetBookingDto extends PaginationDto {
   toDate?: string;
 }
 
-export class GetBookingsResponseDto extends ListItemsResponse<Booking> {
+export class BookingStatItemDto {
+  @ApiProperty({ description: 'Số lượng booking', example: 5 })
+  count: number;
+
+  @ApiProperty({ description: 'Tổng tiền', example: 1500000 })
+  totalPrice: number;
+}
+
+export class BookingStatDto {
+  @ApiProperty({ type: BookingStatItemDto })
+  pending: BookingStatItemDto;
+
+  @ApiProperty({ type: BookingStatItemDto })
+  paid: BookingStatItemDto;
+
+  @ApiProperty({ type: BookingStatItemDto })
+  cancel: BookingStatItemDto;
+
+  @ApiProperty({
+    description: 'Tổng hợp tất cả trạng thái',
+    type: BookingStatItemDto,
+  })
+  total: BookingStatItemDto;
+}
+
+export class GetBookingsResponseDto extends ListItemsResponse<
+  Booking,
+  BookingStatDto
+> {
   @ApiProperty({ type: [Booking] })
   declare items: Booking[];
+
+  @ApiProperty({ type: BookingStatDto })
+  declare stats: BookingStatDto;
 }
