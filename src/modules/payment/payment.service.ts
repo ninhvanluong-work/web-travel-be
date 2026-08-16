@@ -46,6 +46,22 @@ export class PaymentService {
     private readonly configService: ConfigService,
   ) {}
 
+  async getPaymentLogs(
+    bookingPaymentId: string,
+  ): Promise<BookingPaymentHistory[]> {
+    const payment = await this.bookingPaymentRepository.findOne({
+      where: { id: bookingPaymentId },
+    });
+    if (!payment) {
+      throw new NotFoundException('Booking payment not found');
+    }
+
+    return this.bookingPaymentHistoryRepository.find({
+      where: { bookingPaymentId },
+      order: { createdAt: 'ASC' },
+    });
+  }
+
   private async getPayableBooking(
     userId: string,
     bookingId: string,

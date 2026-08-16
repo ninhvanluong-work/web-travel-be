@@ -9,6 +9,7 @@ import { BookingPaymentHistory } from 'src/modules/booking/entities/booking-paym
 
 import { PaymentController } from './payment.controller';
 import { VnpayPaymentController } from './vnpay-payment.controller';
+import { BookingPaymentController } from './booking-payment.controller';
 import { PaymentService } from './payment.service';
 import { PaypalService } from './paypal.service';
 import { VnpayService } from './vnpay.service';
@@ -19,7 +20,11 @@ import { VnpayService } from './vnpay.service';
     ConfigModule,
     TypeOrmModule.forFeature([Booking, BookingPayment, BookingPaymentHistory]),
   ],
-  controllers: [PaymentController, VnpayPaymentController],
+  controllers: [
+    PaymentController,
+    VnpayPaymentController,
+    BookingPaymentController,
+  ],
   providers: [PaymentService, PaypalService, VnpayService],
   exports: [PaymentService, PaypalService, VnpayService],
 })
