@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Param,
   Post,
   Query,
   UseGuards,
@@ -10,11 +11,13 @@ import {
 import {
   ApiBearerAuth,
   ApiExtraModels,
+  ApiParam,
   ApiResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
 
 import { Booking } from 'src/modules/booking/entities/booking.entity';
+import { BookingPayment } from 'src/modules/booking/entities/booking-payment.entity';
 import { CreateBookingDto } from 'src/modules/booking/dto/create-booking.dto';
 import {
   GetBookingDto,
@@ -28,7 +31,12 @@ import { OptionalUserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('booking')
-@ApiExtraModels(Booking, CreateBookingDto, GetBookingsResponseDto)
+@ApiExtraModels(
+  Booking,
+  BookingPayment,
+  CreateBookingDto,
+  GetBookingsResponseDto,
+)
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
 
@@ -75,6 +83,40 @@ export class BookingController {
       result,
       HttpStatus.OK,
       'Get bookings successfully!',
+    );
+  }
+
+  @Get(':id/payment')
+  @ApiParam({
+    name: 'id',
+    description: 'ID của booking',
+    example: '0df1ec7e-166e-4209-810a-23156b3b0489',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'get the list of payments belonging to a booking',
+    schema: {
+      properties: {
+        data: {
+          type: 'array',
+          items: { $ref: getSchemaPath(BookingPayment) },
+        },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Booking not found',
+  })
+  async findPayments(@Param('id') id: string) {
+    const result = await this.bookingService.findPayments(id);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'Get booking payments successfully',
     );
   }
 }

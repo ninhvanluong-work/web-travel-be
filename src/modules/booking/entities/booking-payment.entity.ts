@@ -2,6 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 
 import { BaseEntity } from 'src/database/base.entity';
 import { Booking } from 'src/modules/booking/entities/booking.entity';
+import { ApiHideProperty } from '@nestjs/swagger';
 
 export enum BookingPaymentStatus {
   PENDING = 'pending',
@@ -47,6 +48,7 @@ export class BookingPayment extends BaseEntity {
   @Column({ type: 'uuid', name: 'booking_id', nullable: true })
   bookingId: string;
 
+  @ApiHideProperty()
   @ManyToOne(() => Booking)
   @JoinColumn({
     name: 'booking_id',

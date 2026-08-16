@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Booking } from 'src/modules/booking/entities/booking.entity';
+import { BookingPayment } from 'src/modules/booking/entities/booking-payment.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
 import { Session } from 'src/modules/session/entities/session.entity';
@@ -17,6 +18,7 @@ import { BookingController } from './booking.controller';
   imports: [
     TypeOrmModule.forFeature([
       Booking,
+      BookingPayment,
       Product,
       Option,
       Session,

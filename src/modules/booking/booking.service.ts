@@ -21,6 +21,7 @@ import {
   BookingPassenger,
   BookingStatus,
 } from 'src/modules/booking/entities/booking.entity';
+import { BookingPayment } from 'src/modules/booking/entities/booking-payment.entity';
 import { CreateBookingDto } from 'src/modules/booking/dto/create-booking.dto';
 import {
   BookingStatDto,
@@ -53,6 +54,8 @@ export class BookingService {
   constructor(
     @InjectRepository(Booking)
     private readonly bookingRepository: Repository<Booking>,
+    @InjectRepository(BookingPayment)
+    private readonly bookingPaymentRepository: Repository<BookingPayment>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Option)
@@ -363,5 +366,22 @@ export class BookingService {
       cancel: byStatus[BookingStatus.CANCEL],
       total,
     };
+  }
+
+  async findPayments(bookingId: string): Promise<BookingPayment[]> {
+    const prefix = this.prefix('findPayments', bookingId);
+
+    const booking = await this.bookingRepository.findOne({
+      where: { id: bookingId },
+    });
+    if (!booking) {
+      this.logger.warn(`${prefix} rejected: booking not found`);
+      throw new NotFoundException('Booking not found');
+    }
+
+    return this.bookingPaymentRepository.find({
+      where: { bookingId },
+      order: { createdAt: 'DESC' },
+    });
   }
 }
