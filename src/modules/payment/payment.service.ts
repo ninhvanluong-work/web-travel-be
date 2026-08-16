@@ -16,6 +16,7 @@ import {
   BookingPayment,
   BookingPaymentStatus,
 } from 'src/modules/booking/entities/booking-payment.entity';
+import { BookingPaymentHistory } from 'src/modules/booking/entities/booking-payment-history.entity';
 import { PaypalService } from 'src/modules/payment/paypal.service';
 import { VnpayService } from 'src/modules/payment/vnpay.service';
 import {
@@ -38,6 +39,8 @@ export class PaymentService {
     private readonly bookingRepository: Repository<Booking>,
     @InjectRepository(BookingPayment)
     private readonly bookingPaymentRepository: Repository<BookingPayment>,
+    @InjectRepository(BookingPaymentHistory)
+    private readonly bookingPaymentHistoryRepository: Repository<BookingPaymentHistory>,
     private readonly paypalService: PaypalService,
     private readonly vnpayService: VnpayService,
     private readonly configService: ConfigService,
@@ -125,13 +128,19 @@ export class PaymentService {
     const captureDetail = capture.purchase_units?.[0]?.payments?.captures?.[0];
 
     if (capture.status === 'COMPLETED' && captureDetail) {
-      await this.markPaymentSucceeded(payment, captureDetail.id, capture);
+      await this.markPaymentSucceeded(
+        payment,
+        captureDetail.id,
+        capture,
+        'paypal_capture',
+      );
       this.logger.log(`${prefix} orderId=${orderId} captured successfully`);
     } else {
       await this.markPaymentFailed(
         payment,
         `Paypal capture status: ${capture.status}`,
         capture,
+        'paypal_capture',
       );
       this.logger.warn(`${prefix} orderId=${orderId} capture not completed`);
       throw new BadRequestException('Payment capture failed');
@@ -162,7 +171,12 @@ export class PaymentService {
     if (payment.status === BookingPaymentStatus.SUCCEED) {
       return;
     }
-    await this.markPaymentSucceeded(payment, providerTxId, rawResponse);
+    await this.markPaymentSucceeded(
+      payment,
+      providerTxId,
+      rawResponse,
+      'paypal_webhook',
+    );
   }
 
   async markPaymentFailedByIntentId(
@@ -183,7 +197,12 @@ export class PaymentService {
     if (payment.status !== BookingPaymentStatus.PENDING) {
       return;
     }
-    await this.markPaymentFailed(payment, reason, rawResponse);
+    await this.markPaymentFailed(
+      payment,
+      reason,
+      rawResponse,
+      'paypal_webhook',
+    );
   }
 
   async createVnpayPaymentUrl(
@@ -256,7 +275,12 @@ export class PaymentService {
       this.logger.warn(
         `${prefix} amount mismatch expected=${payment.price} actual=${result.amount}`,
       );
-      await this.markPaymentFailed(payment, 'Amount mismatch', query);
+      await this.markPaymentFailed(
+        payment,
+        'Amount mismatch',
+        query,
+        'vnpay_callback',
+      );
       return {
         ...result,
         isSuccess: false,
@@ -267,13 +291,19 @@ export class PaymentService {
     }
 
     if (result.isSuccess && result.transactionNo) {
-      await this.markPaymentSucceeded(payment, result.transactionNo, query);
+      await this.markPaymentSucceeded(
+        payment,
+        result.transactionNo,
+        query,
+        'vnpay_callback',
+      );
       this.logger.log(`${prefix} marked as succeeded`);
     } else {
       await this.markPaymentFailed(
         payment,
         `Vnpay responseCode: ${result.responseCode}`,
         query,
+        'vnpay_callback',
       );
       this.logger.warn(`${prefix} marked as failed`);
     }
@@ -324,7 +354,9 @@ export class PaymentService {
     payment: BookingPayment,
     providerTxId: string,
     rawResponse: Record<string, any>,
+    source: string,
   ): Promise<void> {
+    const fromStatus = payment.status;
     payment.status = BookingPaymentStatus.SUCCEED;
     payment.providerTxId = providerTxId;
     payment.rawResponse = rawResponse;
@@ -333,17 +365,57 @@ export class PaymentService {
     await this.bookingRepository.update(payment.booking.id, {
       status: BookingStatus.PAID,
     });
+
+    await this.recordStatusHistory(
+      payment,
+      fromStatus,
+      BookingPaymentStatus.SUCCEED,
+      { rawResponse, source },
+    );
   }
 
   private async markPaymentFailed(
     payment: BookingPayment,
     reason: string,
     rawResponse: Record<string, any>,
+    source: string,
   ): Promise<void> {
+    const fromStatus = payment.status;
     payment.status = BookingPaymentStatus.FAILED;
     payment.failureReason = reason;
     payment.rawResponse = rawResponse;
     await this.bookingPaymentRepository.save(payment);
+
+    await this.recordStatusHistory(
+      payment,
+      fromStatus,
+      BookingPaymentStatus.FAILED,
+      { reason, rawResponse, source },
+    );
+  }
+
+  private async recordStatusHistory(
+    payment: BookingPayment,
+    fromStatus: BookingPaymentStatus | null,
+    toStatus: BookingPaymentStatus,
+    options: {
+      reason?: string;
+      rawResponse?: Record<string, any>;
+      source: string;
+    },
+  ): Promise<void> {
+    const history = this.bookingPaymentHistoryRepository.create({
+      bookingPaymentId: payment.id,
+      bookingId: payment.bookingId ?? payment.booking?.id,
+      fromStatus,
+      toStatus,
+      provider: payment.provider,
+      providerTxId: payment.providerTxId,
+      reason: options.reason,
+      rawResponse: options.rawResponse,
+      source: options.source,
+    });
+    await this.bookingPaymentHistoryRepository.save(history);
   }
 
   getPaypalPublicConfig() {

@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Booking } from 'src/modules/booking/entities/booking.entity';
 import { BookingPayment } from 'src/modules/booking/entities/booking-payment.entity';
+import { BookingPaymentHistory } from 'src/modules/booking/entities/booking-payment-history.entity';
 
 import { PaymentController } from './payment.controller';
 import { VnpayPaymentController } from './vnpay-payment.controller';
@@ -16,7 +17,7 @@ import { VnpayService } from './vnpay.service';
   imports: [
     HttpModule,
     ConfigModule,
-    TypeOrmModule.forFeature([Booking, BookingPayment]),
+    TypeOrmModule.forFeature([Booking, BookingPayment, BookingPaymentHistory]),
   ],
   controllers: [PaymentController, VnpayPaymentController],
   providers: [PaymentService, PaypalService, VnpayService],
