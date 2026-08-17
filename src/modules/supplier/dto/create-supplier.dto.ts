@@ -23,7 +23,6 @@ export class CreateSupplierDto {
   @IsString()
   avatar?: string;
 
-
   //@ApiProperty({ default: 0 })
   //@IsOptional()
   //@IsNumber()
