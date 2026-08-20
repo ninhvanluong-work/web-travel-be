@@ -10,6 +10,8 @@ import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 export enum UserRole {
   NORMAL = 'normal',
   TOUR_GUIDE = 'tour_guide',
+  ADMIN = 'admin',
+  SUPER_ADMIN = 'super_admin',
 }
 
 @Entity('user')

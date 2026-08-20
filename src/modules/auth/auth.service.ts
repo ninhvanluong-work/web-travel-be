@@ -57,18 +57,21 @@ export class AuthService {
   async genLoginJwtToken(payload: {
     userId: string;
     tourGuideId: string;
+    role: UserRole;
     version?: number;
   }): Promise<{ accessToken: string; refreshToken: string }> {
-    const { userId, tourGuideId, version = 1 } = payload;
+    const { userId, tourGuideId, role, version = 1 } = payload;
     const jwtSecret = this.configService.get<string>('JWT_SECRET', '');
     const jwtPayload = {
       userId,
       tourGuideId,
+      role,
     };
 
     const refreshTokenPayload = {
       userId,
       tourGuideId,
+      role,
       version,
     };
 
@@ -86,6 +89,11 @@ export class AuthService {
 
   async register(registerDto: RegisterDto) {
     const { email, password, role = UserRole.NORMAL } = registerDto;
+
+    if (role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN) {
+      throw new BadRequestException('Cannot register an admin account');
+    }
+
     const existUser = await this.userRepository.findOneBy({ email });
     if (existUser) {
       throw new ConflictException(
@@ -114,8 +122,10 @@ export class AuthService {
     return this.userRepository.save(user);
   }
 
-  async login(loginDto: LoginDto) {
-    const { email, password } = loginDto;
+  private async validateCredentials(
+    email: string,
+    password: string,
+  ): Promise<User> {
     const loginErrMsg = `Email or password is incorrect`;
 
     const existUser = await this.userRepository.findOneBy({ email });
@@ -133,9 +143,14 @@ export class AuthService {
       throw new UnauthorizedException(loginErrMsg);
     }
 
+    return existUser;
+  }
+
+  private async buildLoginResponse(existUser: User) {
     const { accessToken, refreshToken } = await this.genLoginJwtToken({
       userId: existUser.id,
       tourGuideId: existUser.tourGuideId,
+      role: existUser.role,
       version: existUser.refreshTokenVersion,
     });
 
@@ -148,6 +163,26 @@ export class AuthService {
       refreshToken,
       user,
     };
+  }
+
+  async login(loginDto: LoginDto) {
+    const { email, password } = loginDto;
+    const existUser = await this.validateCredentials(email, password);
+    return this.buildLoginResponse(existUser);
+  }
+
+  async loginAdmin(loginDto: LoginDto) {
+    const { email, password } = loginDto;
+    const existUser = await this.validateCredentials(email, password);
+
+    if (
+      existUser.role !== UserRole.ADMIN &&
+      existUser.role !== UserRole.SUPER_ADMIN
+    ) {
+      throw new UnauthorizedException(`Email or password is incorrect`);
+    }
+
+    return this.buildLoginResponse(existUser);
   }
 
   async handleForgotPassword(payload: ForgotPasswordDto) {
@@ -230,7 +265,12 @@ export class AuthService {
     const prefixLog = `[handleRenewAccessToken]`;
 
     const { refreshToken } = payload;
-    let decoded: { userId: string; tourGuideId: string; version: number };
+    let decoded: {
+      userId: string;
+      tourGuideId: string;
+      role: UserRole;
+      version: number;
+    };
 
     const errorMsg = `Token expired or invalid`;
     try {
@@ -243,7 +283,7 @@ export class AuthService {
       throw new UnauthorizedException(errorMsg);
     }
 
-    const { userId, version, tourGuideId } = decoded;
+    const { userId, version, tourGuideId, role } = decoded;
     this.logger.log(
       `${prefixLog} Decoded token - userId=${userId}, tourGuideId=${tourGuideId}, version=${version}`,
     );
@@ -276,6 +316,7 @@ export class AuthService {
       await this.genLoginJwtToken({
         userId,
         tourGuideId,
+        role,
         version: newVersion,
       });
 

@@ -58,6 +58,24 @@ export class AuthController {
     return formatApiResponse(result, HttpStatus.OK, 'user login successfully');
   }
 
+  @Post('admin/login')
+  @ApiResponse({
+    status: 200,
+    description: 'admin login',
+    schema: {
+      properties: {
+        data: { $ref: getSchemaPath('LoginResponseDto') },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async loginAdmin(@Body() loginDto: LoginDto) {
+    const result = await this.authService.loginAdmin(loginDto);
+    return formatApiResponse(result, HttpStatus.OK, 'admin login successfully');
+  }
+
   @Post('forgot-password')
   @ApiResponse({
     status: 200,

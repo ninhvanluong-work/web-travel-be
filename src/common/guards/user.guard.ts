@@ -8,7 +8,8 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 
-import { PUBLIC, TOUR_GUIDE } from 'src/common/decorators';
+import { PUBLIC, TOUR_GUIDE, ADMIN, SUPER_ADMIN } from 'src/common/decorators';
+import { UserRole } from 'src/modules/user/entities/user.entity';
 
 @Injectable()
 export class UserGuard implements CanActivate {
@@ -27,6 +28,14 @@ export class UserGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+    const isAdmin = this.reflector.getAllAndOverride<boolean>(ADMIN, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    const isSuperAdmin = this.reflector.getAllAndOverride<boolean>(
+      SUPER_ADMIN,
+      [context.getHandler(), context.getClass()],
+    );
 
     if (isPublic) {
       return true;
@@ -49,8 +58,23 @@ export class UserGuard implements CanActivate {
         throw new UnauthorizedException('Invalid token');
       }
 
+      //check is admin token (super admin is also allowed)
+      if (
+        isAdmin &&
+        payload?.role !== UserRole.ADMIN &&
+        payload?.role !== UserRole.SUPER_ADMIN
+      ) {
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      //check is super admin token
+      if (isSuperAdmin && payload?.role !== UserRole.SUPER_ADMIN) {
+        throw new UnauthorizedException('Invalid token');
+      }
+
       request['userId'] = payload.userId;
       request['tourGuideId'] = payload.tourGuideId;
+      request['role'] = payload.role;
     } catch (error: any) {
       console.log(error.message);
       throw new UnauthorizedException('Token expired or invalid');
