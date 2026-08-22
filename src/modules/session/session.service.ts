@@ -22,7 +22,10 @@ import { Product } from 'src/modules/product/entities/product.entity';
 import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { SessionUnit } from 'src/modules/session-unit/entities/session-unit.entity';
 import { CreateSessionDto } from './dto/create-session.dto';
-import { CreateSessionRangeDto } from './dto/create-session-range.dto';
+import {
+  CreateSessionRangeDto,
+  DuplicateStrategy,
+} from './dto/create-session-range.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { GetSessionDto } from './dto/get-session.dto';
 import {
@@ -191,22 +194,39 @@ export class SessionService {
       }
     }
 
+    const duplicateStrategy =
+      payload.duplicateStrategy ?? DuplicateStrategy.SKIP;
+
     const existingSessions = await this.sessionRepository.find({
       where: {
         productId: payload.productId,
         travelDate: Between(start, endOfDay(end)),
       },
+      relations: { sessionUnits: true },
     });
-    const existingDateKeys = new Set(
-      existingSessions.map((s) => startOfDay(new Date(s.travelDate)).getTime()),
+    const existingByDateKey = new Map(
+      existingSessions.map((s) => [
+        startOfDay(new Date(s.travelDate)).getTime(),
+        s,
+      ]),
     );
 
-    const newSessions = Array.from({ length: days }, (_, i) => {
+    // Full list of candidate dates in the range, narrowed down to the
+    // selected weekdays only (daysOfWeek uses ISO weekday: 1=Mon...7=Sun,
+    // while Date.getDay() returns 0=Sun...6=Sat, hence the 0 -> 7 remap).
+    const allDates = Array.from({ length: days }, (_, i) => {
       const travelDate = new Date(start);
       travelDate.setDate(travelDate.getDate() + i);
       return travelDate;
-    })
-      .filter((travelDate) => !existingDateKeys.has(travelDate.getTime()))
+    }).filter((travelDate) => {
+      if (!payload.daysOfWeek?.length) return true;
+      const isoWeekday = travelDate.getDay() === 0 ? 7 : travelDate.getDay();
+      return payload.daysOfWeek.includes(isoWeekday);
+    });
+
+    // Dates with no existing session -> always created.
+    const newSessions = allDates
+      .filter((travelDate) => !existingByDateKey.has(travelDate.getTime()))
       .map((travelDate) =>
         this.sessionRepository.create({
           productId: payload.productId,
@@ -217,7 +237,19 @@ export class SessionService {
         }),
       );
 
-    if (newSessions.length === 0) {
+    // Dates that already have a session -> handled per duplicateStrategy below.
+    const conflictingSessions = allDates
+      .filter((travelDate) => existingByDateKey.has(travelDate.getTime()))
+      .map((travelDate) => existingByDateKey.get(travelDate.getTime())!);
+
+    // SKIP + nothing new to create is only an error when the caller actually
+    // asked for dates (allDates.length > 0); an empty daysOfWeek match should
+    // just return an empty result instead of looking like a conflict.
+    if (
+      duplicateStrategy === DuplicateStrategy.SKIP &&
+      newSessions.length === 0 &&
+      allDates.length > 0
+    ) {
       this.logger.warn(
         `createRange() rejected: session already exists for product ${payload.productId} on ${formatDateSpan(start, end)}`,
       );
@@ -226,10 +258,40 @@ export class SessionService {
       );
     }
 
-    await this.sessionRepository.save(newSessions);
+    if (newSessions.length) {
+      await this.sessionRepository.save(newSessions);
+    }
 
-    if (payload.sessionUnits?.length) {
-      const sessionUnits = newSessions.flatMap((session) =>
+    // OVERWRITE: update status and fully replace sessionUnits on the
+    // conflicting sessions instead of skipping them.
+    let overwrittenSessions: Session[] = [];
+    if (
+      duplicateStrategy === DuplicateStrategy.OVERWRITE &&
+      conflictingSessions.length
+    ) {
+      for (const session of conflictingSessions) {
+        session.status = payload.status ?? session.status;
+      }
+      await this.sessionRepository.save(conflictingSessions);
+
+      if (payload.sessionUnits?.length) {
+        const toDelete = conflictingSessions.flatMap(
+          (session) => session.sessionUnits ?? [],
+        );
+        if (toDelete.length) {
+          await this.sessionUnitRepository.remove(toDelete);
+        }
+      }
+
+      overwrittenSessions = conflictingSessions;
+    }
+
+    // sessionUnits from the payload apply uniformly to both freshly created
+    // sessions and sessions that were just overwritten.
+    const affectedSessions = [...newSessions, ...overwrittenSessions];
+
+    if (payload.sessionUnits?.length && affectedSessions.length) {
+      const sessionUnits = affectedSessions.flatMap((session) =>
         payload.sessionUnits!.map((su) =>
           this.sessionUnitRepository.create({
             sessionId: session.id,
@@ -242,11 +304,15 @@ export class SessionService {
     }
 
     this.logger.log(
-      `createRange() created ${newSessions.length} session(s) for product ${payload.productId} on ${formatDateSpan(start, end)}`,
+      `createRange() created ${newSessions.length} and overwrote ${overwrittenSessions.length} session(s) for product ${payload.productId} on ${formatDateSpan(start, end)}`,
     );
 
+    if (affectedSessions.length === 0) {
+      return [];
+    }
+
     return this.find({
-      where: { id: In(newSessions.map((s) => s.id)) },
+      where: { id: In(affectedSessions.map((s) => s.id)) },
       relations: { sessionUnits: { unit: true } },
       order: { travelDate: 'ASC' },
     });
