@@ -51,7 +51,7 @@ export class EmbeddingService {
     const payload = {
       video: {
         name: video.name,
-        description: video.description,
+        description: video?.description || 'empty',
       },
       product: {
         name: product?.name || 'empty',

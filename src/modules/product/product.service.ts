@@ -139,11 +139,13 @@ export class ProductService {
       video.type = VideoType.HERO;
       await this.videoRepository.save(video);
       try {
+        video.product = result;
         const newEmbedding =
           await this.embeddingService.generateVideoEmbedding(video);
         video.embedding = newEmbedding;
-        video.embedding = newEmbedding;
-        await this.videoRepository.save(video);
+        await this.videoRepository.update(video.id, {
+          embedding: newEmbedding,
+        });
       } catch (error: any) {
         this.logger.error(
           `${prefixLog} update video embedding error ${error?.message}`,
@@ -476,9 +478,9 @@ export class ProductService {
       });
 
       try {
+        video.product = product;
         const newEmbedding =
           await this.embeddingService.generateVideoEmbedding(video);
-        video.embedding = newEmbedding;
 
         await this.videoRepository.update(video.id, {
           embedding: newEmbedding,
