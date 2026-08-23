@@ -41,6 +41,7 @@ import { OptionStatus } from 'src/modules/option/entities/option.entity';
 import { DepartureTimeService } from 'src/modules/departure-time/departure-time.service';
 import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-location.entity';
 import { Unit } from 'src/modules/unit/entities/unit.entity';
+import { EmbeddingService } from 'src/modules/embedding/embedding.service';
 
 @Injectable()
 export class ProductService {
@@ -69,6 +70,7 @@ export class ProductService {
     private readonly elementService: ElementService,
     private readonly optionService: OptionService,
     private readonly departureTimeService: DepartureTimeService,
+    private readonly embeddingService: EmbeddingService,
   ) {}
 
   async create(payload: CreateProductDto) {
@@ -133,14 +135,20 @@ export class ProductService {
         throw new NotFoundException('Video Not Found');
       }
 
-      await this.videoRepository.update(
-        {
-          productId: result.id,
-        },
-        {
-          type: VideoType.HERO,
-        },
-      );
+      video.productId = result.id;
+      video.type = VideoType.HERO;
+      await this.videoRepository.save(video);
+      try {
+        const newEmbedding =
+          await this.embeddingService.generateVideoEmbedding(video);
+        video.embedding = newEmbedding;
+        video.embedding = newEmbedding;
+        await this.videoRepository.save(video);
+      } catch (error: any) {
+        this.logger.error(
+          `${prefixLog} update video embedding error ${error?.message}`,
+        );
+      }
     }
 
     // gắn danh sách tag (quan hệ nhiều-nhiều) cho product

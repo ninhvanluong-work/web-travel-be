@@ -19,6 +19,7 @@ import { ReviewModule } from 'src/modules/review/review.module';
 import { ElementModule } from 'src/modules/element/element.module';
 import { OptionModule } from 'src/modules/option/option.module';
 import { DepartureTimeModule } from 'src/modules/departure-time/departure-time.module';
+import { EmbeddingModule } from 'src/modules/embedding/embedding.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { DepartureTimeModule } from 'src/modules/departure-time/departure-time.m
     ElementModule,
     OptionModule,
     DepartureTimeModule,
+    EmbeddingModule,
   ],
   controllers: [ProductController],
   providers: [ProductService],
