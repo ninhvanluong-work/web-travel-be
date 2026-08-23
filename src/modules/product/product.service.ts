@@ -421,6 +421,7 @@ export class ProductService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
+    const prefixLog = `[update] id: ${id}`;
     const {
       destinationId,
       supplierId,
@@ -473,6 +474,20 @@ export class ProductService {
         type: VideoType.HERO,
         productId: id,
       });
+
+      try {
+        const newEmbedding =
+          await this.embeddingService.generateVideoEmbedding(video);
+        video.embedding = newEmbedding;
+
+        await this.videoRepository.update(video.id, {
+          embedding: newEmbedding,
+        });
+      } catch (error: any) {
+        this.logger.error(
+          `${prefixLog} update video embedding error ${error?.message}`,
+        );
+      }
 
       delete updateProductDto.heroVideoId;
     }
