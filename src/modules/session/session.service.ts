@@ -364,6 +364,7 @@ export class SessionService {
         const existing = existingSessionUnits.find(
           (e) => e.unitId === su.unitId,
         );
+
         return this.sessionUnitRepository.create({
           id: existing?.id,
           sessionId: id,
@@ -372,16 +373,52 @@ export class SessionService {
         });
       });
 
-      if (toDelete.length) {
-        await this.sessionUnitRepository.remove(toDelete);
-      }
-      if (toUpsert.length) {
-        await this.sessionUnitRepository.save(toUpsert);
+      this.logger.debug(
+        `update() session ${id} sessionUnits diff: toDelete=[${toDelete
+          .map((su) => `${su.id}:${su.unitId}`)
+          .join(', ')}], toUpsert=[${toUpsert
+          .map(
+            (su) => `${su.id ?? 'new'}:${su.unitId}:sessionId=${su.sessionId}`,
+          )
+          .join(', ')}]`,
+      );
+
+      try {
+        if (toDelete.length) {
+          await this.sessionUnitRepository.remove(toDelete);
+          this.logger.log(
+            `update() session ${id} deleted ${toDelete.length} sessionUnit(s): unitIds=[${toDelete
+              .map((su) => su.unitId)
+              .join(', ')}]`,
+          );
+        }
+        if (toUpsert.length) {
+          await this.sessionUnitRepository.save(toUpsert);
+          this.logger.log(
+            `update() session ${id} upserted ${toUpsert.length} sessionUnit(s): unitIds=[${toUpsert
+              .map((su) => su.unitId)
+              .join(', ')}]`,
+          );
+        }
+      } catch (err) {
+        this.logger.error(
+          `update() session ${id} failed to persist sessionUnits. toDelete=${JSON.stringify(
+            toDelete.map((su) => ({ id: su.id, unitId: su.unitId })),
+          )}, toUpsert=${JSON.stringify(
+            toUpsert.map((su) => ({
+              id: su.id,
+              sessionId: su.sessionId,
+              unitId: su.unitId,
+              price: su.price,
+            })),
+          )}`,
+          err instanceof Error ? err.stack : String(err),
+        );
+        throw err;
       }
     }
 
-    Object.assign(session, sessionFields);
-    await this.sessionRepository.save(session);
+    await this.sessionRepository.update(id, sessionFields);
 
     this.logger.log(`update() session ${id} updated`);
 
