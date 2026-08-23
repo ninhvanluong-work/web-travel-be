@@ -26,6 +26,7 @@ import { DepartureTimeModule } from './modules/departure-time/departure-time.mod
 import { BookingModule } from './modules/booking/booking.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { SupplierModule } from './modules/supplier/supplier.module';
+import { MailModule } from 'src/common/mail/mail.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { SupplierModule } from './modules/supplier/supplier.module';
       envFilePath: '.env',
     }),
     ScheduleModule.forRoot(),
+    MailModule,
     UserModule,
     ProductModule,
     DatabaseModule,

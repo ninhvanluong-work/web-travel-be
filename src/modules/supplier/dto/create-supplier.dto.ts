@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsNumber,
   IsBoolean,
+  IsEmail,
   Min,
   Max,
 } from 'class-validator';
@@ -17,6 +18,15 @@ export class CreateSupplierDto {
   @IsOptional()
   @IsString()
   contact?: string;
+
+  @ApiProperty({
+    nullable: true,
+    example: 'supplier@example.com',
+    description: 'Email to notify on new bookings',
+  })
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 
   @ApiProperty({ nullable: true })
   @IsOptional()

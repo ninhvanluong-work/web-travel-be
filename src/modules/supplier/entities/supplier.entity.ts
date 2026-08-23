@@ -13,6 +13,13 @@ export class Supplier extends BaseEntity {
   @ApiProperty({ nullable: true })
   contact: string;
 
+  @Column({ nullable: true, length: 255 })
+  @ApiProperty({
+    nullable: true,
+    description: 'Email to notify on new bookings',
+  })
+  email: string;
+
   @Column({ length: 500, nullable: true })
   @ApiProperty({ nullable: true })
   avatar: string;

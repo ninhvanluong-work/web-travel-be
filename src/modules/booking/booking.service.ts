@@ -42,6 +42,7 @@ import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-loca
 import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { SessionUnit } from 'src/modules/session-unit/entities/session-unit.entity';
 import { DepartureTime } from 'src/modules/departure-time/entities/departure-time.entity';
+import { MailService } from 'src/common/mail/mail.service';
 
 @Injectable()
 export class BookingService {
@@ -70,6 +71,7 @@ export class BookingService {
     private readonly sessionUnitRepository: Repository<SessionUnit>,
     @InjectRepository(DepartureTime)
     private readonly departureTimeRepository: Repository<DepartureTime>,
+    private readonly mailService: MailService,
   ) {}
 
   private generateBookingCode(): string {
@@ -242,6 +244,13 @@ export class BookingService {
     this.logger.debug(
       `${this.prefix('create', session.id)} capacity ${session.capacity + totalCount} -> ${session.capacity}`,
     );
+
+    if (product.supplier) {
+      await this.mailService.sendSupplierBookingNotification(
+        savedBooking,
+        product.supplier,
+      );
+    }
 
     return savedBooking;
   }
