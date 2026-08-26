@@ -40,10 +40,5 @@ export class CreateVideoDto {
   @ApiPropertyOptional({ nullable: true, format: 'uuid' })
   @IsUUID()
   @IsOptional()
-  productId?: string;
-
-  @ApiPropertyOptional({ nullable: true, format: 'uuid' })
-  @IsUUID()
-  @IsOptional()
   tourGuideId?: string;
 }

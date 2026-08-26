@@ -17,7 +17,6 @@ import {
   VideoDto,
 } from 'src/modules/video/dto/get-video.dto';
 import { ConfigService } from '@nestjs/config';
-import { ProductService } from 'src/modules/product/product.service';
 import { BunnyVideoStatus } from 'src/modules/webhook/types/bunny-webhook.type';
 import { generateSlug } from 'src/common/utils/gen-code';
 import { VideoType } from 'src/modules/video/video.type';
@@ -36,7 +35,6 @@ export class VideoService {
     @InjectRepository(TourGuide)
     private readonly tourGuideRepository: Repository<TourGuide>,
 
-    private readonly productService: ProductService,
     private readonly embeddingService: EmbeddingService,
     private readonly configService: ConfigService,
     private readonly videoEditorService: VideoEditorService,
@@ -59,38 +57,13 @@ export class VideoService {
   }
 
   async create(payload: CreateVideoDto) {
-    const { productId, tourGuideId, name, guid } = payload;
-    const prefixLog = `[create] productId ${productId} tourGuideId ${tourGuideId}`;
+    const { tourGuideId, name, guid } = payload;
     const videoInsertData: Partial<Video> = payload;
     videoInsertData.slug = generateSlug(name);
     videoInsertData.embedUrl = this.getVideoEmbedUrl(guid);
     videoInsertData.shortUrl = this.getVideoShortUrl(guid);
     if (!payload.thumbnail) {
       videoInsertData.thumbnail = this.getVideoThumbnailUrl(guid);
-    }
-
-    if (productId) {
-      const product = await this.productService.findByPk(productId);
-      if (!product) {
-        throw new NotFoundException('Product not found');
-      }
-      //description, slug
-      this.logger.log(
-        `${prefixLog} product provided -> save description, slug`,
-      );
-
-      videoInsertData.description = product.description;
-      videoInsertData.slug = product.slug;
-
-      if (payload.type === VideoType.HERO) {
-        this.logger.log(
-          `${prefixLog} hero video -> set all current product video = normal`,
-        );
-        await this.videoRepository.update(
-          { productId },
-          { type: VideoType.NORMAL },
-        );
-      }
     }
 
     if (tourGuideId) {
@@ -204,30 +177,6 @@ export class VideoService {
   }
 
   async update(id: string, updateVideoDto: UpdateVideoDto) {
-    const prefixLog = `[update] ${id}`;
-    const productId = updateVideoDto?.productId as string;
-
-    if (productId) {
-      const product = await this.productService.findByPk(productId);
-      if (!product) {
-        throw new NotFoundException('Product not found');
-      }
-      //description, slug
-      this.logger.log(
-        `${prefixLog} product provided -> save description, slug`,
-      );
-
-      if (updateVideoDto.type === VideoType.HERO) {
-        this.logger.log(
-          `${prefixLog} hero video -> set all current product video = normal`,
-        );
-        await this.videoRepository.update(
-          { productId },
-          { type: VideoType.NORMAL },
-        );
-      }
-    }
-
     await this.videoRepository.update(id, updateVideoDto);
     const updatedVideo = (await this.findOne(id)) as Video;
     await this.updateVideoEmbedding(updatedVideo);

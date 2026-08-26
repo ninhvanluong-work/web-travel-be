@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { VideoService } from './video.service';
@@ -7,7 +7,6 @@ import { EmbeddingModule } from 'src/modules/embedding/embedding.module';
 
 import { Video } from 'src/modules/video/entities/video.entity';
 import { ConfigModule } from '@nestjs/config';
-import { ProductModule } from 'src/modules/product/product.module';
 
 import { Product } from 'src/modules/product/entities/product.entity';
 import { VideoEditorService } from 'src/modules/video/video-editor.service';
@@ -42,7 +41,6 @@ import { Unit } from 'src/modules/unit/entities/unit.entity';
     ]),
     EmbeddingModule,
     ConfigModule,
-    forwardRef(() => ProductModule),
     UploadModule,
     SearchingModule,
     ElementModule,
