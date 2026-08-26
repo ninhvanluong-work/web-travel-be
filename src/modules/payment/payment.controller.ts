@@ -12,7 +12,6 @@ import { IsUUID } from 'class-validator';
 
 import { PaymentService } from 'src/modules/payment/payment.service';
 import { CapturePaymentDto } from 'src/modules/payment/dto/capture-payment.dto';
-import { CreateDemoOrderDto } from 'src/modules/payment/dto/create-demo-order.dto';
 
 import { formatApiResponse } from 'src/common/utils/format';
 import { UserId } from 'src/common/decorators';
@@ -28,39 +27,14 @@ class BookingIdParam {
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
-  // NOTE: literal routes below (config, demo/*) must stay declared before the
-  // ':bookingId/*' routes, otherwise the ':bookingId' param would greedily
-  // match the 'demo' segment first.
   @Get('config')
   @ApiResponse({
     status: 200,
-    description:
-      'public paypal config (client id + currency) for the demo page',
+    description: 'public paypal config (client id + currency)',
   })
   getConfig() {
     const result = this.paymentService.getPaypalPublicConfig();
     return formatApiResponse(result, HttpStatus.OK, 'paypal config');
-  }
-
-  @Post('demo/create-order')
-  @ApiResponse({
-    status: 200,
-    description:
-      'DEMO ONLY: create a paypal order for a fixed amount, not tied to any booking',
-  })
-  async createDemoOrder(@Body() dto: CreateDemoOrderDto) {
-    const result = await this.paymentService.createDemoOrder(dto.amount ?? 10);
-    return formatApiResponse(result, HttpStatus.OK, 'demo order created');
-  }
-
-  @Post('demo/capture-order')
-  @ApiResponse({
-    status: 200,
-    description: 'DEMO ONLY: capture a demo paypal order',
-  })
-  async captureDemoOrder(@Body() dto: CapturePaymentDto) {
-    const result = await this.paymentService.captureDemoOrder(dto.orderId);
-    return formatApiResponse(result, HttpStatus.OK, 'demo order captured');
   }
 
   @Post(':bookingId/create-order')

@@ -440,24 +440,4 @@ export class PaymentService {
       currency: this.configService.get<string>('PAYPAL_CURRENCY') || 'USD',
     };
   }
-
-  async createDemoOrder(amount: number) {
-    const currency = this.configService.get<string>('PAYPAL_CURRENCY') || 'USD';
-    const order = await this.paypalService.createOrder({
-      bookingCode: `DEMO-${Date.now()}`,
-      amount,
-      currency,
-    });
-    return { orderId: order.id, status: order.status };
-  }
-
-  async captureDemoOrder(orderId: string) {
-    const capture = await this.paypalService.captureOrder(orderId);
-    const captureDetail = capture.purchase_units?.[0]?.payments?.captures?.[0];
-    return {
-      orderId: capture.id,
-      status: capture.status,
-      captureId: captureDetail?.id,
-    };
-  }
 }
