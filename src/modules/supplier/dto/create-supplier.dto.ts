@@ -9,7 +9,7 @@ export class CreateSupplierDto {
   @ApiProperty({ nullable: true })
   @IsOptional()
   @IsString()
-  contact?: string;
+  phone?: string;
 
   @ApiProperty({
     nullable: true,

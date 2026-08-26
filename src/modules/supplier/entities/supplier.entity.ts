@@ -11,7 +11,7 @@ export class Supplier extends BaseEntity {
 
   @Column({ nullable: true })
   @ApiProperty({ nullable: true })
-  contact: string;
+  phone: string;
 
   @Column({ nullable: true, length: 255 })
   @ApiProperty({
