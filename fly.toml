@@ -16,6 +16,10 @@ primary_region = 'hkg'
   min_machines_running = 1
   processes = ['app']
 
+[[files]]
+  guest_path='/app/certs/ca-certificate.crt'
+  secret_name='CA_CERT_BASE64'
+
 [[vm]]
   memory = '1gb'
   cpu_kind = 'shared'
