@@ -14,3 +14,9 @@ export class BasicInfoDto {
   @ApiProperty({ example: 'name' })
   name: string;
 }
+
+export enum ENV_ENUM {
+  PRODUCTION = 'production',
+  LOCAL = 'local',
+  DEVELOPMENT = 'development',
+}
