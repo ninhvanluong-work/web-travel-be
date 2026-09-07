@@ -4,9 +4,7 @@ dotenv.config({ path: '.env' });
 
 const schema = process.env.POSTGRES_SCHEMA || 'public';
 
-export class BookingPassengersMetadata1784902286427
-  implements MigrationInterface
-{
+export class BookingPassengersMetadata1784902286427 implements MigrationInterface {
   name = 'BookingPassengersMetadata1784902286427';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

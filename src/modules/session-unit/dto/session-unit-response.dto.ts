@@ -13,7 +13,10 @@ export class SessionUnitDto {
   @ApiProperty({ type: 'string', format: 'uuid' })
   unitId: string;
 
-  @ApiProperty({ example: 1500000, description: 'giá của unit trong session này' })
+  @ApiProperty({
+    example: 1500000,
+    description: 'giá của unit trong session này',
+  })
   price: number;
 
   @ApiProperty({ type: 'string', format: 'date-time' })
