@@ -8,8 +8,14 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import { formatApiResponse } from 'src/common/utils/format';
 import { IdDto } from 'src/types/common.dto';
@@ -19,6 +25,9 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { GetTagDto, GetTagsResponseDto } from './dto/get-tag.dto';
 import { TagDto } from './dto/tag-response.dto';
+import { Admin } from 'src/common/decorators';
+import { UserGuard } from 'src/common/guards';
+import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('tag')
 @ApiExtraModels(TagDto, GetTagsResponseDto)
@@ -26,6 +35,9 @@ export class TagController {
   constructor(private readonly tagService: TagService) {}
 
   @Post()
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create tag',
@@ -67,6 +79,9 @@ export class TagController {
   }
 
   @Put(':id')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update tag',
@@ -86,6 +101,9 @@ export class TagController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'deactivate tag',

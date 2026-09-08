@@ -7,8 +7,14 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import {
   Product,
@@ -34,6 +40,9 @@ import {
 } from 'src/modules/review/dto/get-review.dto';
 import { ReviewService } from 'src/modules/review/review.service';
 import { UpdateProductStatusDto } from 'src/modules/product/dto/update-product-status.dto';
+import { Admin } from 'src/common/decorators';
+import { UserGuard } from 'src/common/guards';
+import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('product')
 @ApiExtraModels(
@@ -52,6 +61,9 @@ export class ProductController {
   ) {}
 
   @Post()
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create product',
@@ -146,6 +158,9 @@ export class ProductController {
   }
 
   @Put(':id')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update product',
@@ -174,6 +189,9 @@ export class ProductController {
   }
 
   @Post(':id/publish')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'publish product',
@@ -201,6 +219,9 @@ export class ProductController {
   }
 
   @Post(':id/status/:status')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update product status',

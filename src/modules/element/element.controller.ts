@@ -8,8 +8,14 @@ import {
   Get,
   HttpStatus,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import { ElementService } from 'src/modules/element/element.service';
 
@@ -20,6 +26,9 @@ import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
 import { GetElementDto } from './dto/get-element.dto';
 import { ElementDto } from './dto/element-response.dto';
+import { Admin } from 'src/common/decorators';
+import { UserGuard } from 'src/common/guards';
+import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('element')
 @ApiExtraModels(ElementDto)
@@ -27,6 +36,9 @@ export class ElementController {
   constructor(private readonly elementService: ElementService) {}
 
   @Post()
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create element',
@@ -72,6 +84,9 @@ export class ElementController {
   }
 
   @Put(':id')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'UPDATE element',
@@ -95,6 +110,9 @@ export class ElementController {
   }
 
   @Put(':id/active')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'UPDATE element',
@@ -118,6 +136,9 @@ export class ElementController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'deactivate element',

@@ -8,8 +8,14 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import { SupplierService } from 'src/modules/supplier/supplier.service';
 import { CreateSupplierDto } from 'src/modules/supplier/dto/create-supplier.dto';
@@ -22,9 +28,15 @@ import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 
 import { formatApiResponse } from 'src/common/utils/format';
 import { IdDto } from 'src/types/common.dto';
+import { Admin } from 'src/common/decorators';
+import { UserGuard } from 'src/common/guards';
+import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('supplier')
 @ApiExtraModels(Supplier, GetSuppliersResponseDto)
+@ApiBearerAuth(USER_TOKEN)
+@Admin()
+@UseGuards(UserGuard)
 export class SupplierController {
   constructor(private readonly supplierService: SupplierService) {}
 

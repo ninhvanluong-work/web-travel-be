@@ -8,12 +8,18 @@ import {
   HttpStatus,
   Put,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 
 import { VideoService } from './video.service';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
-import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import {
   GetVideoAdminDto,
   GetVideoDto,
@@ -22,6 +28,9 @@ import {
 import { formatApiResponse } from 'src/common/utils/format';
 import { Video } from 'src/modules/video/entities/video.entity';
 import { SearchingService } from 'src/modules/searching/searching.service';
+import { Admin } from 'src/common/decorators';
+import { UserGuard } from 'src/common/guards';
+import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('video')
 @ApiExtraModels(GetVideoDto, GetVideoResponseDto, Video, GetVideoAdminDto)
@@ -68,6 +77,9 @@ export class VideoController {
   }
 
   @Get('/admin')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'get list video for admin purpose',
@@ -142,6 +154,9 @@ export class VideoController {
   }
 
   @Post('')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create video',
@@ -166,6 +181,9 @@ export class VideoController {
   }
 
   @Put(':id')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update video',

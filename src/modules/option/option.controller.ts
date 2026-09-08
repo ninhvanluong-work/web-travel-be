@@ -8,8 +8,14 @@ import {
   Get,
   HttpStatus,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import { OptionService } from './option.service';
 import { CreateOptionDto } from './dto/create-option.dto';
@@ -18,6 +24,9 @@ import { GetOptionDto, GetOptionsResponseDto } from './dto/get-option.dto';
 import { OptionDto } from './dto/option-response.dto';
 import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
+import { Admin } from 'src/common/decorators';
+import { UserGuard } from 'src/common/guards';
+import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('option')
 @ApiExtraModels(OptionDto, GetOptionsResponseDto)
@@ -25,6 +34,9 @@ export class OptionController {
   constructor(private readonly optionService: OptionService) {}
 
   //@Post()
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create option',
@@ -84,6 +96,9 @@ export class OptionController {
   }
 
   @Put(':id')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update option',
@@ -107,6 +122,9 @@ export class OptionController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'delete option',

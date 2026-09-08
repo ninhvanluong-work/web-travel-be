@@ -8,8 +8,14 @@ import {
   Get,
   HttpStatus,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import { SessionService } from './session.service';
 import { CreateSessionDto } from './dto/create-session.dto';
@@ -19,6 +25,9 @@ import { GetSessionDto, GetSessionsResponseDto } from './dto/get-session.dto';
 import { SessionDto } from './dto/session-response.dto';
 import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
+import { Admin } from 'src/common/decorators';
+import { UserGuard } from 'src/common/guards';
+import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('session')
 @ApiExtraModels(SessionDto, GetSessionsResponseDto)
@@ -26,6 +35,9 @@ export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
   @Post()
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create session',
@@ -48,6 +60,9 @@ export class SessionController {
   }
 
   @Post('range')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create sessions for 1 or multiple consecutive days',
@@ -107,6 +122,9 @@ export class SessionController {
   }
 
   @Put(':id')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update session',
@@ -133,6 +151,9 @@ export class SessionController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'delete session',

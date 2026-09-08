@@ -5,11 +5,13 @@ import {
   Param,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiExtraModels,
@@ -29,9 +31,16 @@ import {
 } from 'src/modules/upload/dto/upload-video.dto';
 
 import { UploadService } from 'src/modules/upload/upload.service';
+import { Admin } from 'src/common/decorators';
+import { UserGuard } from 'src/common/guards';
+import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('upload')
 @ApiExtraModels(UploadVideoResponseDto, UploadFileResponseDto)
+//@ApiBearerAuth(USER_TOKEN)
+//@Admin()
+//@UseGuards(UserGuard)
+//TODO: check client
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
   @Post('video')
