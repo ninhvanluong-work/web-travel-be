@@ -73,28 +73,14 @@ export class ProductService {
     private readonly embeddingService: EmbeddingService,
   ) {}
 
-  async create(payload: CreateProductDto) {
-    const prefixLog = `[create] `;
+  async checkExternalTableId(ids: {
+    supplierId?: string;
+    destinationId?: string;
+  }) {
+    const prefixLog = `[checkExternalTableId] `;
+    this.logger.debug(`${prefixLog} ${JSON.stringify(ids)}`);
 
-    this.logger.debug(`${prefixLog} ${JSON.stringify(payload)}`);
-
-    const {
-      name,
-      destinationId,
-      supplierId,
-      heroVideoId,
-      tagIds,
-      tourGuideIds,
-      elementIds,
-      options,
-      departureTimes,
-      pickupLocations,
-      units,
-    } = payload;
-    const slug = generateSlug(name);
-    const code = generateRandomCode(8);
-
-    // destination/supplier phải tồn tại trước khi tạo product
+    const { supplierId, destinationId } = ids;
     if (destinationId) {
       this.logger.log(`${prefixLog} checking destination: ${destinationId}`);
       const destination = await this.destinationRepository.findOne({
@@ -115,6 +101,30 @@ export class ProductService {
         throw new NotFoundException('Supplier Not Found');
       }
     }
+  }
+
+  async create(payload: CreateProductDto) {
+    const prefixLog = `[create] `;
+    this.logger.debug(`${prefixLog} ${JSON.stringify(payload)}`);
+
+    const {
+      name,
+      destinationId,
+      supplierId,
+      heroVideoId,
+      tagIds,
+      tourGuideIds,
+      elementIds,
+      options,
+      departureTimes,
+      pickupLocations,
+      units,
+    } = payload;
+    const slug = generateSlug(name);
+    const code = generateRandomCode(8);
+
+    // destination/supplier phải tồn tại trước khi tạo product
+    await this.checkExternalTableId({ destinationId, supplierId });
 
     const newProduct = this.productRepository.create({
       ...payload,
@@ -440,23 +450,7 @@ export class ProductService {
     const product = await this.findByPk(id);
     if (!product) throw new NotFoundException('Product Not Found');
 
-    if (destinationId) {
-      const destination = await this.destinationRepository.findOne({
-        where: { id: destinationId },
-      });
-      if (!destination) {
-        throw new NotFoundException('Destination Not Found');
-      }
-    }
-
-    if (supplierId) {
-      const supplier = await this.supplierRepository.findOne({
-        where: { id: supplierId },
-      });
-      if (!supplier) {
-        throw new NotFoundException('Supplier Not Found');
-      }
-    }
+    await this.checkExternalTableId({ destinationId, supplierId });
 
     // đổi hero video: bỏ hero video cũ (nếu có) rồi gán video mới làm hero
     if (heroVideoId) {
