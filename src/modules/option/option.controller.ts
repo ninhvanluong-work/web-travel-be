@@ -24,7 +24,7 @@ import { GetOptionDto, GetOptionsResponseDto } from './dto/get-option.dto';
 import { OptionDto } from './dto/option-response.dto';
 import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
-import { Admin } from 'src/common/decorators';
+import { Admin, UserId } from 'src/common/decorators';
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
@@ -49,8 +49,8 @@ export class OptionController {
       },
     },
   })
-  async create(@Body() dto: CreateOptionDto) {
-    const result = await this.optionService.create(dto);
+  async create(@Body() dto: CreateOptionDto, @UserId() userId: string) {
+    const result = await this.optionService.create(dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -111,9 +111,13 @@ export class OptionController {
       },
     },
   })
-  async update(@Param() param: IdDto, @Body() dto: UpdateOptionDto) {
+  async update(
+    @Param() param: IdDto,
+    @Body() dto: UpdateOptionDto,
+    @UserId() userId: string,
+  ) {
     const { id } = param;
-    const result = await this.optionService.update(id, dto);
+    const result = await this.optionService.update(id, dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -137,9 +141,9 @@ export class OptionController {
       },
     },
   })
-  async remove(@Param() param: IdDto) {
+  async remove(@Param() param: IdDto, @UserId() userId: string) {
     const { id } = param;
-    const result = await this.optionService.remove(id);
+    const result = await this.optionService.remove(id, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,

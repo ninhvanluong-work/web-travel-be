@@ -16,28 +16,33 @@ export class DepartureTimeService {
     private readonly productRepository: Repository<Product>,
   ) {}
 
-  async create(payload: CreateDepartureTimeDto) {
+  async create(payload: CreateDepartureTimeDto, userId: string) {
     const product = await this.productRepository.findOne({
       where: { id: payload.productId },
     });
     if (!product) throw new NotFoundException('Product Not Found');
 
-    const newDepartureTime = this.departureTimeRepository.create(payload);
+    const newDepartureTime = this.departureTimeRepository.create({
+      ...payload,
+      createdBy: userId,
+      updatedBy: userId,
+    });
     return this.departureTimeRepository.save(newDepartureTime);
   }
 
-  async update(id: string, payload: UpdateDepartureTimeDto) {
+  async update(id: string, payload: UpdateDepartureTimeDto, userId: string) {
     const departureTime = await this.findOneById(id);
     if (!departureTime) throw new NotFoundException('Departure Time not found');
 
-    Object.assign(departureTime, payload);
+    Object.assign(departureTime, payload, { updatedBy: userId });
     return this.departureTimeRepository.save(departureTime);
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string) {
     const found = await this.findOneById(id);
     if (!found) throw new NotFoundException('Departure Time not found');
 
+    await this.departureTimeRepository.update(id, { deletedBy: userId });
     await this.departureTimeRepository.softDelete(id);
     const removed = await this.findOneById(id, true);
     if (!removed) throw new NotFoundException('Departure Time not found');

@@ -24,7 +24,7 @@ import { GetDepartureTimeDto } from './dto/get-departure-time.dto';
 import { DepartureTimeDto } from './dto/departure-time-response.dto';
 import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
-import { Admin } from 'src/common/decorators';
+import { Admin, UserId } from 'src/common/decorators';
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
@@ -49,8 +49,8 @@ export class DepartureTimeController {
       },
     },
   })
-  async create(@Body() dto: CreateDepartureTimeDto) {
-    const result = await this.departureTimeService.create(dto);
+  async create(@Body() dto: CreateDepartureTimeDto, @UserId() userId: string) {
+    const result = await this.departureTimeService.create(dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -119,9 +119,13 @@ export class DepartureTimeController {
       },
     },
   })
-  async update(@Param() param: IdDto, @Body() dto: UpdateDepartureTimeDto) {
+  async update(
+    @Param() param: IdDto,
+    @Body() dto: UpdateDepartureTimeDto,
+    @UserId() userId: string,
+  ) {
     const { id } = param;
-    const result = await this.departureTimeService.update(id, dto);
+    const result = await this.departureTimeService.update(id, dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -148,9 +152,9 @@ export class DepartureTimeController {
       },
     },
   })
-  async remove(@Param() param: IdDto) {
+  async remove(@Param() param: IdDto, @UserId() userId: string) {
     const { id } = param;
-    const result = await this.departureTimeService.remove(id);
+    const result = await this.departureTimeService.remove(id, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,

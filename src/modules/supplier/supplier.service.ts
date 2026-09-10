@@ -18,8 +18,12 @@ export class SupplierService {
     private readonly supplierRepository: Repository<Supplier>,
   ) {}
 
-  create(payload: CreateSupplierDto) {
-    const supplier = this.supplierRepository.create(payload);
+  create(payload: CreateSupplierDto, userId: string) {
+    const supplier = this.supplierRepository.create({
+      ...payload,
+      createdBy: userId,
+      updatedBy: userId,
+    });
     return this.supplierRepository.save(supplier);
   }
 
@@ -61,14 +65,15 @@ export class SupplierService {
     return supplier;
   }
 
-  async update(id: string, payload: UpdateSupplierDto) {
+  async update(id: string, payload: UpdateSupplierDto, userId: string) {
     const supplier = await this.findOneById(id);
-    Object.assign(supplier, payload);
+    Object.assign(supplier, payload, { updatedBy: userId });
     return this.supplierRepository.save(supplier);
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string) {
     await this.findOneById(id);
+    await this.supplierRepository.update(id, { deletedBy: userId });
     await this.supplierRepository.softDelete(id);
   }
 }

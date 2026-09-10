@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   Entity,
   Column,
@@ -9,7 +9,6 @@ import {
   JoinTable,
 } from 'typeorm';
 
-import { AuditableEntity } from 'src/database/auditable.entity';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 import { Video } from 'src/modules/video/entities/video.entity';
@@ -25,6 +24,7 @@ import { PickupLocation } from 'src/modules/pickup-location/entities/pickup-loca
 import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { Session } from 'src/modules/session/entities/session.entity';
 import { HeroVideoDto } from 'src/modules/product/dto/product-detail.dto';
+import { AuditableEntity } from 'src/database/auditable.entity';
 
 export enum ProductStatus {
   DRAFT = 'draft',
@@ -188,6 +188,7 @@ export class Product extends AuditableEntity {
   supplier: Supplier;
 
   @OneToMany(() => Video, (video) => video.product)
+  @ApiHideProperty()
   videos: Video[];
 
   @OneToMany(() => Booking, (booking: Booking) => booking.product)

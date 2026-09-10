@@ -28,7 +28,7 @@ import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 
 import { formatApiResponse } from 'src/common/utils/format';
 import { IdDto } from 'src/types/common.dto';
-import { Admin } from 'src/common/decorators';
+import { Admin, UserId } from 'src/common/decorators';
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
@@ -53,8 +53,8 @@ export class SupplierController {
       },
     },
   })
-  async create(@Body() dto: CreateSupplierDto) {
-    const result = await this.supplierService.create(dto);
+  async create(@Body() dto: CreateSupplierDto, @UserId() userId: string) {
+    const result = await this.supplierService.create(dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -119,8 +119,12 @@ export class SupplierController {
       },
     },
   })
-  async update(@Param() param: IdDto, @Body() dto: UpdateSupplierDto) {
-    const result = await this.supplierService.update(param.id, dto);
+  async update(
+    @Param() param: IdDto,
+    @Body() dto: UpdateSupplierDto,
+    @UserId() userId: string,
+  ) {
+    const result = await this.supplierService.update(param.id, dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -141,8 +145,8 @@ export class SupplierController {
       },
     },
   })
-  async remove(@Param() param: IdDto) {
-    await this.supplierService.remove(param.id);
+  async remove(@Param() param: IdDto, @UserId() userId: string) {
+    await this.supplierService.remove(param.id, userId);
     return formatApiResponse(
       null,
       HttpStatus.OK,

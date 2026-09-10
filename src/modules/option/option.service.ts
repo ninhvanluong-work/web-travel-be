@@ -27,28 +27,33 @@ export class OptionService {
     private readonly productRepository: Repository<Product>,
   ) {}
 
-  async create(payload: CreateOptionDto) {
+  async create(payload: CreateOptionDto, userId: string) {
     const product = await this.productRepository.findOne({
       where: { id: payload.productId },
     });
     if (!product) throw new NotFoundException('Product Not Found');
 
-    const newOption = this.optionRepository.create(payload);
+    const newOption = this.optionRepository.create({
+      ...payload,
+      createdBy: userId,
+      updatedBy: userId,
+    });
     return this.optionRepository.save(newOption);
   }
 
-  async update(id: string, payload: UpdateOptionDto) {
+  async update(id: string, payload: UpdateOptionDto, userId: string) {
     const option = await this.findOneById(id);
     if (!option) throw new NotFoundException('Option not found');
 
-    Object.assign(option, payload);
+    Object.assign(option, payload, { updatedBy: userId });
     return this.optionRepository.save(option);
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string) {
     const found = await this.findOneById(id);
     if (!found) throw new NotFoundException('Option not found');
 
+    await this.optionRepository.update(id, { deletedBy: userId });
     await this.optionRepository.softDelete(id);
     const removedOption = await this.findOneById(id, true);
     if (!removedOption) throw new NotFoundException('Option not found');

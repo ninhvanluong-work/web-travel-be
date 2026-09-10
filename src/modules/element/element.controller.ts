@@ -26,7 +26,7 @@ import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
 import { GetElementDto } from './dto/get-element.dto';
 import { ElementDto } from './dto/element-response.dto';
-import { Admin } from 'src/common/decorators';
+import { Admin, UserId } from 'src/common/decorators';
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
@@ -51,8 +51,8 @@ export class ElementController {
       },
     },
   })
-  async create(@Body() dto: CreateElementDto) {
-    const result = await this.elementService.create(dto);
+  async create(@Body() dto: CreateElementDto, @UserId() userId: string) {
+    const result = await this.elementService.create(dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -99,9 +99,13 @@ export class ElementController {
       },
     },
   })
-  async update(@Param() param: IdDto, @Body() dto: UpdateElementDto) {
+  async update(
+    @Param() param: IdDto,
+    @Body() dto: UpdateElementDto,
+    @UserId() userId: string,
+  ) {
     const { id } = param;
-    const result = await this.elementService.update(id, dto);
+    const result = await this.elementService.update(id, dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -125,9 +129,9 @@ export class ElementController {
       },
     },
   })
-  async activate(@Param() param: IdDto) {
+  async activate(@Param() param: IdDto, @UserId() userId: string) {
     const { id } = param;
-    const result = await this.elementService.activate(id);
+    const result = await this.elementService.activate(id, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -151,9 +155,9 @@ export class ElementController {
       },
     },
   })
-  async remove(@Param() param: IdDto) {
+  async remove(@Param() param: IdDto, @UserId() userId: string) {
     const { id } = param;
-    const result = await this.elementService.remove(id);
+    const result = await this.elementService.remove(id, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,

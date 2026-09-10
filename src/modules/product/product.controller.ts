@@ -40,7 +40,7 @@ import {
 } from 'src/modules/review/dto/get-review.dto';
 import { ReviewService } from 'src/modules/review/review.service';
 import { UpdateProductStatusDto } from 'src/modules/product/dto/update-product-status.dto';
-import { Admin } from 'src/common/decorators';
+import { Admin, UserId } from 'src/common/decorators';
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
@@ -78,8 +78,11 @@ export class ProductController {
       },
     },
   })
-  async create(@Body() createProductDto: CreateProductDto) {
-    const result = await this.productService.create(createProductDto);
+  async create(
+    @Body() createProductDto: CreateProductDto,
+    @UserId() userId: string,
+  ) {
+    const result = await this.productService.create(createProductDto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -178,9 +181,14 @@ export class ProductController {
   async update(
     @Param() param: IdDto,
     @Body() updateProductDto: UpdateProductDto,
+    @UserId() userId: string,
   ) {
     const { id } = param;
-    const result = await this.productService.update(id, updateProductDto);
+    const result = await this.productService.update(
+      id,
+      updateProductDto,
+      userId,
+    );
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -206,11 +214,15 @@ export class ProductController {
       },
     },
   })
-  async publish(@Param() param: IdDto) {
+  async publish(@Param() param: IdDto, @UserId() userId: string) {
     const { id } = param;
-    const result = await this.productService.update(id, {
-      status: ProductStatus.PUBLISHED,
-    });
+    const result = await this.productService.update(
+      id,
+      {
+        status: ProductStatus.PUBLISHED,
+      },
+      userId,
+    );
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -236,11 +248,18 @@ export class ProductController {
       },
     },
   })
-  async updateStatus(@Param() param: UpdateProductStatusDto) {
+  async updateStatus(
+    @Param() param: UpdateProductStatusDto,
+    @UserId() userId: string,
+  ) {
     const { id, status } = param;
-    const result = await this.productService.update(id, {
-      status,
-    });
+    const result = await this.productService.update(
+      id,
+      {
+        status,
+      },
+      userId,
+    );
     return formatApiResponse(
       result,
       HttpStatus.OK,

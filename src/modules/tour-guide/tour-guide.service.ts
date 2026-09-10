@@ -22,7 +22,7 @@ export class TourGuideService {
     private readonly destinationRepository: Repository<Destination>,
   ) {}
 
-  async create(payload: CreateTourGuideDto) {
+  async create(payload: CreateTourGuideDto, userId?: string) {
     if (payload.locationId) {
       const destination = await this.destinationRepository.findOne({
         where: { id: payload.locationId },
@@ -46,6 +46,8 @@ export class TourGuideService {
     const tourGuide = this.tourGuideRepository.create({
       ...payload,
       refCode,
+      createdBy: userId,
+      updatedBy: userId,
     });
     return this.tourGuideRepository.save(tourGuide);
   }
@@ -144,7 +146,7 @@ export class TourGuideService {
     };
   }
 
-  async update(id: string, payload: UpdateTourGuideDto) {
+  async update(id: string, payload: UpdateTourGuideDto, userId: string) {
     const tourGuide = await this.findOneById(id);
     if (!tourGuide) {
       throw new NotFoundException('Tour guide not found');
@@ -159,7 +161,7 @@ export class TourGuideService {
       }
     }
 
-    Object.assign(tourGuide, payload);
+    Object.assign(tourGuide, payload, { updatedBy: userId });
     return this.tourGuideRepository.save(tourGuide);
   }
 
@@ -175,12 +177,13 @@ export class TourGuideService {
     return this.tourGuideRepository.save(tourGuide);
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string) {
     const tourGuide = await this.findOneById(id);
     if (!tourGuide) {
       throw new NotFoundException('Tour guide not found');
     }
 
+    await this.tourGuideRepository.update(id, { deletedBy: userId });
     await this.tourGuideRepository.softDelete(id);
 
     return tourGuide;

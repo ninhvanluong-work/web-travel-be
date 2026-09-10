@@ -30,7 +30,7 @@ export class TagService {
     private readonly tagRepository: Repository<Tag>,
   ) {}
 
-  async create(payload: CreateTagDto) {
+  async create(payload: CreateTagDto, userId: string) {
     const existingTag = await this.tagRepository.findOne({
       where: { name: payload.name },
     });
@@ -39,12 +39,16 @@ export class TagService {
       return existingTag;
     }
 
-    const newTag = this.tagRepository.create(payload);
+    const newTag = this.tagRepository.create({
+      ...payload,
+      createdBy: userId,
+      updatedBy: userId,
+    });
     const savedTag = await this.tagRepository.save(newTag);
     return savedTag;
   }
 
-  async update(id: string, payload: UpdateTagDto) {
+  async update(id: string, payload: UpdateTagDto, userId: string) {
     const tag = await this.findOneById(id);
     if (!tag) throw new NotFoundException('Tag not found');
 
@@ -62,15 +66,16 @@ export class TagService {
       }
     }
 
-    Object.assign(tag, payload);
+    Object.assign(tag, payload, { updatedBy: userId });
     const updatedTag = await this.tagRepository.save(tag);
     return updatedTag;
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string) {
     const found = await this.findOneById(id);
     if (!found) throw new NotFoundException('Tag not found');
 
+    await this.tagRepository.update(id, { deletedBy: userId });
     await this.tagRepository.softDelete(id);
     const removedTag = await this.findOneById(id, true);
     if (!removedTag) throw new NotFoundException('Tag not found');

@@ -43,7 +43,7 @@ import { UpdateTourGuideMomentParamsDto } from 'src/modules/tour-guide/dto/updat
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 import tourGuideSkills from 'src/common/constants/tour-guide-skills.json';
-import { TourGuide, TourGuideId } from 'src/common/decorators';
+import { TourGuide, TourGuideId, UserId } from 'src/common/decorators';
 
 @Controller('tour-guide')
 @ApiExtraModels(
@@ -74,8 +74,8 @@ export class TourGuideController {
       },
     },
   })
-  async create(@Body() dto: CreateTourGuideDto) {
-    const result = await this.tourGuideService.create(dto);
+  async create(@Body() dto: CreateTourGuideDto, @UserId() userId: string) {
+    const result = await this.tourGuideService.create(dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -172,8 +172,12 @@ export class TourGuideController {
       },
     },
   })
-  async update(@Param() param: IdDto, @Body() dto: UpdateTourGuideDto) {
-    const result = await this.tourGuideService.update(param.id, dto);
+  async update(
+    @Param() param: IdDto,
+    @Body() dto: UpdateTourGuideDto,
+    @UserId() userId: string,
+  ) {
+    const result = await this.tourGuideService.update(param.id, dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -219,8 +223,8 @@ export class TourGuideController {
       },
     },
   })
-  async remove(@Param() param: IdDto) {
-    await this.tourGuideService.remove(param.id);
+  async remove(@Param() param: IdDto, @UserId() userId: string) {
+    await this.tourGuideService.remove(param.id, userId);
     return formatApiResponse(
       null,
       HttpStatus.OK,
@@ -306,9 +310,10 @@ export class TourGuideController {
   async createTourGuideMoment(
     @Param() param: IdDto,
     @Body() dto: CreateVideoDto,
+    @UserId() userId: string,
   ) {
     dto.tourGuideId = param.id;
-    const result = await this.videoService.create(dto);
+    const result = await this.videoService.create(dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -335,9 +340,15 @@ export class TourGuideController {
   async updateTourGuideMoment(
     @Param() param: UpdateTourGuideMomentParamsDto,
     @Body() dto: UpdateMomentDto,
+    @UserId() userId: string,
   ) {
     const { id, momentId } = param;
-    const result = await this.videoService.updateMoment(momentId, id, dto);
+    const result = await this.videoService.updateMoment(
+      momentId,
+      id,
+      dto,
+      userId,
+    );
     return formatApiResponse(
       result,
       HttpStatus.OK,

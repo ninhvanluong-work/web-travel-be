@@ -24,7 +24,7 @@ export class ElementService {
     private readonly elementRepository: Repository<Element>,
   ) {}
 
-  async create(payload: CreateElementDto) {
+  async create(payload: CreateElementDto, userId: string) {
     const element = await this.elementRepository.findOne({
       where: { key: payload.key, name: payload.name },
     });
@@ -32,11 +32,15 @@ export class ElementService {
       return element;
     }
 
-    const newElement = this.elementRepository.create(payload);
+    const newElement = this.elementRepository.create({
+      ...payload,
+      createdBy: userId,
+      updatedBy: userId,
+    });
     return this.elementRepository.save(newElement);
   }
 
-  async update(id: string, payload: UpdateElementDto) {
+  async update(id: string, payload: UpdateElementDto, userId: string) {
     const element = await this.elementRepository.findOne({ where: { id } });
     if (!element) throw new NotFoundException('Element not found');
     //check name value
@@ -56,21 +60,23 @@ export class ElementService {
       }
     }
 
-    Object.assign(element, payload);
+    Object.assign(element, payload, { updatedBy: userId });
     return this.elementRepository.save(element);
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string) {
     const found = await this.findOneById(id);
     if (!found) throw new NotFoundException('Element not found');
     found.isActive = false;
+    found.updatedBy = userId;
     return this.elementRepository.save(found);
   }
 
-  async activate(id: string) {
+  async activate(id: string, userId: string) {
     const found = await this.findOneById(id);
     if (!found) throw new NotFoundException('Element not found');
     found.isActive = true;
+    found.updatedBy = userId;
     return this.elementRepository.save(found);
   }
 

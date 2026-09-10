@@ -25,7 +25,7 @@ import { GetSessionDto, GetSessionsResponseDto } from './dto/get-session.dto';
 import { SessionDto } from './dto/session-response.dto';
 import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
-import { Admin } from 'src/common/decorators';
+import { Admin, UserId } from 'src/common/decorators';
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
@@ -50,8 +50,8 @@ export class SessionController {
       },
     },
   })
-  async create(@Body() dto: CreateSessionDto) {
-    const result = await this.sessionService.create(dto);
+  async create(@Body() dto: CreateSessionDto, @UserId() userId: string) {
+    const result = await this.sessionService.create(dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -75,8 +75,11 @@ export class SessionController {
       },
     },
   })
-  async createRange(@Body() dto: CreateSessionRangeDto) {
-    const result = await this.sessionService.createRange(dto);
+  async createRange(
+    @Body() dto: CreateSessionRangeDto,
+    @UserId() userId: string,
+  ) {
+    const result = await this.sessionService.createRange(dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -140,9 +143,13 @@ export class SessionController {
       },
     },
   })
-  async update(@Param() param: IdDto, @Body() dto: UpdateSessionDto) {
+  async update(
+    @Param() param: IdDto,
+    @Body() dto: UpdateSessionDto,
+    @UserId() userId: string,
+  ) {
     const { id } = param;
-    const result = await this.sessionService.update(id, dto);
+    const result = await this.sessionService.update(id, dto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -169,9 +176,9 @@ export class SessionController {
       },
     },
   })
-  async remove(@Param() param: IdDto) {
+  async remove(@Param() param: IdDto, @UserId() userId: string) {
     const { id } = param;
-    const result = await this.sessionService.remove(id);
+    const result = await this.sessionService.remove(id, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,

@@ -28,7 +28,7 @@ import {
 import { formatApiResponse } from 'src/common/utils/format';
 import { Video } from 'src/modules/video/entities/video.entity';
 import { SearchingService } from 'src/modules/searching/searching.service';
-import { Admin } from 'src/common/decorators';
+import { Admin, UserId } from 'src/common/decorators';
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
@@ -171,8 +171,8 @@ export class VideoController {
       },
     },
   })
-  async create(@Body() body: CreateVideoDto) {
-    const result = await this.videosService.create(body);
+  async create(@Body() body: CreateVideoDto, @UserId() userId: string) {
+    const result = await this.videosService.create(body, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
@@ -201,8 +201,9 @@ export class VideoController {
   async update(
     @Param('id') id: string,
     @Body() updateVideoDto: UpdateVideoDto,
+    @UserId() userId: string,
   ) {
-    const result = await this.videosService.update(id, updateVideoDto);
+    const result = await this.videosService.update(id, updateVideoDto, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,

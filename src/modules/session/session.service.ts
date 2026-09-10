@@ -61,7 +61,7 @@ export class SessionService {
     private readonly sessionUnitRepository: Repository<SessionUnit>,
   ) {}
 
-  async create(payload: CreateSessionDto) {
+  async create(payload: CreateSessionDto, userId: string) {
     this.logger.debug(`create() payload=${JSON.stringify(payload)}`);
 
     const product = await this.productRepository.findOne({
@@ -115,6 +115,8 @@ export class SessionService {
       travelDate: payload.travelDate,
       status: SessionStatus.ACTIVE,
       //capacity: payload.capacity ?? 0,
+      createdBy: userId,
+      updatedBy: userId,
     });
     await this.sessionRepository.save(newSession);
 
@@ -136,7 +138,7 @@ export class SessionService {
     return this.findOneById(newSession.id);
   }
 
-  async createRange(payload: CreateSessionRangeDto) {
+  async createRange(payload: CreateSessionRangeDto, userId: string) {
     this.logger.debug(`createRange() payload=${JSON.stringify(payload)}`);
 
     const product = await this.productRepository.findOne({
@@ -234,6 +236,8 @@ export class SessionService {
 
           //capacity: payload.capacity ?? 0,
           status: payload.status ?? SessionStatus.ACTIVE,
+          createdBy: userId,
+          updatedBy: userId,
         }),
       );
 
@@ -271,6 +275,7 @@ export class SessionService {
     ) {
       for (const session of conflictingSessions) {
         session.status = payload.status ?? session.status;
+        session.updatedBy = userId;
       }
       await this.sessionRepository.save(conflictingSessions);
 
@@ -318,7 +323,7 @@ export class SessionService {
     });
   }
 
-  async update(id: string, payload: UpdateSessionDto) {
+  async update(id: string, payload: UpdateSessionDto, userId: string) {
     this.logger.debug(`update() id=${id} payload=${JSON.stringify(payload)}`);
 
     const session = await this.findOneById(id);
@@ -418,14 +423,17 @@ export class SessionService {
       }
     }
 
-    await this.sessionRepository.update(id, sessionFields);
+    await this.sessionRepository.update(id, {
+      ...sessionFields,
+      updatedBy: userId,
+    });
 
     this.logger.log(`update() session ${id} updated`);
 
     return this.findOneById(id);
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string) {
     this.logger.debug(`remove() id=${id}`);
 
     const found = await this.findOneById(id);
@@ -434,6 +442,7 @@ export class SessionService {
       throw new NotFoundException('Session not found');
     }
 
+    await this.sessionRepository.update(id, { deletedBy: userId });
     await this.sessionRepository.softDelete(id);
     const removed = await this.findOneById(id, true);
     if (!removed) {

@@ -56,12 +56,14 @@ export class VideoService {
     return `${baseUri}/${guid}/thumbnail.jpg`;
   }
 
-  async create(payload: CreateVideoDto) {
+  async create(payload: CreateVideoDto, userId: string) {
     const { tourGuideId, name, guid } = payload;
     const videoInsertData: Partial<Video> = payload;
     videoInsertData.slug = generateSlug(name);
     videoInsertData.embedUrl = this.getVideoEmbedUrl(guid);
     videoInsertData.shortUrl = this.getVideoShortUrl(guid);
+    videoInsertData.createdBy = userId;
+    videoInsertData.updatedBy = userId;
     if (!payload.thumbnail) {
       videoInsertData.thumbnail = this.getVideoThumbnailUrl(guid);
     }
@@ -160,6 +162,7 @@ export class VideoService {
     videoId: string,
     tourGuideId: string,
     payload: UpdateMomentDto,
+    userId: string,
   ) {
     const prefixLog = `[updateMoment] vId ${videoId}, tGID: ${tourGuideId}`;
     const tourGuide = await this.tourGuideRepository.findOne({
@@ -171,13 +174,19 @@ export class VideoService {
       throw new NotFoundException('Tour guide not found');
     }
 
-    await this.videoRepository.update(videoId, payload);
+    await this.videoRepository.update(videoId, {
+      ...payload,
+      updatedBy: userId,
+    });
     const updatedVideo = (await this.findOne(videoId)) as Video;
     return updatedVideo;
   }
 
-  async update(id: string, updateVideoDto: UpdateVideoDto) {
-    await this.videoRepository.update(id, updateVideoDto);
+  async update(id: string, updateVideoDto: UpdateVideoDto, userId?: string) {
+    await this.videoRepository.update(id, {
+      ...updateVideoDto,
+      updatedBy: userId,
+    });
     const updatedVideo = (await this.findOne(id)) as Video;
     await this.updateVideoEmbedding(updatedVideo);
     return updatedVideo;

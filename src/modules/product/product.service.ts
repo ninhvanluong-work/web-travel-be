@@ -103,7 +103,7 @@ export class ProductService {
     }
   }
 
-  async create(payload: CreateProductDto) {
+  async create(payload: CreateProductDto, userId: string) {
     const prefixLog = `[create] `;
     this.logger.debug(`${prefixLog} ${JSON.stringify(payload)}`);
 
@@ -130,6 +130,8 @@ export class ProductService {
       ...payload,
       slug,
       code,
+      createdBy: userId,
+      updatedBy: userId,
     });
 
     const result = await this.productRepository.save(newProduct);
@@ -221,7 +223,10 @@ export class ProductService {
 
       result.options = await Promise.all(
         options.map((option) =>
-          this.optionService.create({ ...option, productId: result.id }),
+          this.optionService.create(
+            { ...option, productId: result.id },
+            userId,
+          ),
         ),
       );
     }
@@ -234,10 +239,13 @@ export class ProductService {
 
       result.departureTimes = await Promise.all(
         departureTimes.map((departureTime) =>
-          this.departureTimeService.create({
-            ...departureTime,
-            productId: result.id,
-          }),
+          this.departureTimeService.create(
+            {
+              ...departureTime,
+              productId: result.id,
+            },
+            userId,
+          ),
         ),
       );
     }
@@ -248,12 +256,15 @@ export class ProductService {
         `${prefixLog} creating pickup locations: ${pickupLocations.length}`,
       );
 
-      const newPickupLocations = pickupLocations.map((pickupLocation) =>
-        this.pickupLocationRepository.create({
+      const newPickupLocations = pickupLocations.map((pickupLocation) => {
+        const entity = this.pickupLocationRepository.create({
           ...pickupLocation,
           productId: result.id,
-        }),
-      );
+          createdBy: userId,
+          updatedBy: userId,
+        });
+        return entity;
+      });
       result.pickupLocations =
         await this.pickupLocationRepository.save(newPickupLocations);
     }
@@ -262,9 +273,15 @@ export class ProductService {
     if (units && units.length > 0) {
       this.logger.log(`${prefixLog} creating units: ${units.length}`);
 
-      const newUnits = units.map((unit) =>
-        this.unitRepository.create({ ...unit, productId: result.id }),
-      );
+      const newUnits = units.map((unit) => {
+        const entity = this.unitRepository.create({
+          ...unit,
+          productId: result.id,
+          createdBy: userId,
+          updatedBy: userId
+        });
+        return entity;
+      });
       result.units = await this.unitRepository.save(newUnits);
     }
 
@@ -432,7 +449,7 @@ export class ProductService {
     return this.productRepository.findOneBy({ id });
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto, userId: string) {
     const prefixLog = `[update] id: ${id}`;
     const {
       destinationId,
@@ -469,6 +486,7 @@ export class ProductService {
       await this.videoRepository.update(video.id, {
         type: VideoType.HERO,
         productId: id,
+        updatedBy: userId,
       });
 
       try {
@@ -490,13 +508,20 @@ export class ProductService {
 
     // itinerary: xoá hết bản ghi cũ và tạo lại toàn bộ từ danh sách mới (không cần theo id)
     if (itineraries) {
+      await this.itineraryRepository.update(
+        { productId: id },
+        { deletedBy: userId },
+      );
       await this.itineraryRepository.softDelete({ productId: id });
-      const newItins = itineraries.map((itinerary) =>
-        this.itineraryRepository.create({
+      const newItins = itineraries.map((itinerary) => {
+        const entity = this.itineraryRepository.create({
           ...itinerary,
           productId: id,
-        }),
-      );
+          createdBy: userId,
+          updatedBy: userId,
+        });
+        return entity;
+      });
 
       //save db
       await this.itineraryRepository.save(newItins);
@@ -557,7 +582,7 @@ export class ProductService {
             throw new NotFoundException(`Option ${optionId} Not Found`);
           }
           keepIds.add(optionId);
-          await this.optionService.update(optionId, fields);
+          await this.optionService.update(optionId, fields, userId);
         } else {
           // không có id -> tạo option mới, title là field bắt buộc khi tạo
           const { title, ...restFields } = fields;
@@ -566,18 +591,21 @@ export class ProductService {
               'title is required to create a new option',
             );
           }
-          await this.optionService.create({
-            ...restFields,
-            title,
-            productId: id,
-          });
+          await this.optionService.create(
+            {
+              ...restFields,
+              title,
+              productId: id,
+            },
+            userId,
+          );
         }
       }
 
       // option cũ của product mà không nằm trong danh sách gửi lên -> xoá
       const optionsToRemove = existingOptions.filter((o) => !keepIds.has(o.id));
       for (const option of optionsToRemove) {
-        await this.optionService.remove(option.id);
+        await this.optionService.remove(option.id, userId);
       }
 
       delete updateProductDto.options;
@@ -600,7 +628,11 @@ export class ProductService {
             );
           }
           keepIds.add(departureTimeId);
-          await this.departureTimeService.update(departureTimeId, fields);
+          await this.departureTimeService.update(
+            departureTimeId,
+            fields,
+            userId,
+          );
         } else {
           // không có id -> tạo mới, time là field bắt buộc khi tạo
           const { time, ...restFields } = fields;
@@ -609,11 +641,14 @@ export class ProductService {
               'time is required to create a new departure time',
             );
           }
-          await this.departureTimeService.create({
-            ...restFields,
-            time,
-            productId: id,
-          });
+          await this.departureTimeService.create(
+            {
+              ...restFields,
+              time,
+              productId: id,
+            },
+            userId,
+          );
         }
       }
 
@@ -622,7 +657,7 @@ export class ProductService {
         (d) => !keepIds.has(d.id),
       );
       for (const departureTime of departureTimesToRemove) {
-        await this.departureTimeService.remove(departureTime.id);
+        await this.departureTimeService.remove(departureTime.id, userId);
       }
 
       delete updateProductDto.departureTimes;
@@ -649,7 +684,7 @@ export class ProductService {
             );
           }
           keepIds.add(pickupLocationId);
-          Object.assign(existing, fields);
+          Object.assign(existing, fields, { updatedBy: userId });
           await this.pickupLocationRepository.save(existing);
         } else {
           // không có id -> tạo mới, name là field bắt buộc khi tạo
@@ -663,6 +698,8 @@ export class ProductService {
             ...restFields,
             name,
             productId: id,
+            createdBy: userId,
+            updatedBy: userId,
           });
           await this.pickupLocationRepository.save(newPickupLocation);
         }
@@ -673,6 +710,9 @@ export class ProductService {
         .filter((p) => !keepIds.has(p.id))
         .map((p) => p.id);
       if (pickupLocationIdsToRemove.length > 0) {
+        await this.pickupLocationRepository.update(pickupLocationIdsToRemove, {
+          deletedBy: userId,
+        });
         await this.pickupLocationRepository.softDelete(
           pickupLocationIdsToRemove,
         );
@@ -698,7 +738,7 @@ export class ProductService {
             throw new NotFoundException(`Unit ${unitId} Not Found`);
           }
           keepIds.add(unitId);
-          Object.assign(existing, fields);
+          Object.assign(existing, fields, { updatedBy: userId });
           await this.unitRepository.save(existing);
         } else {
           // không có id -> tạo mới, name là field bắt buộc khi tạo
@@ -712,6 +752,8 @@ export class ProductService {
             ...restFields,
             name,
             productId: id,
+            createdBy: userId,
+            updatedBy: userId,
           });
           await this.unitRepository.save(newUnit);
         }
@@ -722,13 +764,19 @@ export class ProductService {
         .filter((u) => !keepIds.has(u.id))
         .map((u) => u.id);
       if (unitIdsToRemove.length > 0) {
+        await this.unitRepository.update(unitIdsToRemove, {
+          deletedBy: userId,
+        });
         await this.unitRepository.softDelete(unitIdsToRemove);
       }
 
       delete updateProductDto.units;
     }
 
-    await this.productRepository.update(id, updateProductDto);
+    await this.productRepository.update(id, {
+      ...updateProductDto,
+      updatedBy: userId,
+    });
     return await this.getProductDetail(id);
   }
 

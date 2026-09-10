@@ -25,7 +25,7 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { GetTagDto, GetTagsResponseDto } from './dto/get-tag.dto';
 import { TagDto } from './dto/tag-response.dto';
-import { Admin } from 'src/common/decorators';
+import { Admin, UserId } from 'src/common/decorators';
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
@@ -50,8 +50,8 @@ export class TagController {
       },
     },
   })
-  async create(@Body() dto: CreateTagDto) {
-    const result = await this.tagService.create(dto);
+  async create(@Body() dto: CreateTagDto, @UserId() userId: string) {
+    const result = await this.tagService.create(dto, userId);
     return formatApiResponse(result, HttpStatus.OK, 'created tag successfully');
   }
 
@@ -94,9 +94,13 @@ export class TagController {
       },
     },
   })
-  async update(@Param() param: IdDto, @Body() dto: UpdateTagDto) {
+  async update(
+    @Param() param: IdDto,
+    @Body() dto: UpdateTagDto,
+    @UserId() userId: string,
+  ) {
     const { id } = param;
-    const result = await this.tagService.update(id, dto);
+    const result = await this.tagService.update(id, dto, userId);
     return formatApiResponse(result, HttpStatus.OK, 'updated tag successfully');
   }
 
@@ -116,9 +120,9 @@ export class TagController {
       },
     },
   })
-  async remove(@Param() param: IdDto) {
+  async remove(@Param() param: IdDto, @UserId() userId: string) {
     const { id } = param;
-    const result = await this.tagService.remove(id);
+    const result = await this.tagService.remove(id, userId);
     return formatApiResponse(
       result,
       HttpStatus.OK,
