@@ -8,7 +8,7 @@ import {
   OneToOne,
 } from 'typeorm';
 
-import { BaseEntity } from 'src/database/base.entity';
+import { AuditableEntity } from 'src/database/auditable.entity';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { CareerPathItemDto } from 'src/modules/tour-guide/dto/create-tour-guide.dto';
@@ -52,7 +52,7 @@ export class SupplierReviewItem {
 }
 
 @Entity('tour_guide')
-export class TourGuide extends BaseEntity {
+export class TourGuide extends AuditableEntity {
   @ApiProperty({ example: 'Nguyễn Văn A' })
   @Column({ length: 255 })
   name: string;

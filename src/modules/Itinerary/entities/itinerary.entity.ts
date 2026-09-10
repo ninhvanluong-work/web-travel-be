@@ -1,11 +1,11 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseEntity } from 'src/database/base.entity';
+import { AuditableEntity } from 'src/database/auditable.entity';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Product } from 'src/modules/product/entities/product.entity';
 
 @Entity('itinerary')
-export class Itinerary extends BaseEntity {
+export class Itinerary extends AuditableEntity {
   @Column({})
   @ApiProperty({ example: 'itinerary title' })
   name: string;

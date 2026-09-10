@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Entity, Column, ManyToMany } from 'typeorm';
 
-import { BaseEntity } from 'src/database/base.entity';
+import { AuditableEntity } from 'src/database/auditable.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 
 @Entity('tag')
-export class Tag extends BaseEntity {
+export class Tag extends AuditableEntity {
   @ApiProperty({ example: 'adventure' })
   @Column({ unique: true, length: 255 })
   name: string;

@@ -1,12 +1,12 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { BaseEntity } from 'src/database/base.entity';
+import { AuditableEntity } from 'src/database/auditable.entity';
 import { SessionUnit } from 'src/modules/session-unit/entities/session-unit.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 
 @Entity('unit')
-export class Unit extends BaseEntity {
+export class Unit extends AuditableEntity {
   @Column({ length: 255 })
   @ApiProperty({ example: 'unit name' })
   name: string;

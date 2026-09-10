@@ -9,7 +9,7 @@ import {
   JoinTable,
 } from 'typeorm';
 
-import { BaseEntity } from 'src/database/base.entity';
+import { AuditableEntity } from 'src/database/auditable.entity';
 import { Destination } from 'src/modules/destination/entities/destination.entity';
 import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 import { Video } from 'src/modules/video/entities/video.entity';
@@ -64,7 +64,7 @@ export class ExperienceItem {
   content: string;
 }
 @Entity('product')
-export class Product extends BaseEntity {
+export class Product extends AuditableEntity {
   @ApiProperty({ example: 'Hạ Long Bay Tour' })
   @Column({ length: 500 })
   name: string;

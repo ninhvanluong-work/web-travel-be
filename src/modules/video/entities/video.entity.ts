@@ -1,13 +1,13 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'; // Import Swagger decorators
-import { BaseEntity } from 'src/database/base.entity';
+import { AuditableEntity } from 'src/database/auditable.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { VideoType } from 'src/modules/video/video.type';
 import { BunnyVideoStatus } from 'src/modules/webhook/types/bunny-webhook.type';
 
 @Entity('video')
-export class Video extends BaseEntity {
+export class Video extends AuditableEntity {
   @ApiProperty({
     example: 'ha noi tour',
   })

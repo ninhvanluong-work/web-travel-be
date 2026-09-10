@@ -1,10 +1,10 @@
 import { Entity, Column, OneToMany } from 'typeorm';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { BaseEntity } from 'src/database/base.entity';
+import { AuditableEntity } from 'src/database/auditable.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 
 @Entity('supplier')
-export class Supplier extends BaseEntity {
+export class Supplier extends AuditableEntity {
   @Column({ length: 255 })
   @ApiProperty({ example: 'supplierA' })
   name: string;

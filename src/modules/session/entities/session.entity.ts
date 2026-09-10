@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { BaseEntity } from 'src/database/base.entity';
+import { AuditableEntity } from 'src/database/auditable.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { SessionUnit } from 'src/modules/session-unit/entities/session-unit.entity';
 
@@ -11,7 +11,7 @@ export enum SessionStatus {
 }
 
 @Entity('session')
-export class Session extends BaseEntity {
+export class Session extends AuditableEntity {
   @Column({ name: 'product_id', nullable: true })
   @ApiProperty({ type: 'string', format: 'uuid', nullable: true })
   productId: string;

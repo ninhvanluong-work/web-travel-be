@@ -1,10 +1,10 @@
 import { Entity, Column, OneToMany } from 'typeorm';
-import { BaseEntity } from 'src/database/base.entity';
+import { AuditableEntity } from 'src/database/auditable.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 
 @Entity('destination')
-export class Destination extends BaseEntity {
+export class Destination extends AuditableEntity {
   @Column({ length: 255 })
   name: string;
 

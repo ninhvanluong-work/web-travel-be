@@ -1,5 +1,5 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseEntity } from 'src/database/base.entity';
+import { AuditableEntity } from 'src/database/auditable.entity';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Product } from 'src/modules/product/entities/product.entity';
@@ -10,7 +10,7 @@ export enum OptionStatus {
 }
 
 @Entity('option')
-export class Option extends BaseEntity {
+export class Option extends AuditableEntity {
   @Column({ length: 500 })
   @ApiProperty({ example: 'product title' })
   title: string;

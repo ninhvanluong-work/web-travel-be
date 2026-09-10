@@ -1,12 +1,12 @@
 import { Entity, Column, ManyToMany } from 'typeorm';
-import { BaseEntity } from 'src/database/base.entity';
+import { AuditableEntity } from 'src/database/auditable.entity';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Product } from 'src/modules/product/entities/product.entity';
 import ELEMENT_KEY from 'src/modules/element/element.type';
 
 @Entity('element')
-export class Element extends BaseEntity {
+export class Element extends AuditableEntity {
   @ApiProperty({ example: 'key_01', description: 'Unique key of the element' })
   @Column({ length: 255 })
   key: ELEMENT_KEY | string;

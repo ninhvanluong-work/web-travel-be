@@ -1,11 +1,11 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { BaseEntity } from 'src/database/base.entity';
+import { AuditableEntity } from 'src/database/auditable.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 
 @Entity('pickup_location')
-export class PickupLocation extends BaseEntity {
+export class PickupLocation extends AuditableEntity {
   @Column({ name: 'product_id' })
   @ApiProperty({ type: 'string', format: 'uuid' })
   productId: string;
