@@ -278,13 +278,23 @@ export class TasksService {
 
 ## 9.9 Known Issues & TODO
 
+> ⚠️ Bảng dưới đã cập nhật theo trạng thái code thực tế — một số issue "chưa có Auth" trong bản cũ **đã được giải quyết một phần** (có JWT), nhưng phát sinh issue mới quan trọng hơn (không phải global guard, nhiều route bị bỏ sót). Xem đầy đủ + vị trí code cụ thể tại [06-business-logic.md §6.16](./06-business-logic.md#616-known-gaps--issues-tổng-hợp).
+
 | Issue | Mức độ | Mô tả |
 |-------|--------|-------|
-| Không có Auth | 🔴 Critical | Chưa có JWT/OAuth — mọi endpoint đều public |
-| review_point không tự động | 🟡 Medium | Phải update thủ công sau khi tạo/xoá review |
+| Session capacity không hoạt động | 🔴 Critical | `capacity` không set được qua API, check overbooking bị tắt nhưng vẫn trừ âm → không giới hạn số chỗ theo ngày |
+| Không có global guard | 🔴 Critical | JWT đã có (`UserGuard`/`OptionalUserGuard`) nhưng phải tự khai báo per-route — Upload, `DELETE /tour-guide/:id`, `GET /booking*` đã bị bỏ sót guard |
+| Destination không có API | 🔴 Critical | Module chưa đăng ký vào `AppModule`, controller/service vẫn là boilerplate |
+| User không có API | 🔴 Critical | `UserController` toàn bộ route bị comment out |
+| Không có huỷ booking | 🟠 High | `BookingStatus.CANCEL` tồn tại trong enum nhưng không endpoint nào set được |
+| Booking không transaction | 🟠 High | Tạo booking + trừ session capacity là 2 write riêng biệt, không khoá — có thể race condition |
+| review_point không tự động | 🟡 Medium | Vẫn thủ công như trước — nhưng nay còn không có API tạo review cho Product nữa (chỉ còn cho Tour Guide) |
 | Supplier stats không tự sync | 🟡 Medium | rating_count, tour_offered cần update tay |
-| Không có rate limiting | 🟡 Medium | Dễ bị spam /video/:id/like |
+| Video like có thể âm | 🟡 Medium | `dislike` không chặn dưới 0 |
+| Response shape lỗi khác thành công | 🟡 Medium | `{statusCode,message,timestamp,path}` (exception filter) vs `{data,code,error,message}` (thành công) |
+| Không có rate limiting | 🟡 Medium | Dễ bị spam `/video/:id/like`, `/upload/*` (cũng đang không có auth) |
 | Thiếu input sanitization | 🟡 Medium | JSONB fields (banner, readBefore) không validate sâu |
+| Audit trail không đầy đủ | 🟡 Medium | Convention-based, một số luồng quên truyền `userId` → `created_by`/`deleted_by` bị `NULL`; không cover `booking`/`review`/`user` |
 | Không có E2E tests | 🟠 Low | Cần thiết lập test database |
 | FFmpeg dependency | 🟠 Low | Cần cài local nếu dùng video preview feature |
 

@@ -31,7 +31,17 @@
 | **FFmpeg** | Tạo video preview 5 giây, cài trong Docker |
 | **Multer** | Middleware xử lý multipart/form-data upload |
 
-## 2.4 HTTP & API
+## 2.4 Auth & Payment
+
+| Công nghệ | Vai trò |
+|-----------|---------|
+| **@nestjs/jwt** | Sinh/verify JWT access + refresh token |
+| **bcrypt** | Hash mật khẩu user |
+| **PayPal REST API** (raw HTTP qua `@nestjs/axios`) | Cổng thanh toán PayPal (order/capture/webhook) |
+| **vnpay** (npm) | Xây URL thanh toán + verify callback VNPay (SHA512 HMAC) |
+| **@nestjs-modules/mailer** | Gửi mail thông báo booking cho supplier (SMTP Gmail) |
+
+## 2.5 HTTP & API
 
 | Công nghệ | Phiên bản | Vai trò |
 |-----------|-----------|---------|
@@ -41,20 +51,20 @@
 | **class-transformer** | ^0.5 | Transform request body |
 | **body-parser** | ^2.2 | Parse JSON body, giữ raw body cho webhook |
 
-## 2.5 Scheduled Tasks
+## 2.6 Scheduled Tasks
 
 | Công nghệ | Vai trò |
 |-----------|---------|
-| **@nestjs/schedule** | Cron job — reset monthly search stats |
+| **@nestjs/schedule** | Cron job — daily search stat recompute + daily embedding backfill |
 
-## 2.6 Utilities
+## 2.7 Utilities
 
 | Công nghệ | Vai trò |
 |-----------|---------|
-| **crypto** (built-in) | Sinh signature upload video cho BunnyCDN |
+| **crypto** (built-in) | Sinh signature upload video cho BunnyCDN, xác thực HMAC webhook |
 | **rxjs** | Reactive extensions (NestJS core dep) |
 
-## 2.7 DevOps & Infrastructure
+## 2.8 DevOps & Infrastructure
 
 | Công nghệ | Vai trò |
 |-----------|---------|
@@ -63,7 +73,7 @@
 | **Fly.io** | Cloud hosting (region: `hkg` — Hong Kong) |
 | **@flydotio/dockerfile** | Generate Dockerfile chuẩn Fly.io |
 
-## 2.8 Development Tools
+## 2.9 Development Tools
 
 | Công nghệ | Vai trò |
 |-----------|---------|
@@ -76,12 +86,15 @@
 
 ---
 
-## 2.9 Kiến trúc tổng thể theo layer
+## 2.10 Kiến trúc tổng thể theo layer
 
 ```
 ┌────────────────────────────────────────────┐
 │              Presentation Layer            │
 │   Controllers → Swagger (auto-generated)   │
+├────────────────────────────────────────────┤
+│         Guard Layer (per-route, KHÔNG global) │
+│   UserGuard / OptionalUserGuard (JWT)      │
 ├────────────────────────────────────────────┤
 │               Business Layer              │
 │         Services (injectable DI)           │
@@ -90,7 +103,8 @@
 │   TypeORM Repositories → PostgreSQL       │
 ├────────────────────────────────────────────┤
 │             Infrastructure Layer          │
-│  BunnyCDN SDK | Axios (AI) | FFmpeg       │
+│  BunnyCDN SDK | Axios (AI) | FFmpeg |     │
+│  PayPal/VNPay API | SMTP Mailer           │
 └────────────────────────────────────────────┘
 ```
 

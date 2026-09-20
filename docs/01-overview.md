@@ -6,13 +6,14 @@
 
 **Web Travel Backend** là REST API phục vụ nền tảng du lịch trực tuyến, cung cấp:
 
-- Quản lý **sản phẩm du lịch** (tour, gói nghỉ dưỡng)
-- Quản lý **nhà cung cấp** (supplier), **điểm đến** (destination), **hướng dẫn viên** (tour guide)
-- Hệ thống **đặt tour** (booking) và **đánh giá** (review)
-- Phát video ngắn (short-form video) gắn với sản phẩm, tích hợp **BunnyCDN**
+- Quản lý **sản phẩm du lịch** (tour, gói nghỉ dưỡng), kèm hệ thống **lập lịch (tour schedule)** (loại khách, khung giờ khởi hành, điểm đón, ngày khởi hành cụ thể + giá theo ngày)
+- Quản lý **nhà cung cấp** (supplier, kèm phương thức nhận thanh toán) và **hướng dẫn viên** (tour guide, có hồ sơ + "moment" video riêng)
+- Hệ thống **đặt tour** (booking), **thanh toán online** (PayPal, VNPay) và **đánh giá** (review — hiện chỉ cho tour guide)
+- **Xác thực & phân quyền** (JWT: user thường / tour guide / admin / super admin) và **audit trail** (created_by/updated_by/deleted_by) cho các entity quản trị
+- Phát video ngắn (short-form video) gắn với sản phẩm hoặc tour guide, tích hợp **BunnyCDN**
 - **AI Embedding** để hỗ trợ tìm kiếm semantic
 - **Hệ thống tìm kiếm** với gợi ý (suggestions) và thống kê hot search
-
+- Gửi **email thông báo** cho supplier khi có booking mới
 ---
 
 ## 1.2 Bối cảnh hệ thống (Context Diagram)
@@ -92,9 +93,12 @@ Admin → POST /upload/video (title)
 ### Luồng đặt tour
 ```
 User → GET /product (browse)
-     → GET /product/:id (detail + options + itinerary)
-     → POST /booking (select option, date, quantity)
+     → GET /product/:id + GET /product/:id/booking (options, departureTimes, pickupLocations)
+     → GET /session?productId=... (chọn ngày khởi hành + xem giá theo unit qua sessionUnits)
+     → POST /booking (option, session, passengers[] theo unit, pickup/departure tuỳ chọn)
      → Booking persisted với status = pending
+     → POST /payment/paypal/:bookingId/create-order (hoặc /payment/vnpay/:bookingId/create-payment-url)
+     → Thanh toán xong → webhook xác nhận → booking.status = paid
 ```
 
 ---
@@ -102,19 +106,22 @@ User → GET /product (browse)
 ## 1.5 Phạm vi & giới hạn
 
 **Trong phạm vi:**
-- CRUD: Product, Supplier, Destination, TourGuide, Tag, Element, Option, Itinerary
-- Booking & Review
+- CRUD: Product, Supplier (+ Supplier Payment), TourGuide, Tag, Element, Option, Itinerary
+- Lập lịch & tồn kho: Unit, Departure Time, Pickup Location, Session, Session Unit (⚠️ capacity chưa enforce được — xem §6.16)
+- Booking & thanh toán (PayPal, VNPay) & Review (chỉ cho Tour Guide)
+- Authentication / Authorization (JWT — user thường / tour guide / admin / super admin, không phải global guard)
+- Audit trail (created_by/updated_by/deleted_by) cho 13 entity quản trị
 - Video management + BunnyCDN integration
-- File upload (image)
+- File upload (image/file)
 - Search logging + suggestions
 - AI Embedding cho video
-- Cron jobs (monthly search stat reset)
+- Email thông báo supplier khi có booking mới
+- Cron jobs (daily: tính lại search stat trong tháng, backfill embedding còn thiếu)
 
-**Ngoài phạm vi (hiện tại):**
-- Authentication / Authorization (không có JWT/OAuth)
-- Payment gateway
-- Email notification
+**Ngoài phạm vi / chưa hoàn thiện (hiện tại):**
+- Giới hạn số chỗ theo ngày (capacity check đang bị tắt)
 - Admin dashboard UI
+- CI/CD pipeline
 
 ---
 [Trang sau →](./02-tech-stack.md)

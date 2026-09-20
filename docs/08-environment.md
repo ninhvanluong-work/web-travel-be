@@ -168,6 +168,65 @@ Nếu trả về JSON → kết nối thành công ✅
 > - `POST /embedding` — embedding từ text đơn
 > - `POST /embedding/video` — embedding từ context video + product + destination
 
+### Auth (JWT)
+
+| Biến | Bắt buộc | Mô tả | Mặc định |
+|------|----------|-------|---------|
+| `JWT_SECRET` | ✅ | Secret ký/verify access + refresh token | — |
+| `JWT_EXPIRES_IN` | ❌ | Thời hạn access token | `7d` |
+| `BCRYPT_SALT_ROUNDS` | ❌ | Số vòng salt khi hash password | `10` |
+| `FRONTEND_URL` | ✅ | Base URL frontend — dùng để build link reset password (`forgot-password`) và link redirect VNPay | `https://web-travel.example.com` |
+
+> ⚠️ `FRONTEND_URL` được đọc bằng `configService.getOrThrow()` — thiếu biến này sẽ làm `POST /auth/forgot-password` và các luồng VNPay redirect **throw lỗi lúc runtime**, không chỉ là optional.
+
+### BunnyCDN — Webhook
+
+| Biến | Bắt buộc | Mô tả |
+|------|----------|-------|
+| `BUNNY_READONLY_API_KEY` | ✅ (nếu dùng webhook) | Readonly API Key từ BunnyCDN dashboard — dùng làm secret HMAC verify `POST /webhook/bunny`. **Khác** `BUNNY_API_KEY` (key ghi/tạo video) |
+
+### PayPal
+
+| Biến | Bắt buộc | Mô tả | Ví dụ |
+|------|----------|-------|-------|
+| `PAYPAL_CLIENT_ID` | ✅ | Client ID ứng dụng PayPal | — |
+| `PAYPAL_CLIENT_SECRET` | ✅ | Client Secret | — |
+| `PAYPAL_MODE` | ❌ | `sandbox` hoặc `live` | `sandbox` |
+| `PAYPAL_WEBHOOK_ID` | ✅ (nếu dùng webhook) | Webhook ID để verify chữ ký `POST /webhook/paypal` | — |
+| `PAYPAL_CURRENCY` | ❌ | Currency mặc định cho order | `USD`/`VND` tuỳ cấu hình |
+
+### VNPay
+
+| Biến | Bắt buộc | Mô tả |
+|------|----------|-------|
+| `VNPAY_TMN_CODE` | ✅ | Mã website đăng ký với VNPay |
+| `VNPAY_HASH_SECRET` | ✅ | Secret key dùng để ký/verify (SHA512 HMAC, thư viện `vnpay`) |
+| `VNPAY_URL` | ✅ | URL cổng thanh toán VNPay (sandbox/production) |
+| `VNPAY_API_URL` | ✅ | URL API tra cứu/hoàn tiền VNPay |
+| `VNPAY_RETURN_URL` | ✅ | URL VNPay redirect trình duyệt về sau khi thanh toán (khớp route `GET /payment/vnpay/return`) |
+
+### Mail (SMTP)
+
+| Biến | Bắt buộc | Mô tả |
+|------|----------|-------|
+| `SMPT_USER` | ✅ (nếu dùng mail) | Địa chỉ Gmail dùng gửi mail — ⚠️ tên biến cố ý viết `SMPT` (không phải lỗi gõ trong tài liệu, đúng như trong code) |
+| `SMPT_APP_PASSWORD` | ✅ | App Password của Gmail (không phải mật khẩu đăng nhập thường) |
+
+> Host/port SMTP (`smtp.gmail.com:587`) đang hardcode trong `mail.module.ts`, không cấu hình qua env.
+
+### Telegram (Exception Alert)
+
+| Biến | Bắt buộc | Mô tả |
+|------|----------|-------|
+| `TELEGRAM_BOT_TOKEN` | ❌ | Bot token — nếu thiếu, `TelegramExceptionFilter` âm thầm bỏ qua việc gửi cảnh báo |
+| `TELEGRAM_CHAT_ID` | ❌ | Chat ID nhận cảnh báo lỗi (mọi exception không bắt được sẽ post kèm status/method/path/stack trace rút gọn) |
+
+### Video (Stream/BunnyCDN)
+
+| Biến | Bắt buộc | Mô tả |
+|------|----------|-------|
+| `STREAM_SERVER_URI` | ✅ | Base URL dùng để build URL embed/thumbnail/preview cho video BunnyCDN Stream |
+
 ---
 
 ## 8.3 File `.env` mẫu
@@ -184,8 +243,24 @@ fly secrets set BUNNY_API_KEY="..."
 fly secrets set BUNNY_LIBRARY_ID="..."
 fly secrets set BUNNY_STORAGE_ZONE="..."
 fly secrets set BUNNY_STORAGE_ACCESS_KEY="..."
+fly secrets set BUNNY_READONLY_API_KEY="..."
 fly secrets set FILE_SERVER_URI="..."
+fly secrets set STREAM_SERVER_URI="..."
 fly secrets set EMBEDDING_API_URL="..."
+fly secrets set JWT_SECRET="..."
+fly secrets set FRONTEND_URL="..."
+fly secrets set PAYPAL_CLIENT_ID="..."
+fly secrets set PAYPAL_CLIENT_SECRET="..."
+fly secrets set PAYPAL_WEBHOOK_ID="..."
+fly secrets set VNPAY_TMN_CODE="..."
+fly secrets set VNPAY_HASH_SECRET="..."
+fly secrets set VNPAY_URL="..."
+fly secrets set VNPAY_API_URL="..."
+fly secrets set VNPAY_RETURN_URL="..."
+fly secrets set SMPT_USER="..."
+fly secrets set SMPT_APP_PASSWORD="..."
+fly secrets set TELEGRAM_BOT_TOKEN="..."
+fly secrets set TELEGRAM_CHAT_ID="..."
 ```
 
 ---
