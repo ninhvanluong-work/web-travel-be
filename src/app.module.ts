@@ -19,6 +19,7 @@ import { WebhookModule } from './modules/webhook/webhook.module';
 import { SearchingModule } from './modules/searching/searching.module';
 import { TourGuideModule } from './modules/tour-guide/tour-guide.module';
 import { TagModule } from './modules/tag/tag.module';
+import { DestinationModule } from './modules/destination/destination.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SessionModule } from './modules/session/session.module';
 import { UnitModule } from './modules/unit/unit.module';
@@ -51,6 +52,7 @@ import { MailModule } from 'src/common/mail/mail.module';
     SearchingModule,
     TourGuideModule,
     TagModule,
+    DestinationModule,
     AuthModule,
     SessionModule,
     UnitModule,

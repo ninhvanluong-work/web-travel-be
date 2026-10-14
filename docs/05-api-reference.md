@@ -385,7 +385,21 @@ Response kèm `stat`: `{ pending: {count,totalPrice}, paid: {...}, cancel: {...}
 
 ## 5.11 Destination `/destination`
 
- `destination` vẫn tồn tại và được dùng (Product, Video, Searching, TourGuide đều tham chiếu tới), nhưng hiện **không có API để CRUD destination** — phải thao tác trực tiếp trên DB. Khuyến nghị: hoàn thiện module này hoặc làm rõ với team destination được quản lý ở đâu.
+| Method | Path | Guard | Mô tả |
+|--------|------|-------|------|
+| `GET` | `/destination` | Public | Danh sách, phân trang (`keyword`, `page`, `pageSize`), tìm theo `name` |
+| `GET` | `/destination/:id` | Public | Chi tiết |
+| `POST` | `/destination` | Admin | Tạo mới — `name` trùng (không phân biệt hoa thường) → `409` |
+| `PUT` | `/destination/:id` | Admin | Cập nhật (partial) |
+| `DELETE` | `/destination/:id` | Admin | **Soft delete** — nếu còn product dùng destination này → `409` |
+
+### Body `POST /destination`
+```json
+{
+  "name": "Hạ Long",
+  "description": "Vịnh Hạ Long - di sản thiên nhiên thế giới"
+}
+```
 
 ---
 
