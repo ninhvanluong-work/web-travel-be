@@ -25,6 +25,7 @@
 | `POST` | `/auth/reset-password` | Public | Đổi mật khẩu bằng token reset |
 | `POST` | `/auth/access-token/renew` | Public | Cấp lại access + refresh token (refresh-token rotation) |
 | `POST` | `/auth/logout` | Bắt buộc đăng nhập | Tăng `refresh_token_version` → vô hiệu hoá mọi refresh token cũ |
+| `POST` | `/auth/change-password` | Bắt buộc đăng nhập | Đổi mật khẩu (`oldPassword`, `newPassword`). Sai mật khẩu cũ / trùng mật khẩu cũ → `400`. Tăng `refresh_token_version` (đăng xuất thiết bị khác) và trả về token mới cho thiết bị hiện tại (cùng format response login) |
 
 ### Body `POST /auth/login`
 ```json
@@ -497,7 +498,36 @@ Response kèm `stat`: `{ pending: {count,totalPrice}, paid: {...}, cancel: {...}
 
 ## 5.18 User `/user`
 
-⚠️ **`UserModule` được đăng ký trong `AppModule` nhưng toàn bộ 5 route (`GET`, `GET :id`, `POST`, `PATCH :id`, `DELETE :id`) đang bị comment out trong controller — không có endpoint nào hoạt động.** User được tạo gián tiếp qua `/auth/register` hoặc tự động (anonymous user khi review/booking không có `userId`) — không có API quản lý user trực tiếp.
+Toàn bộ controller yêu cầu `@Admin()` (admin/super_admin). Response không bao giờ trả `password`/token nội bộ.
+
+| Method | Path | Guard | Mô tả |
+|--------|------|-------|------|
+| `GET` | `/user` | Admin | Danh sách, phân trang (`keyword` tìm OR trên `name`/`email`, `role`, `page`, `pageSize`) |
+| `GET` | `/user/:id` | Admin | Chi tiết |
+| `POST` | `/user` | Admin | Tạo user — email trùng (kể cả user đã xoá) → `409`; role `tour_guide` tự tạo hồ sơ Tour Guide |
+| `PUT` | `/user/:id` | Admin | Cập nhật `name`/`email`/`role` (partial). Đổi role → tăng `refresh_token_version` (buộc login lại) |
+| `POST` | `/user/:id/reset-password` | Admin | Cấp lại mật khẩu: admin nhập `newPassword`; vô hiệu hoá mọi refresh token cũ |
+| `DELETE` | `/user/:id` | Admin | **Soft delete** — user bị xoá không login/renew token được |
+
+**Phân quyền** (`403` nếu vi phạm):
+- `admin` chỉ quản lý được user `normal`/`tour_guide`; chỉ `super_admin` mới tạo/sửa/xoá/reset tài khoản `admin`.
+- Không ai tạo hoặc gán role `super_admin` qua API; không ai sửa/xoá/reset tài khoản `super_admin` khác.
+- Được sửa thông tin / reset mật khẩu của chính mình, nhưng không tự đổi role và không tự xoá.
+
+### Body `POST /user`
+```json
+{
+  "email": "user@example.com",
+  "password": "123456",
+  "name": "Nguyễn Văn A",
+  "role": "normal"
+}
+```
+
+### Body `POST /user/:id/reset-password`
+```json
+{ "newPassword": "123456" }
+```
 
 ---
 

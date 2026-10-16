@@ -24,6 +24,7 @@ import { TourGuideService } from 'src/modules/tour-guide/tour-guide.service';
 import { ForgotPasswordDto } from 'src/modules/auth/dto/forgot-password.dto';
 import { ResetPasswordDto } from 'src/modules/auth/dto/reset-password.dto';
 import { RenewTokenDto } from 'src/modules/auth/dto/renew-token.dto';
+import { ChangePasswordDto } from 'src/modules/auth/dto/change-password.dto';
 
 //TODO: refactor: authDto, jwtPayloadDto
 @Injectable()
@@ -333,6 +334,47 @@ export class AuthService {
       refreshToken: newRefreshToken,
       user: userDto,
     };
+  }
+
+  async changePassword(userId: string, payload: ChangePasswordDto) {
+    const { oldPassword, newPassword } = payload;
+    const prefixLog = `[changePassword] userId=${userId}`;
+
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new UnauthorizedException('Token expired or invalid');
+    }
+
+    if (
+      !user.password ||
+      !(await this.comparePassword(oldPassword, user.password))
+    ) {
+      throw new BadRequestException('Old password is incorrect');
+    }
+
+    if (oldPassword === newPassword) {
+      throw new BadRequestException(
+        'New password must be different from old password',
+      );
+    }
+
+    // bump version -> every refresh token issued before is invalidated
+    const newVersion = (user.refreshTokenVersion ?? 1) + 1;
+
+    this.logger.log(`${prefixLog} update password`);
+    await this.userRepository.update(
+      { id: userId },
+      {
+        password: await this.hashPassword(newPassword),
+        resetPasswordToken: null,
+        resetPasswordTokenExp: null,
+        refreshTokenVersion: newVersion,
+      },
+    );
+
+    // return new tokens so the current device stays logged in
+    user.refreshTokenVersion = newVersion;
+    return this.buildLoginResponse(user);
   }
 
   async logout(userId: string) {

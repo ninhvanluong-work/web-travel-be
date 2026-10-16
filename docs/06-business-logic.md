@@ -281,6 +281,7 @@ Hệ thống dùng **JWT (access + refresh token)**, không có bảng "admin to
 | `POST` | `/auth/reset-password` | Public | Dùng token reset để đổi mật khẩu |
 | `POST` | `/auth/access-token/renew` | Public (verify refresh token trong body) | Rotation: so `version` trong token với `user.refresh_token_version`, lệch → 401; thành công → tăng version + cấp lại cả 2 token |
 | `POST` | `/auth/logout` | `UserGuard` | Tăng `refresh_token_version` → vô hiệu hoá mọi refresh token cũ |
+| `POST` | `/auth/change-password` | `UserGuard` | Đổi mật khẩu khi đã đăng nhập: kiểm tra `oldPassword`, tăng `refresh_token_version` → refresh token cũ ở mọi thiết bị bị vô hiệu; response trả cặp token mới để thiết bị hiện tại không bị đăng xuất |
 
 ### 6.5.2 JWT payload
 
@@ -301,7 +302,7 @@ Hệ thống dùng **JWT (access + refresh token)**, không có bảng "admin to
 
 | Mức | Áp dụng cho |
 |---|---|
-| `@Admin()` (admin/super_admin) | Destination*, Element (mutate), Option (`PUT`/`DELETE`), Product (mutate), Session (mutate), Supplier (toàn bộ controller), Supplier Payment (toàn bộ controller), Tag (mutate), Video (`GET /admin`, mutate), Departure Time (mutate) |
+| `@Admin()` (admin/super_admin) | Destination*, Element (mutate), Option (`PUT`/`DELETE`), Product (mutate), Session (mutate), Supplier (toàn bộ controller), Supplier Payment (toàn bộ controller), Tag (mutate), Video (`GET /admin`, mutate), Departure Time (mutate), User (toàn bộ controller — xem [5.18](05-api-reference.md#518-user-user)) |
 | `@TourGuide()` (phải có `tourGuideId` trong token) | Tour guide tự cập nhật profile, onboarding, CRUD "moment" của chính mình |
 | `OptionalUserGuard` | Booking (`POST`), Review (`POST tour-guide/:id`), Payment create-order/capture-order/create-payment-url |
 | Không guard (public thật) | Toàn bộ `GET` liệt kê/chi tiết, Upload (cả 2 endpoint), Webhook (tự xác thực bằng HMAC/chữ ký riêng, không dùng JWT) |
@@ -728,7 +729,7 @@ Danh sách toàn bộ điểm dở dang/rủi ro phát hiện được khi rà c
 | 2 | Không có endpoint huỷ booking (`cancel` không thể reach) | 🔴 Nghiệp vụ | `booking.controller.ts` |
 | 3 | Tạo booking + trừ capacity không transaction → race condition khi nhiều người đặt cùng lúc | 🔴 Nghiệp vụ | `booking.service.ts` |
 | 4 | `Destination` không có CRUD thật (module chưa đăng ký, controller/service là boilerplate) | 🔴 Chức năng | `destination.module.ts` |
-| 5 | `User` controller — toàn bộ route bị comment out, không có API user CRUD | 🔴 Chức năng | `user.controller.ts` |
+| 5 | ~~`User` controller — không có API user CRUD~~ ✅ Đã có API quản lý user `/user` | — | `user.controller.ts` |
 | 6 | Upload (`/upload/video`, `/upload/:fileType`) không có auth guard nào | 🔴 Bảo mật | `upload.controller.ts` |
 | 7 | `DELETE /tour-guide/:id` không có guard nào | 🔴 Bảo mật | `tour-guide.controller.ts` |
 | 8 | `GET /booking`, `GET /booking/:id/payment` không kiểm tra quyền sở hữu | 🟠 Bảo mật | `booking.controller.ts` |

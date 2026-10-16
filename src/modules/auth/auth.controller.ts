@@ -13,6 +13,7 @@ import { LoginDto, LoginResponseDto } from 'src/modules/auth/dto/login.dto';
 import { ForgotPasswordDto } from 'src/modules/auth/dto/forgot-password.dto';
 import { ResetPasswordDto } from 'src/modules/auth/dto/reset-password.dto';
 import { RenewTokenDto } from 'src/modules/auth/dto/renew-token.dto';
+import { ChangePasswordDto } from 'src/modules/auth/dto/change-password.dto';
 import { UserId } from 'src/common/decorators';
 import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
@@ -140,6 +141,34 @@ export class AuthController {
       result,
       HttpStatus.OK,
       'renew token successfully!',
+    );
+  }
+
+  @Post('change-password')
+  @ApiBearerAuth(USER_TOKEN)
+  @UseGuards(UserGuard)
+  @ApiResponse({
+    status: 200,
+    description:
+      'change password of current user, returns new tokens (other devices are logged out)',
+    schema: {
+      properties: {
+        data: { $ref: getSchemaPath('LoginResponseDto') },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async changePassword(
+    @UserId() userId: string,
+    @Body() body: ChangePasswordDto,
+  ) {
+    const result = await this.authService.changePassword(userId, body);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'change password successfully',
     );
   }
 

@@ -13,3 +13,10 @@ export const TourGuideId = createParamDecorator(
     return request.tourGuideId;
   },
 );
+
+export const CurrentRole = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    return request.role;
+  },
+);
