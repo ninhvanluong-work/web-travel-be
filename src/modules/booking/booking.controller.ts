@@ -4,6 +4,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Query,
   UseGuards,
@@ -19,6 +20,7 @@ import {
 import { Booking } from 'src/modules/booking/entities/booking.entity';
 import { BookingPayment } from 'src/modules/booking/entities/booking-payment.entity';
 import { CreateBookingDto } from 'src/modules/booking/dto/create-booking.dto';
+import { CancelBookingDto } from 'src/modules/booking/dto/cancel-booking.dto';
 import {
   GetBookingDto,
   GetBookingsResponseDto,
@@ -26,8 +28,8 @@ import {
 import { BookingService } from 'src/modules/booking/booking.service';
 
 import { formatApiResponse } from 'src/common/utils/format';
-import { UserId } from 'src/common/decorators';
-import { OptionalUserGuard } from 'src/common/guards';
+import { Admin, UserId } from 'src/common/decorators';
+import { OptionalUserGuard, UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('booking')
@@ -83,6 +85,48 @@ export class BookingController {
       result,
       HttpStatus.OK,
       'Get bookings successfully!',
+    );
+  }
+
+  @Post(':id/cancel')
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
+  @UseGuards(UserGuard)
+  @ApiParam({
+    name: 'id',
+    description: 'ID của booking',
+    example: '0df1ec7e-166e-4209-810a-23156b3b0489',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'cancel a pending booking (admin only)',
+    schema: {
+      properties: {
+        data: { $ref: getSchemaPath(Booking) },
+        code: { type: 'number', example: 200 },
+        error: { type: 'null', example: null },
+        message: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Booking is not pending',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Booking not found',
+  })
+  async cancel(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UserId() userId: string,
+    @Body() dto: CancelBookingDto,
+  ) {
+    const result = await this.bookingService.cancel(id, userId, dto);
+    return formatApiResponse(
+      result,
+      HttpStatus.OK,
+      'cancelled booking successfully',
     );
   }
 

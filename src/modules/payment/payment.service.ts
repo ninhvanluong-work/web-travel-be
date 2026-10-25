@@ -411,9 +411,23 @@ export class PaymentService {
         rawResponse,
       });
 
-      await manager.update(Booking, locked.bookingId, {
-        status: BookingStatus.PAID,
+      // khoá dòng booking để không chạy chồng với API hủy booking
+      const booking = await manager.findOne(Booking, {
+        where: { id: locked.bookingId },
+        lock: { mode: 'pessimistic_write' },
       });
+
+      if (booking?.status === BookingStatus.CANCEL) {
+        // tiền đã nhận nên vẫn ghi nhận payment SUCCEED, nhưng giữ booking CANCEL
+        // vì capacity đã được hoàn lại khi hủy -> cần hoàn tiền thủ công
+        this.logger.warn(
+          `${prefix} booking ${booking.bookingCode} was cancelled but payment succeeded (providerTxId=${providerTxId}), manual refund required`,
+        );
+      } else {
+        await manager.update(Booking, locked.bookingId, {
+          status: BookingStatus.PAID,
+        });
+      }
 
       await this.recordStatusHistory(
         manager,

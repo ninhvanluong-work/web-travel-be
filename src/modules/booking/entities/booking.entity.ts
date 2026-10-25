@@ -116,6 +116,15 @@ export class Booking extends BaseEntity {
   @Column({ name: 'supplier_name', nullable: true, length: 255 })
   supplierName: string;
 
+  @Column({ name: 'cancel_reason', nullable: true, length: 500 })
+  cancelReason?: string;
+
+  @Column({ name: 'cancelled_at', type: 'timestamptz', nullable: true })
+  cancelledAt?: Date;
+
+  @Column({ name: 'cancelled_by', type: 'uuid', nullable: true })
+  cancelledBy?: string;
+
   @ApiHideProperty()
   @ManyToOne(() => User, (user) => user.bookings)
   @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'Fk_Booking_User' })

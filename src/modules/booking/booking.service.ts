@@ -25,6 +25,7 @@ import {
 } from 'src/modules/booking/entities/booking.entity';
 import { BookingPayment } from 'src/modules/booking/entities/booking-payment.entity';
 import { CreateBookingDto } from 'src/modules/booking/dto/create-booking.dto';
+import { CancelBookingDto } from 'src/modules/booking/dto/cancel-booking.dto';
 import {
   BookingStatDto,
   BookingStatItemDto,
@@ -279,6 +280,69 @@ export class BookingService {
     }
 
     return savedBooking;
+  }
+
+  async cancel(
+    id: string,
+    userId: string,
+    payload: CancelBookingDto,
+  ): Promise<Booking> {
+    const prefix = this.prefix('cancel', id);
+
+    // đổi status + hoàn capacity trong cùng 1 transaction
+    return this.dataSource.transaction(async (manager) => {
+      // khoá dòng booking: chặn 2 request hủy cùng lúc, và chặn chạy chồng với
+      // luồng xác nhận thanh toán (markPaymentSucceeded cũng khoá dòng này)
+      const booking = await manager.findOne(Booking, {
+        where: { id },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!booking) {
+        this.logger.warn(`${prefix} rejected: booking not found`);
+        throw new NotFoundException('Booking not found');
+      }
+
+      // booking đã PAID chưa có luồng hoàn tiền nên không cho hủy
+      if (booking.status !== BookingStatus.PENDING) {
+        this.logger.warn(
+          `${prefix} rejected: booking status is ${booking.status}`,
+        );
+        throw new BadRequestException(
+          `Booking ${booking.bookingCode} cannot be cancelled (status: ${booking.status})`,
+        );
+      }
+
+      booking.status = BookingStatus.CANCEL;
+      booking.cancelReason = payload.reason;
+      booking.cancelledAt = new Date();
+      booking.cancelledBy = userId;
+      await manager.update(Booking, id, {
+        status: booking.status,
+        cancelReason: booking.cancelReason,
+        cancelledAt: booking.cancelledAt,
+        cancelledBy: booking.cancelledBy,
+      });
+
+      // hoàn lại số chỗ đã trừ khi đặt
+      const totalCount = (booking.passengers ?? []).reduce(
+        (sum, passenger) => sum + passenger.count,
+        0,
+      );
+      if (booking.tourSessionId && totalCount > 0) {
+        await manager.increment(
+          Session,
+          { id: booking.tourSessionId },
+          'capacity',
+          totalCount,
+        );
+      }
+
+      this.logger.log(
+        `${prefix} cancelled booking ${booking.bookingCode} by ${userId}, restored capacity=${totalCount} to session ${booking.tourSessionId}`,
+      );
+
+      return booking;
+    });
   }
 
   buildQueryCondition(
