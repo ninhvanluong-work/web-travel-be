@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 
 import {
   Booking,
@@ -44,6 +44,7 @@ export class PaymentService {
     private readonly paypalService: PaypalService,
     private readonly vnpayService: VnpayService,
     private readonly configService: ConfigService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async getPaymentLogs(
@@ -366,28 +367,62 @@ export class PaymentService {
     return 'declined';
   }
 
+  // khoá dòng payment (SELECT ... FOR UPDATE) để 2 luồng cùng xử lý 1 payment
+  // (vd. VNPAY return URL + IPN, PayPal capture + webhook) phải chạy lần lượt
+  private async lockPayment(
+    manager: EntityManager,
+    paymentId: string,
+  ): Promise<BookingPayment> {
+    const locked = await manager.findOne(BookingPayment, {
+      where: { id: paymentId },
+      lock: { mode: 'pessimistic_write' },
+    });
+    if (!locked) {
+      throw new NotFoundException('Booking payment not found');
+    }
+    return locked;
+  }
+
   private async markPaymentSucceeded(
     payment: BookingPayment,
     providerTxId: string,
     rawResponse: Record<string, any>,
     source: string,
   ): Promise<void> {
-    const fromStatus = payment.status;
-    payment.status = BookingPaymentStatus.SUCCEED;
-    payment.providerTxId = providerTxId;
-    payment.rawResponse = rawResponse;
-    await this.bookingPaymentRepository.save(payment);
+    const prefix = this.prefix('markPaymentSucceeded', payment.id);
 
-    await this.bookingRepository.update(payment.booking.id, {
-      status: BookingStatus.PAID,
+    await this.dataSource.transaction(async (manager) => {
+      const locked = await this.lockPayment(manager, payment.id);
+
+      // kiểm tra lại status sau khi đã khoá, luồng khác có thể vừa xử lý xong
+      if (locked.status === BookingPaymentStatus.SUCCEED) {
+        this.logger.log(`${prefix} already succeeded, skip (source=${source})`);
+        payment.status = locked.status;
+        return;
+      }
+
+      const fromStatus = locked.status;
+      payment.status = BookingPaymentStatus.SUCCEED;
+      payment.providerTxId = providerTxId;
+      payment.rawResponse = rawResponse;
+      await manager.update(BookingPayment, payment.id, {
+        status: payment.status,
+        providerTxId,
+        rawResponse,
+      });
+
+      await manager.update(Booking, locked.bookingId, {
+        status: BookingStatus.PAID,
+      });
+
+      await this.recordStatusHistory(
+        manager,
+        payment,
+        fromStatus,
+        BookingPaymentStatus.SUCCEED,
+        { rawResponse, source },
+      );
     });
-
-    await this.recordStatusHistory(
-      payment,
-      fromStatus,
-      BookingPaymentStatus.SUCCEED,
-      { rawResponse, source },
-    );
   }
 
   private async markPaymentFailed(
@@ -396,21 +431,45 @@ export class PaymentService {
     rawResponse: Record<string, any>,
     source: string,
   ): Promise<void> {
-    const fromStatus = payment.status;
-    payment.status = BookingPaymentStatus.FAILED;
-    payment.failureReason = reason;
-    payment.rawResponse = rawResponse;
-    await this.bookingPaymentRepository.save(payment);
+    const prefix = this.prefix('markPaymentFailed', payment.id);
 
-    await this.recordStatusHistory(
-      payment,
-      fromStatus,
-      BookingPaymentStatus.FAILED,
-      { reason, rawResponse, source },
-    );
+    await this.dataSource.transaction(async (manager) => {
+      const locked = await this.lockPayment(manager, payment.id);
+
+      // không hạ payment đã thành công về failed, không ghi failed 2 lần
+      if (
+        locked.status === BookingPaymentStatus.SUCCEED ||
+        locked.status === BookingPaymentStatus.FAILED
+      ) {
+        this.logger.log(
+          `${prefix} already ${locked.status}, skip (source=${source})`,
+        );
+        payment.status = locked.status;
+        return;
+      }
+
+      const fromStatus = locked.status;
+      payment.status = BookingPaymentStatus.FAILED;
+      payment.failureReason = reason;
+      payment.rawResponse = rawResponse;
+      await manager.update(BookingPayment, payment.id, {
+        status: payment.status,
+        failureReason: reason,
+        rawResponse,
+      });
+
+      await this.recordStatusHistory(
+        manager,
+        payment,
+        fromStatus,
+        BookingPaymentStatus.FAILED,
+        { reason, rawResponse, source },
+      );
+    });
   }
 
   private async recordStatusHistory(
+    manager: EntityManager,
     payment: BookingPayment,
     fromStatus: BookingPaymentStatus | null,
     toStatus: BookingPaymentStatus,
@@ -420,7 +479,7 @@ export class PaymentService {
       source: string;
     },
   ): Promise<void> {
-    const history = this.bookingPaymentHistoryRepository.create({
+    const history = manager.create(BookingPaymentHistory, {
       bookingPaymentId: payment.id,
       bookingId: payment.bookingId ?? payment.booking?.id,
       fromStatus,
@@ -431,7 +490,7 @@ export class PaymentService {
       rawResponse: options.rawResponse,
       source: options.source,
     });
-    await this.bookingPaymentHistoryRepository.save(history);
+    await manager.save(history);
   }
 
   getPaypalPublicConfig() {

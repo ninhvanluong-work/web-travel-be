@@ -1,6 +1,11 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import {
+  DataSource,
+  EntityManager,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
 
 import { Review } from 'src/modules/review/entities/review.entity';
 import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
@@ -26,10 +31,9 @@ export class ReviewService {
   constructor(
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
-    @InjectRepository(TourGuide)
-    private readonly tourGuideRepository: Repository<TourGuide>,
 
     private readonly userService: UserService,
+    private readonly dataSource: DataSource,
   ) {}
 
   private calculateAverage(
@@ -149,30 +153,56 @@ export class ReviewService {
     tourGuideId: string,
     payload: CreateReviewDto,
   ) {
-    const tourGuide = await this.tourGuideRepository.findOne({
-      where: { id: tourGuideId },
-    });
-
-    if (!tourGuide) {
-      throw new NotFoundException('Tour guide not found');
-    }
-
     const prefix = this.prefix('createTourGuideReview', tourGuideId);
     this.logger.debug(`${prefix} ${JSON.stringify(payload)}`);
 
-    const { tourGuideSubRatings, ...restPayload } = payload;
-
-    let reviewerId = userId;
-    if (!reviewerId) {
-      const anonymousUser = await this.userService.createAnonymousUser();
-      reviewerId = anonymousUser.id;
-      this.logger.log(`${prefix} created anonymous user ${reviewerId}`);
-    } else {
-      const isExisted = await this.userService.isExisted(reviewerId);
+    if (userId) {
+      const isExisted = await this.userService.isExisted(userId);
       if (!isExisted) {
         throw new NotFoundException('User not found');
       }
     }
+
+    // tạo user ẩn danh + lưu review + cập nhật điểm tour guide trong cùng 1 transaction
+    return this.dataSource.transaction(async (manager) => {
+      // khoá dòng tour guide để các review đồng thời tính điểm lần lượt,
+      // tránh mất lượt đánh giá khi 2 request cùng đọc ratingCount cũ
+      const tourGuide = await manager.findOne(TourGuide, {
+        where: { id: tourGuideId },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!tourGuide) {
+        throw new NotFoundException('Tour guide not found');
+      }
+
+      let reviewerId = userId;
+      if (!reviewerId) {
+        const anonymousUser =
+          await this.userService.createAnonymousUser(manager);
+        reviewerId = anonymousUser.id;
+        this.logger.log(`${prefix} created anonymous user ${reviewerId}`);
+      }
+
+      return this.saveTourGuideReview(
+        manager,
+        tourGuide,
+        reviewerId,
+        payload,
+        prefix,
+      );
+    });
+  }
+
+  private async saveTourGuideReview(
+    manager: EntityManager,
+    tourGuide: TourGuide,
+    reviewerId: string,
+    payload: CreateReviewDto,
+    prefix: string,
+  ) {
+    const tourGuideId = tourGuide.id;
+    const { tourGuideSubRatings, ...restPayload } = payload;
 
     this.logger.log(`${prefix} creating review`);
     const reviewData: Partial<Review> = {
@@ -224,14 +254,19 @@ export class ReviewService {
       ratings: updatedUserReviewRatings,
     };
 
-    await this.tourGuideRepository.save(tourGuide);
+    const review = manager.create(Review, reviewData);
+    const savedReview = await manager.save(review);
+    this.logger.log(`${prefix} created review ${savedReview.id}`);
+
+    // chỉ cập nhật các cột điểm, không ghi đè các cột khác của tour guide
+    await manager.update(TourGuide, tourGuideId, {
+      ratingCount: tourGuide.ratingCount,
+      ratingValue: tourGuide.ratingValue,
+      userReview: tourGuide.userReview,
+    });
     this.logger.debug(
       `${prefix} updated tour guide ratings count=${tourGuide.ratingCount} average=${tourGuide.ratingValue}`,
     );
-
-    const review = this.reviewRepository.create(reviewData);
-    const savedReview = await this.reviewRepository.save(review);
-    this.logger.log(`${prefix} created review ${savedReview.id}`);
 
     return savedReview;
   }

@@ -2,6 +2,7 @@ import { escapeLike } from 'src/common/utils/sql';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  EntityManager,
   Repository,
   ILike,
   FindOptionsWhere,
@@ -28,35 +29,56 @@ export class OptionService {
     private readonly productRepository: Repository<Product>,
   ) {}
 
-  async create(payload: CreateOptionDto, userId: string) {
-    const product = await this.productRepository.findOne({
+  // manager: truyền vào khi được gọi bên trong transaction của service khác
+  async create(
+    payload: CreateOptionDto,
+    userId: string,
+    manager?: EntityManager,
+  ) {
+    const optionRepository =
+      manager?.getRepository(Option) ?? this.optionRepository;
+    const productRepository =
+      manager?.getRepository(Product) ?? this.productRepository;
+
+    const product = await productRepository.findOne({
       where: { id: payload.productId },
     });
     if (!product) throw new NotFoundException('Product Not Found');
 
-    const newOption = this.optionRepository.create({
+    const newOption = optionRepository.create({
       ...payload,
       createdBy: userId,
       updatedBy: userId,
     });
-    return this.optionRepository.save(newOption);
+    return optionRepository.save(newOption);
   }
 
-  async update(id: string, payload: UpdateOptionDto, userId: string) {
-    const option = await this.findOneById(id);
+  async update(
+    id: string,
+    payload: UpdateOptionDto,
+    userId: string,
+    manager?: EntityManager,
+  ) {
+    const optionRepository =
+      manager?.getRepository(Option) ?? this.optionRepository;
+
+    const option = await this.findOneById(id, false, manager);
     if (!option) throw new NotFoundException('Option not found');
 
     Object.assign(option, payload, { updatedBy: userId });
-    return this.optionRepository.save(option);
+    return optionRepository.save(option);
   }
 
-  async remove(id: string, userId: string) {
-    const found = await this.findOneById(id);
+  async remove(id: string, userId: string, manager?: EntityManager) {
+    const optionRepository =
+      manager?.getRepository(Option) ?? this.optionRepository;
+
+    const found = await this.findOneById(id, false, manager);
     if (!found) throw new NotFoundException('Option not found');
 
-    await this.optionRepository.update(id, { deletedBy: userId });
-    await this.optionRepository.softDelete(id);
-    const removedOption = await this.findOneById(id, true);
+    await optionRepository.update(id, { deletedBy: userId });
+    await optionRepository.softDelete(id);
+    const removedOption = await this.findOneById(id, true, manager);
     if (!removedOption) throw new NotFoundException('Option not found');
     return removedOption;
   }
@@ -99,8 +121,10 @@ export class OptionService {
     };
   }
 
-  async findOneById(id: string, withDeleted = false) {
-    return this.optionRepository.findOne({
+  async findOneById(id: string, withDeleted = false, manager?: EntityManager) {
+    const optionRepository =
+      manager?.getRepository(Option) ?? this.optionRepository;
+    return optionRepository.findOne({
       where: { id },
       withDeleted,
     });

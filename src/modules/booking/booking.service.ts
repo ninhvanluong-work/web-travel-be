@@ -8,6 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Between,
+  DataSource,
   FindOptionsWhere,
   ILike,
   In,
@@ -73,6 +74,7 @@ export class BookingService {
     @InjectRepository(DepartureTime)
     private readonly departureTimeRepository: Repository<DepartureTime>,
     private readonly mailService: MailService,
+    private readonly dataSource: DataSource,
   ) {}
 
   private generateBookingCode(): string {
@@ -209,7 +211,7 @@ export class BookingService {
     //  throw new BadRequestException('Not enough remaining slot');
     //}
 
-    const booking = this.bookingRepository.create({
+    const bookingData: Partial<Booking> = {
       userId,
       productId: payload.productId,
       supplierId: product.supplierId,
@@ -233,19 +235,42 @@ export class BookingService {
       pickupLocationName: pickupLocation?.name,
       departureTime: departure?.time,
       departureLabel: departure?.label,
+    };
+
+    // lưu booking + trừ capacity trong cùng 1 transaction
+    const savedBooking = await this.dataSource.transaction(async (manager) => {
+      // khoá dòng session để các booking đồng thời trừ capacity lần lượt
+      const lockedSession = await manager.findOne(Session, {
+        where: { id: session.id },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!lockedSession || lockedSession.status !== SessionStatus.ACTIVE) {
+        this.logger.warn(
+          `${prefix} rejected: session ${session.id} is no longer active`,
+        );
+        throw new BadRequestException('Session is not active');
+      }
+
+      const created = await manager.save(manager.create(Booking, bookingData));
+      this.logger.log(
+        `${prefix} created booking ${created.id} (${created.bookingCode}) totalPrice=${totalPrice}`,
+      );
+
+      // chỉ cập nhật cột capacity, không ghi đè các cột khác của session
+      await manager.decrement(
+        Session,
+        { id: session.id },
+        'capacity',
+        totalCount,
+      );
+      this.logger.debug(
+        `${this.prefix('create', session.id)} capacity ${lockedSession.capacity} -> ${lockedSession.capacity - totalCount}`,
+      );
+
+      return created;
     });
 
-    const savedBooking = await this.bookingRepository.save(booking);
-    this.logger.log(
-      `${prefix} created booking ${savedBooking.id} (${savedBooking.bookingCode}) totalPrice=${totalPrice}`,
-    );
-
-    session.capacity -= totalCount;
-    await this.sessionRepository.save(session);
-    this.logger.debug(
-      `${this.prefix('create', session.id)} capacity ${session.capacity + totalCount} -> ${session.capacity}`,
-    );
-
+    // gửi mail sau khi commit, booking đã chắc chắn được lưu
     if (product.supplier) {
       await this.mailService.sendSupplierBookingNotification(
         savedBooking,

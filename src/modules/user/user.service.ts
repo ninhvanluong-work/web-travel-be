@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { EntityManager, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import * as bcrypt from 'bcrypt';
 
@@ -44,13 +44,15 @@ export class UserService {
     return await this.userRepository.existsBy({ id: userId });
   }
 
-  async createAnonymousUser(): Promise<User> {
-    const user = this.userRepository.create({
+  // manager: truyền vào khi được gọi bên trong transaction của service khác
+  async createAnonymousUser(manager?: EntityManager): Promise<User> {
+    const userRepository = manager?.getRepository(User) ?? this.userRepository;
+    const user = userRepository.create({
       name: 'Anonymous',
       role: UserRole.NORMAL,
     });
 
-    return this.userRepository.save(user);
+    return userRepository.save(user);
   }
 
   private async hashPassword(plainText: string) {
