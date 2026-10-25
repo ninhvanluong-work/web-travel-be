@@ -1,3 +1,4 @@
+import { escapeLike } from 'src/common/utils/sql';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
@@ -73,7 +74,9 @@ export class SearchingService {
   }
 
   async getSuggestions(keyword?: string): Promise<SuggestResult> {
-    const keywordCondition = keyword ? ILike(`${keyword}%`) : undefined;
+    const keywordCondition = keyword
+      ? ILike(`${escapeLike(keyword)}%`)
+      : undefined;
 
     const getHotSearchPromise = this.searchingStatRepository.find({
       where: keyword ? { query: keywordCondition } : {},

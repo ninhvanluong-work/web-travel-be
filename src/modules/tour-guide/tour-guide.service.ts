@@ -1,3 +1,4 @@
+import { escapeLike } from 'src/common/utils/sql';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
@@ -69,7 +70,7 @@ export class TourGuideService {
         expYear: true,
       },
       where: {
-        name: ILike(`%${keyword}%`),
+        name: ILike(`%${escapeLike(keyword)}%`),
       },
       take: pageSize,
       skip,

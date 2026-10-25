@@ -1,3 +1,4 @@
+import { escapeLike } from 'src/common/utils/sql';
 import {
   ConflictException,
   Injectable,
@@ -87,7 +88,7 @@ export class TagService {
     const skip = (page - 1) * pageSize;
 
     const condition: FindOptionsWhere<Tag> = {
-      name: ILike(`%${keyword}%`),
+      name: ILike(`%${escapeLike(keyword)}%`),
     };
 
     const [tags, total] = await this.tagRepository.findAndCount({

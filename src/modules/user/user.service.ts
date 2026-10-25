@@ -1,3 +1,4 @@
+import { escapeLike } from 'src/common/utils/sql';
 import {
   ConflictException,
   ForbiddenException,
@@ -149,8 +150,8 @@ export class UserService {
     const baseCondition: FindOptionsWhere<User> = role ? { role } : {};
     const where: FindOptionsWhere<User>[] | FindOptionsWhere<User> = keyword
       ? [
-          { ...baseCondition, name: ILike(`%${keyword}%`) },
-          { ...baseCondition, email: ILike(`%${keyword}%`) },
+          { ...baseCondition, name: ILike(`%${escapeLike(keyword)}%`) },
+          { ...baseCondition, email: ILike(`%${escapeLike(keyword)}%`) },
         ]
       : baseCondition;
 

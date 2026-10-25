@@ -1,3 +1,4 @@
+import { escapeLike } from 'src/common/utils/sql';
 import {
   ConflictException,
   Injectable,
@@ -85,10 +86,10 @@ export class ElementService {
 
     let condition: FindOptionsWhere<Element>[] = [
       {
-        name: ILike(`%${keyword}%`),
+        name: ILike(`%${escapeLike(keyword)}%`),
       },
       {
-        key: ILike(`%${keyword}%`),
+        key: ILike(`%${escapeLike(keyword)}%`),
       },
     ];
 

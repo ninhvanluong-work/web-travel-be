@@ -1,3 +1,4 @@
+import { escapeLike } from 'src/common/utils/sql';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -67,7 +68,7 @@ export class OptionService {
     const condition: FindOptionsWhere<Option> = {};
 
     if (keyword) {
-      condition.title = ILike(`%${keyword}%`);
+      condition.title = ILike(`%${escapeLike(keyword)}%`);
     }
 
     if (productId) {

@@ -1,3 +1,4 @@
+import { escapeLike } from 'src/common/utils/sql';
 import { Itinerary } from './../Itinerary/entities/itinerary.entity';
 import {
   ListItemsResponse,
@@ -278,7 +279,7 @@ export class ProductService {
           ...unit,
           productId: result.id,
           createdBy: userId,
-          updatedBy: userId
+          updatedBy: userId,
         });
         return entity;
       });
@@ -292,7 +293,7 @@ export class ProductService {
     const condition: FindOptionsWhere<Product> = {};
 
     if (query.keyword) {
-      condition.name = ILike(`%${query.keyword}%`);
+      condition.name = ILike(`%${escapeLike(query.keyword)}%`);
     }
 
     if (query.supplierId) {

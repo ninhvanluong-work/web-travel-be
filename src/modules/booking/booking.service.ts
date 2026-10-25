@@ -1,3 +1,4 @@
+import { escapeLike } from 'src/common/utils/sql';
 import {
   BadRequestException,
   Injectable,
@@ -287,7 +288,7 @@ export class BookingService {
       return condition;
     }
 
-    const keyword = ILike(`%${query.keyword}%`);
+    const keyword = ILike(`%${escapeLike(query.keyword)}%`);
     const searchableFields: (keyof Booking)[] = [
       'phone',
       'email',

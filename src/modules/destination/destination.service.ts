@@ -1,3 +1,4 @@
+import { escapeLike } from 'src/common/utils/sql';
 import {
   ConflictException,
   Injectable,
@@ -45,7 +46,7 @@ export class DestinationService {
     const skip = (page - 1) * pageSize;
 
     const condition: FindOptionsWhere<Destination> = {
-      name: ILike(`%${keyword}%`),
+      name: ILike(`%${escapeLike(keyword)}%`),
     };
 
     const [destinations, total] = await this.destinationRepository.findAndCount(

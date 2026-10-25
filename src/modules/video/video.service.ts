@@ -1,3 +1,4 @@
+import { escapeLike } from 'src/common/utils/sql';
 import { FindOptionsWhere, ILike, IsNull, Repository } from 'typeorm';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -311,7 +312,7 @@ export class VideoService {
   buildAdminVideosCondition(queryPayload: GetVideoAdminDto) {
     const { keyword = '', type } = queryPayload;
     const condition: FindOptionsWhere<Video> = {
-      name: ILike(`%${keyword}%`),
+      name: ILike(`%${escapeLike(keyword)}%`),
     };
 
     if (type) {
@@ -374,7 +375,7 @@ export class VideoService {
     const { keyword = '', type } = queryPayload;
     const condition: FindOptionsWhere<Video> = {
       tourGuideId,
-      name: ILike(`%${keyword}%`),
+      name: ILike(`%${escapeLike(keyword)}%`),
     };
 
     if (type) {
