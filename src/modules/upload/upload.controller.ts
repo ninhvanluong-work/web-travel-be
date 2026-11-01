@@ -5,7 +5,6 @@ import {
   Param,
   Post,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import 'multer';
@@ -31,9 +30,7 @@ import {
 } from 'src/modules/upload/dto/upload-video.dto';
 
 import { UploadService } from 'src/modules/upload/upload.service';
-import { Admin } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
-import { USER_TOKEN } from 'src/common/constants';
+import { Admin, Public } from 'src/common/decorators';
 
 @Controller('upload')
 @ApiExtraModels(UploadVideoResponseDto, UploadFileResponseDto)
@@ -44,6 +41,7 @@ import { USER_TOKEN } from 'src/common/constants';
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
   @Post('video')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'create singed video upload',
@@ -69,6 +67,7 @@ export class UploadController {
   }
 
   @Post(':fileType')
+  @Public()
   @ApiBody({
     type: UploadFileDto,
   })

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 
@@ -28,6 +29,7 @@ import { BookingModule } from './modules/booking/booking.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { SupplierModule } from './modules/supplier/supplier.module';
 import { MailModule } from 'src/common/mail/mail.module';
+import { AuthGuard, OptionalUserGuard, UserGuard } from 'src/common/guards';
 
 @Module({
   imports: [
@@ -62,6 +64,11 @@ import { MailModule } from 'src/common/mail/mail.module';
     SupplierModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    UserGuard,
+    OptionalUserGuard,
+    { provide: APP_GUARD, useClass: AuthGuard },
+  ],
 })
 export class AppModule {}

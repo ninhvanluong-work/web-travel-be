@@ -8,7 +8,6 @@ import {
   Get,
   HttpStatus,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -24,8 +23,7 @@ import { GetOptionDto, GetOptionsResponseDto } from './dto/get-option.dto';
 import { OptionDto } from './dto/option-response.dto';
 import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
-import { Admin, UserId } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
+import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('option')
@@ -36,7 +34,6 @@ export class OptionController {
   //@Post()
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create option',
@@ -77,6 +74,7 @@ export class OptionController {
   }
 
   @Get(':id')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get option detail',
@@ -98,7 +96,6 @@ export class OptionController {
   @Put(':id')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update option',
@@ -128,7 +125,6 @@ export class OptionController {
   @Delete(':id')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'delete option',

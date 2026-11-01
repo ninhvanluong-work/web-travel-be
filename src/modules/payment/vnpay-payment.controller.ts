@@ -8,7 +8,6 @@ import {
   Query,
   Req,
   Res,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
@@ -17,8 +16,7 @@ import { PaymentService } from 'src/modules/payment/payment.service';
 import type { VnpayCallbackQuery } from 'src/modules/payment/types/vnpay.type';
 
 import { formatApiResponse } from 'src/common/utils/format';
-import { UserId } from 'src/common/decorators';
-import { OptionalUserGuard } from 'src/common/guards';
+import { OptionalAuth, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
 
 function getClientIp(req: Request): string {
@@ -35,7 +33,7 @@ export class VnpayPaymentController {
 
   @Post(':bookingId/create-payment-url')
   @ApiBearerAuth(USER_TOKEN)
-  @UseGuards(OptionalUserGuard)
+  @OptionalAuth()
   @ApiResponse({
     status: 200,
     description:
@@ -64,6 +62,7 @@ export class VnpayPaymentController {
   // renders JSON to the browser - it always redirects to FRONTEND_URL so
   // the frontend page can show the result to the user.
   @Get('return')
+  @Public()
   async verifyReturn(@Query() query: VnpayCallbackQuery, @Res() res: Response) {
     const result = await this.paymentService.handleVnpayCallback(query);
     const redirectUrl = this.paymentService.buildVnpayReturnRedirectUrl(result);

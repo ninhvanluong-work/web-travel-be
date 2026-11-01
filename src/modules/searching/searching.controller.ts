@@ -10,6 +10,7 @@ import {
   SuggestQueryDto,
   SuggestResponseDto,
 } from './dto/searching-suggestion.dto';
+import { Public } from 'src/common/decorators';
 
 @ApiExtraModels(
   SuggestResponseDto,
@@ -22,6 +23,7 @@ export class SearchingController {
   constructor(private readonly searchingService: SearchingService) {}
 
   @Get('suggest')
+  @Public()
   @ApiResponse({
     status: 200,
     description:

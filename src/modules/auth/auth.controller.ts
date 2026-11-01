@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, HttpStatus } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiExtraModels,
@@ -14,8 +14,7 @@ import { ForgotPasswordDto } from 'src/modules/auth/dto/forgot-password.dto';
 import { ResetPasswordDto } from 'src/modules/auth/dto/reset-password.dto';
 import { RenewTokenDto } from 'src/modules/auth/dto/renew-token.dto';
 import { ChangePasswordDto } from 'src/modules/auth/dto/change-password.dto';
-import { UserId } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
+import { Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('auth')
@@ -24,6 +23,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'register user',
@@ -42,6 +42,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'user login',
@@ -60,6 +61,7 @@ export class AuthController {
   }
 
   @Post('admin/login')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'admin login',
@@ -78,6 +80,7 @@ export class AuthController {
   }
 
   @Post('forgot-password')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'forgot password',
@@ -101,6 +104,7 @@ export class AuthController {
   }
 
   @Post('reset-password')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'reset password',
@@ -123,6 +127,7 @@ export class AuthController {
   }
 
   @Post('access-token/renew')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get new access token',
@@ -146,7 +151,6 @@ export class AuthController {
 
   @Post('change-password')
   @ApiBearerAuth(USER_TOKEN)
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description:
@@ -174,7 +178,6 @@ export class AuthController {
 
   @Post('logout')
   @ApiBearerAuth(USER_TOKEN)
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'logout',

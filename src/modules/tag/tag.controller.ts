@@ -8,7 +8,6 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -25,8 +24,7 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { GetTagDto, GetTagsResponseDto } from './dto/get-tag.dto';
 import { TagDto } from './dto/tag-response.dto';
-import { Admin, UserId } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
+import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('tag')
@@ -37,7 +35,6 @@ export class TagController {
   @Post()
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create tag',
@@ -56,6 +53,7 @@ export class TagController {
   }
 
   @Get()
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'list tags',
@@ -81,7 +79,6 @@ export class TagController {
   @Put(':id')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update tag',
@@ -107,7 +104,6 @@ export class TagController {
   @Delete(':id')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'deactivate tag',

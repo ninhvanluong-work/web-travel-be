@@ -8,7 +8,6 @@ import {
   Get,
   HttpStatus,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -26,8 +25,7 @@ import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
 import { GetElementDto } from './dto/get-element.dto';
 import { ElementDto } from './dto/element-response.dto';
-import { Admin, UserId } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
+import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('element')
@@ -38,7 +36,6 @@ export class ElementController {
   @Post()
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create element',
@@ -61,6 +58,7 @@ export class ElementController {
   }
 
   @Get()
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'list elements',
@@ -86,7 +84,6 @@ export class ElementController {
   @Put(':id')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'UPDATE element',
@@ -116,7 +113,6 @@ export class ElementController {
   @Put(':id/active')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'UPDATE element',
@@ -142,7 +138,6 @@ export class ElementController {
   @Delete(':id')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'deactivate element',

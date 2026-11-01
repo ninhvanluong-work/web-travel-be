@@ -8,7 +8,6 @@ import {
   Get,
   HttpStatus,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -25,8 +24,7 @@ import { GetSessionDto, GetSessionsResponseDto } from './dto/get-session.dto';
 import { SessionDto } from './dto/session-response.dto';
 import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
-import { Admin, UserId } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
+import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('session')
@@ -37,7 +35,6 @@ export class SessionController {
   @Post()
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create session',
@@ -62,7 +59,6 @@ export class SessionController {
   @Post('range')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create sessions for 1 or multiple consecutive days',
@@ -88,6 +84,7 @@ export class SessionController {
   }
 
   @Get()
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'list sessions',
@@ -106,6 +103,7 @@ export class SessionController {
   }
 
   @Get(':id')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get session detail',
@@ -127,7 +125,6 @@ export class SessionController {
   @Put(':id')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update session',
@@ -160,7 +157,6 @@ export class SessionController {
   @Delete(':id')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'delete session',

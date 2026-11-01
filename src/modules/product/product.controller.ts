@@ -7,7 +7,6 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -40,8 +39,7 @@ import {
 } from 'src/modules/review/dto/get-review.dto';
 import { ReviewService } from 'src/modules/review/review.service';
 import { UpdateProductStatusDto } from 'src/modules/product/dto/update-product-status.dto';
-import { Admin, UserId } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
+import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('product')
@@ -63,7 +61,6 @@ export class ProductController {
   @Post()
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create product',
@@ -91,6 +88,7 @@ export class ProductController {
   }
 
   @Get()
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get product list',
@@ -118,6 +116,7 @@ export class ProductController {
   }
 
   @Get(':id')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get product detail',
@@ -139,6 +138,7 @@ export class ProductController {
   }
 
   @Get(':id/booking')
+  @Public()
   @ApiResponse({
     status: 200,
     description:
@@ -163,7 +163,6 @@ export class ProductController {
   @Put(':id')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update product',
@@ -199,7 +198,6 @@ export class ProductController {
   @Post(':id/publish')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'publish product',
@@ -233,7 +231,6 @@ export class ProductController {
   @Post(':id/status/:status')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update product status',
@@ -273,6 +270,7 @@ export class ProductController {
   }
 
   @Get(':id/review')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get product reviews',

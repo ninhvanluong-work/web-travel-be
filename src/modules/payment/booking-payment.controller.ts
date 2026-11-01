@@ -9,6 +9,7 @@ import {
 import { PaymentService } from 'src/modules/payment/payment.service';
 import { BookingPaymentLogDto } from 'src/modules/payment/dto/booking-payment-log.dto';
 import { formatApiResponse } from 'src/common/utils/format';
+import { Public } from 'src/common/decorators';
 
 @Controller('booking-payment')
 @ApiExtraModels(BookingPaymentLogDto)
@@ -16,6 +17,7 @@ export class BookingPaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Get(':id/logs')
+  @Public()
   @ApiParam({
     name: 'id',
     description: 'ID của booking payment',

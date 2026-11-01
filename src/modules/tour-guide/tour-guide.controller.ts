@@ -9,7 +9,6 @@ import {
   Put,
   Query,
   NotFoundException,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -40,10 +39,9 @@ import {
   TourGuideDto,
 } from 'src/modules/tour-guide/dto/get-tour-guide.dto';
 import { UpdateTourGuideMomentParamsDto } from 'src/modules/tour-guide/dto/update-tour-guide-moment.dto';
-import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 import tourGuideSkills from 'src/common/constants/tour-guide-skills.json';
-import { TourGuide, TourGuideId, UserId } from 'src/common/decorators';
+import { Public, TourGuide, TourGuideId, UserId } from 'src/common/decorators';
 
 @Controller('tour-guide')
 @ApiExtraModels(
@@ -62,6 +60,7 @@ export class TourGuideController {
   ) {}
 
   @Post()
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'create tour guide',
@@ -84,6 +83,7 @@ export class TourGuideController {
   }
 
   @Get()
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get tour guide list',
@@ -111,6 +111,7 @@ export class TourGuideController {
   }
 
   @Get('skills')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get tour guide skill categories',
@@ -132,6 +133,7 @@ export class TourGuideController {
   }
 
   @Get(':id')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get tour guide by id',
@@ -159,7 +161,6 @@ export class TourGuideController {
   @Put(':id')
   @ApiBearerAuth(USER_TOKEN)
   @TourGuide()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update tour guide',
@@ -188,7 +189,6 @@ export class TourGuideController {
   @Post('onboarding')
   @ApiBearerAuth(USER_TOKEN)
   @TourGuide()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update tour guide onboarding status to true',
@@ -211,6 +211,7 @@ export class TourGuideController {
   }
 
   @Delete(':id')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'delete tour guide',
@@ -233,6 +234,7 @@ export class TourGuideController {
   }
 
   @Get(':id/review')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get tour guide reviews',
@@ -262,6 +264,7 @@ export class TourGuideController {
   }
 
   @Get(':id/moment')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get video moment list by tour guide id',
@@ -294,7 +297,6 @@ export class TourGuideController {
   @Post(':id/moment')
   @ApiBearerAuth(USER_TOKEN)
   @TourGuide()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create tour guide moment',
@@ -324,7 +326,6 @@ export class TourGuideController {
   @Put(':id/moment/:momentId')
   @ApiBearerAuth(USER_TOKEN)
   @TourGuide()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update tour guide moment',
@@ -359,7 +360,6 @@ export class TourGuideController {
   @Delete(':id/moment/:momentId')
   @ApiBearerAuth(USER_TOKEN)
   @TourGuide()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'delete tour guide moment',

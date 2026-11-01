@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpStatus,
-  Param,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpStatus, Param, Post } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiExtraModels,
@@ -20,8 +13,7 @@ import { CreateReviewResponseDto } from 'src/modules/review/dto/get-review.dto';
 import { ReviewService } from 'src/modules/review/review.service';
 import { formatApiResponse } from 'src/common/utils/format';
 
-import { UserId } from 'src/common/decorators';
-import { OptionalUserGuard } from 'src/common/guards';
+import { OptionalAuth, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('review')
@@ -31,7 +23,7 @@ export class ReviewController {
 
   @Post('tour-guide/:tourGuideId')
   @ApiBearerAuth(USER_TOKEN)
-  @UseGuards(OptionalUserGuard)
+  @OptionalAuth()
   @ApiResponse({
     status: 200,
     description: 'create tour guide review',

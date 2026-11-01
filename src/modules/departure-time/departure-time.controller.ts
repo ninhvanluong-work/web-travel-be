@@ -8,7 +8,6 @@ import {
   Get,
   HttpStatus,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -24,8 +23,7 @@ import { GetDepartureTimeDto } from './dto/get-departure-time.dto';
 import { DepartureTimeDto } from './dto/departure-time-response.dto';
 import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
-import { Admin, UserId } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
+import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('departure-time')
@@ -36,7 +34,6 @@ export class DepartureTimeController {
   @Post()
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'create departure time',
@@ -59,6 +56,7 @@ export class DepartureTimeController {
   }
 
   @Get()
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'list departure times of a product',
@@ -82,6 +80,7 @@ export class DepartureTimeController {
   }
 
   @Get(':id')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get departure time detail',
@@ -103,7 +102,6 @@ export class DepartureTimeController {
   @Put(':id')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'update departure time',
@@ -136,7 +134,6 @@ export class DepartureTimeController {
   @Delete(':id')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiResponse({
     status: 200,
     description: 'delete departure time',

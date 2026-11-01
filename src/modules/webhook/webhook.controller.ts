@@ -16,6 +16,7 @@ import { BunnyWebhookPayload } from 'src/modules/webhook/types/bunny-webhook.typ
 import { PaypalWebhookEvent } from 'src/modules/payment/types/paypal.type';
 import { PaypalService } from 'src/modules/payment/paypal.service';
 import type { VnpayCallbackQuery } from 'src/modules/payment/types/vnpay.type';
+import { Public } from 'src/common/decorators';
 
 @Controller('webhook')
 export class WebhookController {
@@ -60,6 +61,7 @@ export class WebhookController {
   }
 
   @Post('/bunny')
+  @Public()
   async handleWebhook(
     @Req() req: Request & { rawBody?: Buffer },
     @Res() res: Response,
@@ -100,6 +102,7 @@ export class WebhookController {
   }
 
   @Post('/paypal')
+  @Public()
   async handlePaypalWebhook(
     @Req() req: Request & { rawBody?: Buffer },
     @Headers('paypal-auth-algo') authAlgo: string,
@@ -149,6 +152,7 @@ export class WebhookController {
   // This is the authoritative source for marking a booking as paid; the
   // payment/vnpay/return endpoint only reflects the browser redirect.
   @Get('/vnpay/ipn')
+  @Public()
   async handleVnpayIpn(@Query() query: VnpayCallbackQuery) {
     const result = await this.webhookService.handleVnpayIpn(query);
 

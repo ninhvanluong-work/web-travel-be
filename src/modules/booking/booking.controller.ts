@@ -7,7 +7,6 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -28,8 +27,7 @@ import {
 import { BookingService } from 'src/modules/booking/booking.service';
 
 import { formatApiResponse } from 'src/common/utils/format';
-import { Admin, UserId } from 'src/common/decorators';
-import { OptionalUserGuard, UserGuard } from 'src/common/guards';
+import { Admin, OptionalAuth, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('booking')
@@ -44,7 +42,7 @@ export class BookingController {
 
   @Post()
   @ApiBearerAuth(USER_TOKEN)
-  @UseGuards(OptionalUserGuard)
+  @OptionalAuth()
   @ApiResponse({
     status: 200,
     description: 'create booking',
@@ -67,6 +65,7 @@ export class BookingController {
   }
 
   @Get()
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'get booking list',
@@ -91,7 +90,6 @@ export class BookingController {
   @Post(':id/cancel')
   @ApiBearerAuth(USER_TOKEN)
   @Admin()
-  @UseGuards(UserGuard)
   @ApiParam({
     name: 'id',
     description: 'ID của booking',
@@ -131,6 +129,7 @@ export class BookingController {
   }
 
   @Get(':id/payment')
+  @Public()
   @ApiParam({
     name: 'id',
     description: 'ID của booking',

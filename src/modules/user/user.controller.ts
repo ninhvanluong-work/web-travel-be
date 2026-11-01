@@ -8,7 +8,6 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -20,7 +19,6 @@ import {
 import { formatApiResponse } from 'src/common/utils/format';
 import { IdDto } from 'src/types/common.dto';
 import { Admin, CurrentRole, UserId } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
 import { UserRole } from './entities/user.entity';
@@ -35,7 +33,6 @@ import { ResetUserPasswordDto } from './dto/reset-user-password.dto';
 @ApiExtraModels(UserDto, GetUsersResponseDto)
 @ApiBearerAuth(USER_TOKEN)
 @Admin()
-@UseGuards(UserGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

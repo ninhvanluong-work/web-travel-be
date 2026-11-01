@@ -8,7 +8,6 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -29,14 +28,12 @@ import { Supplier } from 'src/modules/supplier/entities/supplier.entity';
 import { formatApiResponse } from 'src/common/utils/format';
 import { IdDto } from 'src/types/common.dto';
 import { Admin, UserId } from 'src/common/decorators';
-import { UserGuard } from 'src/common/guards';
 import { USER_TOKEN } from 'src/common/constants';
 
 @Controller('supplier')
 @ApiExtraModels(Supplier, GetSuppliersResponseDto)
 @ApiBearerAuth(USER_TOKEN)
 @Admin()
-@UseGuards(UserGuard)
 export class SupplierController {
   constructor(private readonly supplierService: SupplierService) {}
 

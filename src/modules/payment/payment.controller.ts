@@ -1,33 +1,19 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpStatus,
-  Param,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
 
 import { PaymentService } from 'src/modules/payment/payment.service';
 import { CapturePaymentDto } from 'src/modules/payment/dto/capture-payment.dto';
 
 import { formatApiResponse } from 'src/common/utils/format';
-import { UserId } from 'src/common/decorators';
-import { OptionalUserGuard } from 'src/common/guards';
+import { OptionalAuth, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
-
-class BookingIdParam {
-  @IsUUID()
-  bookingId: string;
-}
 
 @Controller('payment/paypal')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Get('config')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'public paypal config (client id + currency)',
@@ -39,7 +25,7 @@ export class PaymentController {
 
   @Post(':bookingId/create-order')
   @ApiBearerAuth(USER_TOKEN)
-  @UseGuards(OptionalUserGuard)
+  @OptionalAuth()
   @ApiResponse({
     status: 200,
     description:
@@ -62,7 +48,7 @@ export class PaymentController {
 
   @Post(':bookingId/capture-order')
   @ApiBearerAuth(USER_TOKEN)
-  @UseGuards(OptionalUserGuard)
+  @OptionalAuth()
   @ApiResponse({
     status: 200,
     description:
