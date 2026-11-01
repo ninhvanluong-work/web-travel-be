@@ -8,7 +8,9 @@ import {
   HttpStatus,
   Put,
   Req,
+  UseGuards,
 } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 import { VideoService } from './video.service';
 import { CreateVideoDto } from './dto/create-video.dto';
@@ -123,6 +125,8 @@ export class VideoController {
 
   @Post(':id/like')
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } }) // 10 req / 1 min / IP
   async likeVideo(@Param('id') id: string) {
     await this.videosService.handleLikeVideo(id);
     return formatApiResponse(null, HttpStatus.OK, 'ok');
@@ -130,6 +134,8 @@ export class VideoController {
 
   @Post(':id/dislike')
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } }) // 10 req / 1 min / IP
   async dislikeVideo(@Param('id') id: string) {
     await this.videosService.handleDislikeVideo(id);
     return formatApiResponse(null, HttpStatus.OK, 'ok');

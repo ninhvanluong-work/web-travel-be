@@ -30,6 +30,7 @@ import { PaymentModule } from './modules/payment/payment.module';
 import { SupplierModule } from './modules/supplier/supplier.module';
 import { MailModule } from 'src/common/mail/mail.module';
 import { AuthGuard, OptionalUserGuard, UserGuard } from 'src/common/guards';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -38,6 +39,8 @@ import { AuthGuard, OptionalUserGuard, UserGuard } from 'src/common/guards';
       envFilePath: '.env',
     }),
     ScheduleModule.forRoot(),
+    // Rate limit: only applied on routes that use ThrottlerGuard explicitly
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 10 }]),
     MailModule,
     UserModule,
     ProductModule,

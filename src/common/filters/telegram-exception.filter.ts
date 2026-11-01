@@ -31,7 +31,10 @@ export class TelegramExceptionFilter implements ExceptionFilter {
 
     const message = this.extractErrorMessage(exception, errorResponse);
 
-    await this.sendTelegramNotification(request, status, message, exception);
+    // Skip rate-limit errors (429) to avoid flooding Telegram during spam
+    if (status !== Number(HttpStatus.TOO_MANY_REQUESTS)) {
+      await this.sendTelegramNotification(request, status, message, exception);
+    }
 
     response.status(status).json({
       statusCode: status,

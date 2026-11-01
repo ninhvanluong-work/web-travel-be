@@ -5,8 +5,10 @@ import {
   Param,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -42,6 +44,8 @@ export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
   @Post('video')
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } }) // 5 req / 1 min / IP
   @ApiResponse({
     status: 200,
     description: 'create singed video upload',
@@ -68,6 +72,8 @@ export class UploadController {
 
   @Post(':fileType')
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } }) // 5 req / 1 min / IP
   @ApiBody({
     type: UploadFileDto,
   })
