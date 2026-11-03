@@ -175,6 +175,8 @@ export class VideoService {
       throw new NotFoundException('Tour guide not found');
     }
 
+    await this.findMomentOfTourGuide(videoId, tourGuideId);
+
     await this.videoRepository.update(videoId, {
       ...payload,
       updatedBy: userId,
@@ -195,6 +197,26 @@ export class VideoService {
 
   async remove(id: string) {
     await this.videoRepository.delete(id);
+    return null;
+  }
+
+  /**
+   * Ensure the video exists and belongs to the given tour guide.
+   */
+  async findMomentOfTourGuide(videoId: string, tourGuideId: string) {
+    const video = await this.videoRepository.findOne({
+      where: { id: videoId, tourGuideId },
+      select: { id: true, tourGuideId: true },
+    });
+    if (!video) {
+      throw new NotFoundException('Moment not found');
+    }
+    return video;
+  }
+
+  async removeMoment(videoId: string, tourGuideId: string) {
+    await this.findMomentOfTourGuide(videoId, tourGuideId);
+    await this.videoRepository.delete(videoId);
     return null;
   }
 

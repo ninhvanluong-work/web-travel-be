@@ -41,7 +41,14 @@ import {
 import { UpdateTourGuideMomentParamsDto } from 'src/modules/tour-guide/dto/update-tour-guide-moment.dto';
 import { USER_TOKEN } from 'src/common/constants';
 import tourGuideSkills from 'src/common/constants/tour-guide-skills.json';
-import { Public, TourGuide, TourGuideId, UserId } from 'src/common/decorators';
+import {
+  Admin,
+  CurrentRole,
+  Public,
+  TourGuide,
+  TourGuideId,
+  UserId,
+} from 'src/common/decorators';
 
 @Controller('tour-guide')
 @ApiExtraModels(
@@ -161,6 +168,7 @@ export class TourGuideController {
   @Put(':id')
   @ApiBearerAuth(USER_TOKEN)
   @TourGuide()
+  @Admin()
   @ApiResponse({
     status: 200,
     description: 'update tour guide',
@@ -177,7 +185,10 @@ export class TourGuideController {
     @Param() param: IdDto,
     @Body() dto: UpdateTourGuideDto,
     @UserId() userId: string,
+    @TourGuideId() tourGuideId: string,
+    @CurrentRole() role: string,
   ) {
+    this.tourGuideService.assertCanManage(param.id, tourGuideId, role);
     const result = await this.tourGuideService.update(param.id, dto, userId);
     return formatApiResponse(
       result,
@@ -211,7 +222,8 @@ export class TourGuideController {
   }
 
   @Delete(':id')
-  @Public()
+  @ApiBearerAuth(USER_TOKEN)
+  @Admin()
   @ApiResponse({
     status: 200,
     description: 'delete tour guide',
@@ -360,6 +372,7 @@ export class TourGuideController {
   @Delete(':id/moment/:momentId')
   @ApiBearerAuth(USER_TOKEN)
   @TourGuide()
+  @Admin()
   @ApiResponse({
     status: 200,
     description: 'delete tour guide moment',
@@ -372,8 +385,14 @@ export class TourGuideController {
       },
     },
   })
-  async deleteTourGuideMoment(@Param('momentId') momentId: string) {
-    await this.videoService.remove(momentId);
+  async deleteTourGuideMoment(
+    @Param() param: UpdateTourGuideMomentParamsDto,
+    @TourGuideId() tourGuideId: string,
+    @CurrentRole() role: string,
+  ) {
+    const { id, momentId } = param;
+    this.tourGuideService.assertCanManage(id, tourGuideId, role);
+    await this.videoService.removeMoment(momentId, id);
     return formatApiResponse(
       null,
       HttpStatus.OK,

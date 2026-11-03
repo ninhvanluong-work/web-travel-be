@@ -53,23 +53,20 @@ export class UserGuard implements CanActivate {
         secret,
       });
 
-      //check is tour guide token
-      if (isTourGuide && !payload?.tourGuideId) {
-        throw new UnauthorizedException('Invalid token');
-      }
+      // Role decorators are combined with OR semantics:
+      // e.g. @TourGuide() + @Admin() => tour guide OR admin token is accepted.
+      if (isTourGuide || isAdmin || isSuperAdmin) {
+        const role = payload?.role;
+        const matchTourGuide = !!isTourGuide && !!payload?.tourGuideId;
+        // super admin is also allowed for admin routes
+        const matchAdmin =
+          !!isAdmin &&
+          (role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN);
+        const matchSuperAdmin = !!isSuperAdmin && role === UserRole.SUPER_ADMIN;
 
-      //check is admin token (super admin is also allowed)
-      if (
-        isAdmin &&
-        payload?.role !== UserRole.ADMIN &&
-        payload?.role !== UserRole.SUPER_ADMIN
-      ) {
-        throw new UnauthorizedException('Invalid token');
-      }
-
-      //check is super admin token
-      if (isSuperAdmin && payload?.role !== UserRole.SUPER_ADMIN) {
-        throw new UnauthorizedException('Invalid token');
+        if (!matchTourGuide && !matchAdmin && !matchSuperAdmin) {
+          throw new UnauthorizedException('Invalid token');
+        }
       }
 
       request['userId'] = payload.userId;

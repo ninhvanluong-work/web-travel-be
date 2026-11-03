@@ -1,5 +1,9 @@
 import { escapeLike } from 'src/common/utils/sql';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 
@@ -9,6 +13,7 @@ import { TourGuide } from 'src/modules/tour-guide/entities/tour-guide.entity';
 import { CreateTourGuideDto } from 'src/modules/tour-guide/dto/create-tour-guide.dto';
 import { GetTourGuidesDto } from 'src/modules/tour-guide/dto/get-tour-guide.dto';
 import { UpdateTourGuideDto } from 'src/modules/tour-guide/dto/update-tour-guide.dto';
+import { UserRole } from 'src/modules/user/entities/user.entity';
 import {
   ListItemsResponse,
   PaginationResponse,
@@ -145,6 +150,27 @@ export class TourGuideService {
       destinationSummary,
       totalProducts,
     };
+  }
+
+  /**
+   * Admin / super admin can manage any tour guide.
+   * A tour guide can only manage their own profile (token tourGuideId === id).
+   */
+  assertCanManage(
+    targetTourGuideId: string,
+    actorTourGuideId?: string,
+    actorRole?: string,
+  ) {
+    const isAdmin =
+      actorRole === UserRole.ADMIN || actorRole === UserRole.SUPER_ADMIN;
+    if (isAdmin) {
+      return;
+    }
+    if (!actorTourGuideId || actorTourGuideId !== targetTourGuideId) {
+      throw new ForbiddenException(
+        'You do not have permission to manage this tour guide',
+      );
+    }
   }
 
   async update(id: string, payload: UpdateTourGuideDto, userId: string) {
