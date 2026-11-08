@@ -46,6 +46,50 @@ function formatDateSpan(start: Date, end: Date): string {
     : `${formatDateOnly(start)} - ${formatDateOnly(end)}`;
 }
 
+type SessionUnitInput = { unitId: string; price: number };
+
+// Full list of candidate dates in the range, narrowed down to the
+// selected weekdays only (daysOfWeek uses ISO weekday: 1=Mon...7=Sun,
+// while Date.getDay() returns 0=Sun...6=Sat, hence the 0 -> 7 remap).
+export function buildCandidateDates(
+  start: Date,
+  days: number,
+  daysOfWeek?: number[],
+): Date[] {
+  return Array.from({ length: days }, (_, i) => {
+    const travelDate = new Date(start);
+    travelDate.setDate(travelDate.getDate() + i);
+    return travelDate;
+  }).filter((travelDate) => {
+    if (!daysOfWeek?.length) return true;
+    const isoWeekday = travelDate.getDay() === 0 ? 7 : travelDate.getDay();
+    return daysOfWeek.includes(isoWeekday);
+  });
+}
+
+// So sánh sessionUnit hiện có với danh sách gửi lên (khoá theo unitId):
+// - toDelete: bản ghi hiện có mà unitId không còn trong danh sách
+// - toUpsert: mỗi item gửi lên, kèm id bản ghi cũ nếu unitId đã tồn tại (undefined = tạo mới)
+export function diffSessionUnits(
+  existingSessionUnits: SessionUnit[],
+  sessionUnitsInput: SessionUnitInput[],
+): {
+  toDelete: SessionUnit[];
+  toUpsert: { id: string | undefined; unitId: string; price: number }[];
+} {
+  const inputByUnitId = new Map(sessionUnitsInput.map((su) => [su.unitId, su]));
+
+  const toDelete = existingSessionUnits.filter(
+    (su) => !inputByUnitId.has(su.unitId),
+  );
+  const toUpsert = sessionUnitsInput.map((su) => {
+    const existing = existingSessionUnits.find((e) => e.unitId === su.unitId);
+    return { id: existing?.id, unitId: su.unitId, price: su.price };
+  });
+
+  return { toDelete, toUpsert };
+}
+
 @Injectable()
 export class SessionService {
   private readonly logger = new Logger(SessionService.name);
@@ -143,14 +187,7 @@ export class SessionService {
     await this.sessionRepository.save(newSession);
 
     if (payload.sessionUnits?.length) {
-      const sessionUnits = payload.sessionUnits.map((su) =>
-        this.sessionUnitRepository.create({
-          sessionId: newSession.id,
-          unitId: su.unitId,
-          price: su.price,
-        }),
-      );
-      await this.sessionUnitRepository.save(sessionUnits);
+      await this.saveSessionUnitsFor([newSession], payload.sessionUnits);
     }
 
     this.logger.log(
@@ -165,28 +202,7 @@ export class SessionService {
 
     await this.getProductOrThrow('createRange', payload.productId);
 
-    const start = startOfDay(new Date(payload.fromDate));
-    const end = payload.toDate ? startOfDay(new Date(payload.toDate)) : start;
-
-    if (end < start) {
-      this.logger.warn(
-        `createRange() rejected: toDate ${payload.toDate} before fromDate ${payload.fromDate}`,
-      );
-      throw new BadRequestException(
-        'toDate must be greater than or equal to fromDate',
-      );
-    }
-
-    const days =
-      Math.round((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-    if (days > MAX_RANGE_DAYS) {
-      this.logger.warn(
-        `createRange() rejected: range of ${days} days exceeds max ${MAX_RANGE_DAYS}`,
-      );
-      throw new BadRequestException(
-        `date range must not exceed ${MAX_RANGE_DAYS} days`,
-      );
-    }
+    const { start, end, days } = this.resolveDateRange(payload);
 
     await this.validateSessionUnits(
       'createRange',
@@ -211,18 +227,7 @@ export class SessionService {
       ]),
     );
 
-    // Full list of candidate dates in the range, narrowed down to the
-    // selected weekdays only (daysOfWeek uses ISO weekday: 1=Mon...7=Sun,
-    // while Date.getDay() returns 0=Sun...6=Sat, hence the 0 -> 7 remap).
-    const allDates = Array.from({ length: days }, (_, i) => {
-      const travelDate = new Date(start);
-      travelDate.setDate(travelDate.getDate() + i);
-      return travelDate;
-    }).filter((travelDate) => {
-      if (!payload.daysOfWeek?.length) return true;
-      const isoWeekday = travelDate.getDay() === 0 ? 7 : travelDate.getDay();
-      return payload.daysOfWeek.includes(isoWeekday);
-    });
+    const allDates = buildCandidateDates(start, days, payload.daysOfWeek);
 
     // Dates with no existing session -> always created.
     const newSessions = allDates
@@ -264,28 +269,12 @@ export class SessionService {
       await this.sessionRepository.save(newSessions);
     }
 
-    // OVERWRITE: update status and fully replace sessionUnits on the
-    // conflicting sessions instead of skipping them.
     let overwrittenSessions: Session[] = [];
     if (
       duplicateStrategy === DuplicateStrategy.OVERWRITE &&
       conflictingSessions.length
     ) {
-      for (const session of conflictingSessions) {
-        session.status = payload.status ?? session.status;
-        session.updatedBy = userId;
-      }
-      await this.sessionRepository.save(conflictingSessions);
-
-      if (payload.sessionUnits?.length) {
-        const toDelete = conflictingSessions.flatMap(
-          (session) => session.sessionUnits ?? [],
-        );
-        if (toDelete.length) {
-          await this.sessionUnitRepository.remove(toDelete);
-        }
-      }
-
+      await this.applyOverwriteStrategy(conflictingSessions, payload, userId);
       overwrittenSessions = conflictingSessions;
     }
 
@@ -294,16 +283,7 @@ export class SessionService {
     const affectedSessions = [...newSessions, ...overwrittenSessions];
 
     if (payload.sessionUnits?.length && affectedSessions.length) {
-      const sessionUnits = affectedSessions.flatMap((session) =>
-        payload.sessionUnits!.map((su) =>
-          this.sessionUnitRepository.create({
-            sessionId: session.id,
-            unitId: su.unitId,
-            price: su.price,
-          }),
-        ),
-      );
-      await this.sessionUnitRepository.save(sessionUnits);
+      await this.saveSessionUnitsFor(affectedSessions, payload.sessionUnits);
     }
 
     this.logger.log(
@@ -321,6 +301,78 @@ export class SessionService {
     });
   }
 
+  // chuẩn hoá fromDate/toDate về đầu ngày, kiểm tra thứ tự và độ dài khoảng ngày
+  private resolveDateRange(payload: CreateSessionRangeDto): {
+    start: Date;
+    end: Date;
+    days: number;
+  } {
+    const start = startOfDay(new Date(payload.fromDate));
+    const end = payload.toDate ? startOfDay(new Date(payload.toDate)) : start;
+
+    if (end < start) {
+      this.logger.warn(
+        `createRange() rejected: toDate ${payload.toDate} before fromDate ${payload.fromDate}`,
+      );
+      throw new BadRequestException(
+        'toDate must be greater than or equal to fromDate',
+      );
+    }
+
+    const days =
+      Math.round((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+    if (days > MAX_RANGE_DAYS) {
+      this.logger.warn(
+        `createRange() rejected: range of ${days} days exceeds max ${MAX_RANGE_DAYS}`,
+      );
+      throw new BadRequestException(
+        `date range must not exceed ${MAX_RANGE_DAYS} days`,
+      );
+    }
+
+    return { start, end, days };
+  }
+
+  // OVERWRITE: update status and fully replace sessionUnits on the
+  // conflicting sessions instead of skipping them.
+  private async applyOverwriteStrategy(
+    conflictingSessions: Session[],
+    payload: CreateSessionRangeDto,
+    userId: string,
+  ): Promise<void> {
+    for (const session of conflictingSessions) {
+      session.status = payload.status ?? session.status;
+      session.updatedBy = userId;
+    }
+    await this.sessionRepository.save(conflictingSessions);
+
+    if (payload.sessionUnits?.length) {
+      const toDelete = conflictingSessions.flatMap(
+        (session) => session.sessionUnits ?? [],
+      );
+      if (toDelete.length) {
+        await this.sessionUnitRepository.remove(toDelete);
+      }
+    }
+  }
+
+  // tạo sessionUnit (unit + giá) giống nhau cho từng session trong danh sách
+  private async saveSessionUnitsFor(
+    sessions: Session[],
+    sessionUnits: NonNullable<CreateSessionDto['sessionUnits']>,
+  ): Promise<void> {
+    const entities = sessions.flatMap((session) =>
+      sessionUnits.map((su) =>
+        this.sessionUnitRepository.create({
+          sessionId: session.id,
+          unitId: su.unitId,
+          price: su.price,
+        }),
+      ),
+    );
+    await this.sessionUnitRepository.save(entities);
+  }
+
   async update(id: string, payload: UpdateSessionDto, userId: string) {
     this.logger.debug(`update() id=${id} payload=${JSON.stringify(payload)}`);
 
@@ -333,48 +385,25 @@ export class SessionService {
     const { sessionUnits: sessionUnitsInput, ...sessionFields } = payload;
 
     if (sessionUnitsInput !== undefined) {
-      const unitIds = sessionUnitsInput.map((su) => su.unitId);
-      if (new Set(unitIds).size !== unitIds.length) {
-        this.logger.warn(
-          `update() rejected: duplicate unitId in sessionUnits for session ${id}`,
-        );
-        throw new BadRequestException('Duplicate unitId in sessionUnits');
-      }
-
-      if (unitIds.length) {
-        const units = await this.unitRepository.find({
-          where: { id: In(unitIds), productId: session.productId },
-        });
-        if (units.length !== unitIds.length) {
-          this.logger.warn(
-            `update() rejected: one or more units not found for session ${id}, requested=${unitIds.join(',')}`,
-          );
-          throw new NotFoundException(
-            'One or more units not found for this product',
-          );
-        }
-      }
-
-      const existingSessionUnits = session.sessionUnits ?? [];
-      const inputByUnitId = new Map(
-        sessionUnitsInput.map((su) => [su.unitId, su]),
+      await this.validateUpdateSessionUnits(
+        id,
+        session.productId,
+        sessionUnitsInput,
       );
 
-      const toDelete = existingSessionUnits.filter(
-        (su) => !inputByUnitId.has(su.unitId),
+      const diff = diffSessionUnits(
+        session.sessionUnits ?? [],
+        sessionUnitsInput,
       );
-      const toUpsert = sessionUnitsInput.map((su) => {
-        const existing = existingSessionUnits.find(
-          (e) => e.unitId === su.unitId,
-        );
-
-        return this.sessionUnitRepository.create({
-          id: existing?.id,
+      const toDelete = diff.toDelete;
+      const toUpsert = diff.toUpsert.map((su) =>
+        this.sessionUnitRepository.create({
+          id: su.id,
           sessionId: id,
           unitId: su.unitId,
           price: su.price,
-        });
-      });
+        }),
+      );
 
       this.logger.debug(
         `update() session ${id} sessionUnits diff: toDelete=[${toDelete
@@ -386,39 +415,7 @@ export class SessionService {
           .join(', ')}]`,
       );
 
-      try {
-        if (toDelete.length) {
-          await this.sessionUnitRepository.remove(toDelete);
-          this.logger.log(
-            `update() session ${id} deleted ${toDelete.length} sessionUnit(s): unitIds=[${toDelete
-              .map((su) => su.unitId)
-              .join(', ')}]`,
-          );
-        }
-        if (toUpsert.length) {
-          await this.sessionUnitRepository.save(toUpsert);
-          this.logger.log(
-            `update() session ${id} upserted ${toUpsert.length} sessionUnit(s): unitIds=[${toUpsert
-              .map((su) => su.unitId)
-              .join(', ')}]`,
-          );
-        }
-      } catch (err) {
-        this.logger.error(
-          `update() session ${id} failed to persist sessionUnits. toDelete=${JSON.stringify(
-            toDelete.map((su) => ({ id: su.id, unitId: su.unitId })),
-          )}, toUpsert=${JSON.stringify(
-            toUpsert.map((su) => ({
-              id: su.id,
-              sessionId: su.sessionId,
-              unitId: su.unitId,
-              price: su.price,
-            })),
-          )}`,
-          err instanceof Error ? err.stack : String(err),
-        );
-        throw err;
-      }
+      await this.persistSessionUnitsDiff(id, toDelete, toUpsert);
     }
 
     await this.sessionRepository.update(id, {
@@ -429,6 +426,77 @@ export class SessionService {
     this.logger.log(`update() session ${id} updated`);
 
     return this.findOneById(id);
+  }
+
+  // sessionUnits khi update: không trùng unitId, unit phải thuộc product của session.
+  // khác validateSessionUnits: danh sách rỗng vẫn hợp lệ (xoá hết sessionUnit), log theo session id
+  private async validateUpdateSessionUnits(
+    sessionId: string,
+    productId: string,
+    sessionUnitsInput: SessionUnitInput[],
+  ): Promise<void> {
+    const unitIds = sessionUnitsInput.map((su) => su.unitId);
+    if (new Set(unitIds).size !== unitIds.length) {
+      this.logger.warn(
+        `update() rejected: duplicate unitId in sessionUnits for session ${sessionId}`,
+      );
+      throw new BadRequestException('Duplicate unitId in sessionUnits');
+    }
+
+    if (unitIds.length) {
+      const units = await this.unitRepository.find({
+        where: { id: In(unitIds), productId },
+      });
+      if (units.length !== unitIds.length) {
+        this.logger.warn(
+          `update() rejected: one or more units not found for session ${sessionId}, requested=${unitIds.join(',')}`,
+        );
+        throw new NotFoundException(
+          'One or more units not found for this product',
+        );
+      }
+    }
+  }
+
+  // ghi phần chênh lệch sessionUnit xuống DB, lỗi thì log đầy đủ dữ liệu rồi ném tiếp
+  private async persistSessionUnitsDiff(
+    sessionId: string,
+    toDelete: SessionUnit[],
+    toUpsert: SessionUnit[],
+  ): Promise<void> {
+    try {
+      if (toDelete.length) {
+        await this.sessionUnitRepository.remove(toDelete);
+        this.logger.log(
+          `update() session ${sessionId} deleted ${toDelete.length} sessionUnit(s): unitIds=[${toDelete
+            .map((su) => su.unitId)
+            .join(', ')}]`,
+        );
+      }
+      if (toUpsert.length) {
+        await this.sessionUnitRepository.save(toUpsert);
+        this.logger.log(
+          `update() session ${sessionId} upserted ${toUpsert.length} sessionUnit(s): unitIds=[${toUpsert
+            .map((su) => su.unitId)
+            .join(', ')}]`,
+        );
+      }
+    } catch (err) {
+      this.logger.error(
+        `update() session ${sessionId} failed to persist sessionUnits. toDelete=${JSON.stringify(
+          toDelete.map((su) => ({ id: su.id, unitId: su.unitId })),
+        )}, toUpsert=${JSON.stringify(
+          toUpsert.map((su) => ({
+            id: su.id,
+            sessionId: su.sessionId,
+            unitId: su.unitId,
+            price: su.price,
+          })),
+        )}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+      throw err;
+    }
   }
 
   async remove(id: string, userId: string) {

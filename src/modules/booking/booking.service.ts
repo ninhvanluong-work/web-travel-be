@@ -93,6 +93,75 @@ export class BookingService {
       throw new BadRequestException('Passengers must not be empty');
     }
 
+    const { product, option, session, pickupLocation, departure } =
+      await this.loadBookingContext(prefix, payload);
+
+    const { passengers, totalCount, totalPrice } =
+      await this.buildPassengerSnapshot(prefix, payload, session);
+
+    //if (session.capacity < totalCount) {
+    //  this.logger.warn(
+    //    `${prefix} rejected: not enough capacity (remaining=${session.capacity}, requested=${totalCount})`,
+    //  );
+    //  throw new BadRequestException('Not enough remaining slot');
+    //}
+
+    const bookingData: Partial<Booking> = {
+      userId,
+      productId: payload.productId,
+      supplierId: product.supplierId,
+      supplierName: product.supplier?.name,
+      optionId: payload.optionId,
+      tourSessionId: payload.tourSessionId,
+      pickupLocationId: payload.pickupLocationId,
+      departureId: payload.departureId,
+      bookingCode: this.generateBookingCode(),
+      travelDate: session.travelDate,
+      passengers,
+      totalPrice,
+      currency: product.currency,
+      status: BookingStatus.PENDING,
+      email: payload.email,
+      phone: payload.phone,
+      username: payload.username,
+      messengerApp: payload.messengerApp ?? [],
+      productName: product.name,
+      optionName: option.title,
+      pickupLocationName: pickupLocation?.name,
+      departureTime: departure?.time,
+      departureLabel: departure?.label,
+    };
+
+    const savedBooking = await this.persistBooking(
+      prefix,
+      session,
+      bookingData,
+      totalCount,
+      totalPrice,
+    );
+
+    // gửi mail sau khi commit, booking đã chắc chắn được lưu
+    if (product.supplier) {
+      await this.mailService.sendSupplierBookingNotification(
+        savedBooking,
+        product.supplier,
+      );
+    }
+
+    return savedBooking;
+  }
+
+  // tra cứu + kiểm tra product/option/session/pickup location/departure time của booking
+  private async loadBookingContext(
+    prefix: string,
+    payload: CreateBookingDto,
+  ): Promise<{
+    product: Product;
+    option: Option;
+    session: Session;
+    pickupLocation: PickupLocation | null;
+    departure: DepartureTime | null;
+  }> {
     const product = await this.productRepository.findOne({
       where: { id: payload.productId },
       relations: ['supplier'],
@@ -156,6 +225,19 @@ export class BookingService {
       }
     }
 
+    return { product, option, session, pickupLocation, departure };
+  }
+
+  // chụp lại tên unit + giá theo session tại thời điểm đặt, tính tổng số khách và tổng tiền
+  private async buildPassengerSnapshot(
+    prefix: string,
+    payload: CreateBookingDto,
+    session: Session,
+  ): Promise<{
+    passengers: BookingPassenger[];
+    totalCount: number;
+    totalPrice: number;
+  }> {
     const unitIds = payload.passengers.map((passenger) => passenger.unitId);
     const units = await this.unitRepository.find({
       where: { id: In(unitIds) },
@@ -205,41 +287,18 @@ export class BookingService {
       `${prefix} snapshot passengers=${JSON.stringify(passengers)} totalCount=${totalCount} totalPrice=${totalPrice}`,
     );
 
-    //if (session.capacity < totalCount) {
-    //  this.logger.warn(
-    //    `${prefix} rejected: not enough capacity (remaining=${session.capacity}, requested=${totalCount})`,
-    //  );
-    //  throw new BadRequestException('Not enough remaining slot');
-    //}
+    return { passengers, totalCount, totalPrice };
+  }
 
-    const bookingData: Partial<Booking> = {
-      userId,
-      productId: payload.productId,
-      supplierId: product.supplierId,
-      supplierName: product.supplier?.name,
-      optionId: payload.optionId,
-      tourSessionId: payload.tourSessionId,
-      pickupLocationId: payload.pickupLocationId,
-      departureId: payload.departureId,
-      bookingCode: this.generateBookingCode(),
-      travelDate: session.travelDate,
-      passengers,
-      totalPrice,
-      currency: product.currency,
-      status: BookingStatus.PENDING,
-      email: payload.email,
-      phone: payload.phone,
-      username: payload.username,
-      messengerApp: payload.messengerApp ?? [],
-      productName: product.name,
-      optionName: option.title,
-      pickupLocationName: pickupLocation?.name,
-      departureTime: departure?.time,
-      departureLabel: departure?.label,
-    };
-
-    // lưu booking + trừ capacity trong cùng 1 transaction
-    const savedBooking = await this.dataSource.transaction(async (manager) => {
+  // lưu booking + trừ capacity trong cùng 1 transaction
+  private async persistBooking(
+    prefix: string,
+    session: Session,
+    bookingData: Partial<Booking>,
+    totalCount: number,
+    totalPrice: number,
+  ): Promise<Booking> {
+    return this.dataSource.transaction(async (manager) => {
       // khoá dòng session để các booking đồng thời trừ capacity lần lượt
       const lockedSession = await manager.findOne(Session, {
         where: { id: session.id },
@@ -270,16 +329,6 @@ export class BookingService {
 
       return created;
     });
-
-    // gửi mail sau khi commit, booking đã chắc chắn được lưu
-    if (product.supplier) {
-      await this.mailService.sendSupplierBookingNotification(
-        savedBooking,
-        product.supplier,
-      );
-    }
-
-    return savedBooking;
   }
 
   async cancel(
