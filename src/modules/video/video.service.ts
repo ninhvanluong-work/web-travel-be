@@ -22,7 +22,7 @@ import { BunnyVideoStatus } from 'src/modules/webhook/types/bunny-webhook.type';
 import { generateSlug } from 'src/common/utils/gen-code';
 import { VideoType } from 'src/modules/video/video.type';
 import { VideoEditorService } from 'src/modules/video/video-editor.service';
-import { PaginationResponse } from 'src/types/pagination.dto';
+import { PaginationDto, PaginationResponse } from 'src/types/pagination.dto';
 import { ProductStatus } from 'src/modules/product/entities/product.entity';
 
 @Injectable()
@@ -343,7 +343,10 @@ export class VideoService {
     return condition;
   }
 
-  async getVideos(condition: FindOptionsWhere<Video>, queryPayload: any) {
+  async getVideos(
+    condition: FindOptionsWhere<Video>,
+    queryPayload: PaginationDto,
+  ) {
     const { page = 1, pageSize = 10 } = queryPayload;
     const skip = (page - 1) * pageSize;
 

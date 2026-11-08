@@ -14,7 +14,6 @@ import { EmbeddingModule } from './modules/embedding/embedding.module';
 import { OptionModule } from './modules/option/option.module';
 import { ElementModule } from './modules/element/element.module';
 import { ReviewModule } from './modules/review/review.module';
-import { ItineraryModule } from 'src/modules/Itinerary/itinerary.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
 import { SearchingModule } from './modules/searching/searching.module';
@@ -51,7 +50,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
     OptionModule,
     ElementModule,
     ReviewModule,
-    ItineraryModule,
     UploadModule,
     WebhookModule,
     SearchingModule,

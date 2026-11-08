@@ -9,6 +9,9 @@ import { FileType } from 'src/modules/upload/upload.type';
 
 const execAsync = promisify(exec);
 
+// thư mục chứa file preview tạm, resolve theo cwd
+const TMP_DIR = path.join(process.cwd(), 'tmp');
+
 @Injectable()
 export class VideoEditorService {
   logger = new Logger(VideoEditorService.name);
@@ -17,12 +20,12 @@ export class VideoEditorService {
 
   async cutVideoPreview(videoUrl: string): Promise<string> {
     const previewName = `preview-${Date.now()}.mp4`;
-    const outputPath = path.join(process.cwd(), 'tmp', previewName);
+    const outputPath = path.join(TMP_DIR, previewName);
 
     try {
       // 1. đảm bảo thư mục tmp tồn tại
-      if (!fs.existsSync('tmp')) {
-        fs.mkdirSync('tmp');
+      if (!fs.existsSync(TMP_DIR)) {
+        fs.mkdirSync(TMP_DIR);
       }
 
       // 2. ffmpeg đọc trực tiếp từ URL

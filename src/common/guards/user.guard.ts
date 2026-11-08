@@ -3,6 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -13,6 +14,8 @@ import { UserRole } from 'src/modules/user/entities/user.entity';
 
 @Injectable()
 export class UserGuard implements CanActivate {
+  private readonly logger = new Logger(UserGuard.name);
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly reflector: Reflector,
@@ -73,7 +76,7 @@ export class UserGuard implements CanActivate {
       request['tourGuideId'] = payload.tourGuideId;
       request['role'] = payload.role;
     } catch (error: any) {
-      console.log(error.message);
+      this.logger.log(error.message);
       throw new UnauthorizedException('Token expired or invalid');
     }
 

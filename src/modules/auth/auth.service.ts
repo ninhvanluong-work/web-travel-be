@@ -26,6 +26,10 @@ import { ResetPasswordDto } from 'src/modules/auth/dto/reset-password.dto';
 import { RenewTokenDto } from 'src/modules/auth/dto/renew-token.dto';
 import { ChangePasswordDto } from 'src/modules/auth/dto/change-password.dto';
 
+// thời hạn token
+const REFRESH_TOKEN_EXPIRES_IN = '7d';
+const RESET_PASSWORD_TOKEN_TTL_MS = 5 * 60 * 1000; // 5 phút
+
 //TODO: refactor: authDto, jwtPayloadDto
 @Injectable()
 export class AuthService {
@@ -82,7 +86,7 @@ export class AuthService {
 
     const refreshToken = await this.jwtService.signAsync(refreshTokenPayload, {
       secret: jwtSecret,
-      expiresIn: '7d',
+      expiresIn: REFRESH_TOKEN_EXPIRES_IN,
     });
 
     return { accessToken, refreshToken };
@@ -206,7 +210,7 @@ export class AuthService {
 
     const rawToken = randomBytes(32).toString('hex'); // 64 chars hex
     const tokenHash = createHash('sha256').update(rawToken).digest('hex');
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
+    const expiresAt = new Date(Date.now() + RESET_PASSWORD_TOKEN_TTL_MS);
 
     this.logger.log(`${prefixLog} update user resetPassword`);
     await this.userRepository.update(

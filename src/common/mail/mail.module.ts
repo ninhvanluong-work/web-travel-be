@@ -12,8 +12,8 @@ import { MailService } from 'src/common/mail/mail.service';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         transport: {
-          host: 'smtp.gmail.com',
-          port: 587,
+          host: configService.get<string>('SMPT_HOST', 'smtp.gmail.com'),
+          port: Number(configService.get<string>('SMPT_PORT', '587')),
           secure: false,
           auth: {
             user: configService.getOrThrow('SMPT_USER'),
