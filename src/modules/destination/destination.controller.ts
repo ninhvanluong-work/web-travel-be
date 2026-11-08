@@ -30,6 +30,7 @@ import {
   GetDestinationsResponseDto,
 } from './dto/get-destination.dto';
 import { DestinationDto } from './dto/destination-response.dto';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('destination')
 @ApiExtraModels(DestinationDto, GetDestinationsResponseDto)
@@ -68,14 +69,9 @@ export class DestinationController {
   @ApiResponse({
     status: 200,
     description: 'list destinations',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('GetDestinationsResponseDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('GetDestinationsResponseDto'),
+    }),
   })
   async findAll(@Query() query: GetDestinationDto) {
     const result = await this.destinationService.findAll(query);
@@ -87,14 +83,7 @@ export class DestinationController {
   @ApiResponse({
     status: 200,
     description: 'destination detail',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('DestinationDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('DestinationDto') }),
   })
   async findOne(@Param() param: IdDto) {
     const result = await this.destinationService.findOneById(param.id);

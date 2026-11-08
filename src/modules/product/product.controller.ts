@@ -41,6 +41,7 @@ import { ReviewService } from 'src/modules/review/review.service';
 import { UpdateProductStatusDto } from 'src/modules/product/dto/update-product-status.dto';
 import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('product')
 @ApiExtraModels(
@@ -64,16 +65,9 @@ export class ProductController {
   @ApiResponse({
     status: 200,
     description: 'create product',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath('Product'),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('Product'),
+    }),
   })
   async create(
     @Body() createProductDto: CreateProductDto,
@@ -92,19 +86,12 @@ export class ProductController {
   @ApiResponse({
     status: 200,
     description: 'get product list',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: {
-            $ref: getSchemaPath('GetProductsResponseDto'),
-          },
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: {
+        $ref: getSchemaPath('GetProductsResponseDto'),
       },
-    },
+    }),
   })
   async findAll(@Query() query: GetProductDto) {
     const result = await this.productService.findAll(query);
@@ -120,16 +107,9 @@ export class ProductController {
   @ApiResponse({
     status: 200,
     description: 'get product detail',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath('ProductDetailDto'),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('ProductDetailDto'),
+    }),
   })
   async findOne(@Param() param: IdDto) {
     const { id } = param;
@@ -143,16 +123,9 @@ export class ProductController {
     status: 200,
     description:
       'get product booking info (departure time, pickup location, option)',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath('ProductBookingInfoDto'),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('ProductBookingInfoDto'),
+    }),
   })
   async findBookingInfo(@Param() param: IdDto) {
     const { id } = param;
@@ -166,16 +139,9 @@ export class ProductController {
   @ApiResponse({
     status: 200,
     description: 'update product',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath('Product'),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('Product'),
+    }),
   })
   async update(
     @Param() param: IdDto,
@@ -201,16 +167,9 @@ export class ProductController {
   @ApiResponse({
     status: 200,
     description: 'publish product',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath('Product'),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('Product'),
+    }),
   })
   async publish(@Param() param: IdDto, @UserId() userId: string) {
     const { id } = param;
@@ -234,16 +193,9 @@ export class ProductController {
   @ApiResponse({
     status: 200,
     description: 'update product status',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath('Product'),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('Product'),
+    }),
   })
   async updateStatus(
     @Param() param: UpdateProductStatusDto,
@@ -269,19 +221,12 @@ export class ProductController {
   @ApiResponse({
     status: 200,
     description: 'get product reviews',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: {
-            $ref: getSchemaPath('GetReviewsResponseDto'),
-          },
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: {
+        $ref: getSchemaPath('GetReviewsResponseDto'),
       },
-    },
+    }),
   })
   async findProductReview(
     @Param() param: IdDto,

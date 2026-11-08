@@ -29,6 +29,7 @@ import { formatApiResponse } from 'src/common/utils/format';
 import { IdDto } from 'src/types/common.dto';
 import { Admin, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('supplier')
 @ApiExtraModels(Supplier, GetSuppliersResponseDto)
@@ -41,14 +42,7 @@ export class SupplierController {
   @ApiResponse({
     status: 200,
     description: 'create supplier',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('Supplier') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('Supplier') }),
   })
   async create(@Body() dto: CreateSupplierDto, @UserId() userId: string) {
     const result = await this.supplierService.create(dto, userId);
@@ -63,14 +57,9 @@ export class SupplierController {
   @ApiResponse({
     status: 200,
     description: 'get supplier list',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('GetSuppliersResponseDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('GetSuppliersResponseDto'),
+    }),
   })
   async findAll(@Query() query: GetSuppliersDto) {
     const result = await this.supplierService.findAll(query);
@@ -85,14 +74,7 @@ export class SupplierController {
   @ApiResponse({
     status: 200,
     description: 'get supplier by id',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('Supplier') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('Supplier') }),
   })
   async findOne(@Param() param: IdDto) {
     const result = await this.supplierService.findOneById(param.id);
@@ -107,14 +89,7 @@ export class SupplierController {
   @ApiResponse({
     status: 200,
     description: 'update supplier',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('Supplier') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('Supplier') }),
   })
   async update(
     @Param() param: IdDto,
@@ -133,14 +108,7 @@ export class SupplierController {
   @ApiResponse({
     status: 200,
     description: 'delete supplier',
-    schema: {
-      properties: {
-        data: { type: 'null', example: null },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ type: 'null', example: null }),
   })
   async remove(@Param() param: IdDto, @UserId() userId: string) {
     await this.supplierService.remove(param.id, userId);

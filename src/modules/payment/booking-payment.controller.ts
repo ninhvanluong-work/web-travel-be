@@ -10,6 +10,7 @@ import { PaymentService } from 'src/modules/payment/payment.service';
 import { BookingPaymentLogDto } from 'src/modules/payment/dto/booking-payment-log.dto';
 import { formatApiResponse } from 'src/common/utils/format';
 import { Public } from 'src/common/decorators';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('booking-payment')
 @ApiExtraModels(BookingPaymentLogDto)
@@ -27,17 +28,10 @@ export class BookingPaymentController {
     status: 200,
     description:
       'Lấy lịch sử thay đổi trạng thái (timeline) của một booking payment, sắp xếp từ cũ đến mới',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: { $ref: getSchemaPath(BookingPaymentLogDto) },
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: { $ref: getSchemaPath(BookingPaymentLogDto) },
+    }),
   })
   @ApiResponse({
     status: 404,

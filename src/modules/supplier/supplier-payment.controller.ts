@@ -29,6 +29,7 @@ import { formatApiResponse } from 'src/common/utils/format';
 import { IdDto } from 'src/types/common.dto';
 import { Admin } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('supplier-payment')
 @ApiExtraModels(SupplierPayment, GetSupplierPaymentsResponseDto)
@@ -43,14 +44,7 @@ export class SupplierPaymentController {
   @ApiResponse({
     status: 200,
     description: 'create supplier payment',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('SupplierPayment') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('SupplierPayment') }),
   })
   async create(@Body() dto: CreateSupplierPaymentDto) {
     const result = await this.supplierPaymentService.create(dto);
@@ -65,14 +59,9 @@ export class SupplierPaymentController {
   @ApiResponse({
     status: 200,
     description: 'get supplier payment list',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('GetSupplierPaymentsResponseDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('GetSupplierPaymentsResponseDto'),
+    }),
   })
   async findAll(@Query() query: GetSupplierPaymentsDto) {
     const result = await this.supplierPaymentService.findAll(query);
@@ -87,14 +76,7 @@ export class SupplierPaymentController {
   @ApiResponse({
     status: 200,
     description: 'get supplier payment by id',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('SupplierPayment') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('SupplierPayment') }),
   })
   async findOne(@Param() param: IdDto) {
     const result = await this.supplierPaymentService.findOneById(param.id);
@@ -109,14 +91,7 @@ export class SupplierPaymentController {
   @ApiResponse({
     status: 200,
     description: 'update supplier payment',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('SupplierPayment') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('SupplierPayment') }),
   })
   async update(@Param() param: IdDto, @Body() dto: UpdateSupplierPaymentDto) {
     const result = await this.supplierPaymentService.update(param.id, dto);
@@ -131,14 +106,7 @@ export class SupplierPaymentController {
   @ApiResponse({
     status: 200,
     description: 'delete supplier payment',
-    schema: {
-      properties: {
-        data: { type: 'null', example: null },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ type: 'null', example: null }),
   })
   async remove(@Param() param: IdDto) {
     await this.supplierPaymentService.remove(param.id);

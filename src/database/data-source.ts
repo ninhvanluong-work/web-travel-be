@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 
-import { getCACertificate } from 'src/common/utils/security';
+import { buildTypeOrmSslConfig } from 'src/common/utils/security';
 
 dotenv.config({
   path: '.env',
@@ -9,14 +9,7 @@ dotenv.config({
 
 const USE_CERT = process.env.USE_CERT === 'true';
 
-const SSL_CONFIG = USE_CERT
-  ? {
-      ssl: {
-        rejectUnauthorized: true,
-        ca: getCACertificate(),
-      },
-    }
-  : {};
+const SSL_CONFIG = buildTypeOrmSslConfig(USE_CERT);
 
 export default new DataSource({
   type: 'postgres',

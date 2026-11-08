@@ -15,6 +15,7 @@ import { formatApiResponse } from 'src/common/utils/format';
 
 import { OptionalAuth, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('review')
 @ApiExtraModels(Review, CreateReviewDto, CreateReviewResponseDto)
@@ -27,16 +28,9 @@ export class ReviewController {
   @ApiResponse({
     status: 200,
     description: 'create tour guide review',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath(CreateReviewResponseDto),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath(CreateReviewResponseDto),
+    }),
   })
   async createTourGuideReview(
     @Param('tourGuideId') tourGuideId: string,

@@ -16,6 +16,7 @@ import { RenewTokenDto } from 'src/modules/auth/dto/renew-token.dto';
 import { ChangePasswordDto } from 'src/modules/auth/dto/change-password.dto';
 import { Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('auth')
 @ApiExtraModels(LoginResponseDto)
@@ -27,14 +28,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'register user',
-    schema: {
-      properties: {
-        data: { type: 'null', example: null },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ type: 'null', example: null }),
   })
   async register(@Body() registerDto: RegisterDto) {
     await this.authService.register(registerDto);
@@ -46,14 +40,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'user login',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('LoginResponseDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('LoginResponseDto') }),
   })
   async login(@Body() loginDto: LoginDto) {
     const result = await this.authService.login(loginDto);
@@ -65,14 +52,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'admin login',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('LoginResponseDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('LoginResponseDto') }),
   })
   async loginAdmin(@Body() loginDto: LoginDto) {
     const result = await this.authService.loginAdmin(loginDto);
@@ -84,14 +64,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'forgot password',
-    schema: {
-      properties: {
-        data: { type: 'null', example: null },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ type: 'null', example: null }),
   })
   async forgotPassword(@Body() body: ForgotPasswordDto) {
     await this.authService.handleForgotPassword(body);
@@ -108,14 +81,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'reset password',
-    schema: {
-      properties: {
-        data: { type: 'null', example: null },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ type: 'null', example: null }),
   })
   async resetPassword(@Body() body: ResetPasswordDto) {
     await this.authService.handleResetPassword(body);
@@ -131,14 +97,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'get new access token',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('LoginResponseDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('LoginResponseDto') }),
   })
   async renewAccessToken(@Body() body: RenewTokenDto) {
     const result = await this.authService.handleRenewAccessToken(body);
@@ -155,14 +114,7 @@ export class AuthController {
     status: 200,
     description:
       'change password of current user, returns new tokens (other devices are logged out)',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('LoginResponseDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('LoginResponseDto') }),
   })
   async changePassword(
     @UserId() userId: string,
@@ -181,14 +133,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'logout',
-    schema: {
-      properties: {
-        data: { type: 'null', example: null },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ type: 'null', example: null }),
   })
   async logout(@UserId() userId: string) {
     await this.authService.logout(userId);

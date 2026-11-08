@@ -33,6 +33,7 @@ import {
 
 import { UploadService } from 'src/modules/upload/upload.service';
 import { Admin, Public } from 'src/common/decorators';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('upload')
 @ApiExtraModels(UploadVideoResponseDto, UploadFileResponseDto)
@@ -49,16 +50,9 @@ export class UploadController {
   @ApiResponse({
     status: 200,
     description: 'create singed video upload',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath('UploadVideoResponseDto'),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('UploadVideoResponseDto'),
+    }),
   })
   async uploadVideo(@Body() body: UploadVideoDto) {
     const result = await this.uploadService.handleUploadVideo(body);
@@ -80,16 +74,9 @@ export class UploadController {
   @ApiResponse({
     status: 200,
     description: 'upload by filetype',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath('UploadFileResponseDto'),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('UploadFileResponseDto'),
+    }),
   })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))

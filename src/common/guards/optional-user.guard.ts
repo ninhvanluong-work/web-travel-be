@@ -1,52 +1,35 @@
-import { JwtService } from '@nestjs/jwt';
 import {
-  CanActivate,
   ExecutionContext,
   Injectable,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
 
 import { PUBLIC, TOUR_GUIDE } from 'src/common/decorators';
+import { BaseUserGuard } from './base-user.guard';
 
 @Injectable()
-export class OptionalUserGuard implements CanActivate {
-  private readonly logger = new Logger(OptionalUserGuard.name);
-
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly reflector: Reflector,
-    private readonly configService: ConfigService,
-  ) {}
+export class OptionalUserGuard extends BaseUserGuard {
+  protected readonly logger = new Logger(OptionalUserGuard.name);
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-    const isTourGuide = this.reflector.getAllAndOverride<boolean>(TOUR_GUIDE, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const isPublic = this.getFlag(context, PUBLIC);
+    const isTourGuide = this.getFlag(context, TOUR_GUIDE);
 
     if (isPublic) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
-    const token: string = request.headers.authorization?.split(' ')[1];
+    const token = this.extractToken(request);
 
+    // không có token -> vẫn cho qua (khách vãng lai)
     if (!token) {
       return true;
     }
 
     try {
-      const secret = this.configService.get<string>('JWT_SECRET');
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret,
-      });
+      const payload = await this.verifyToken(token);
 
       if (isTourGuide && !payload?.tourGuideId) {
         throw new UnauthorizedException('Invalid token');

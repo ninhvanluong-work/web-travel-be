@@ -27,6 +27,7 @@ import { GetElementDto } from './dto/get-element.dto';
 import { ElementDto } from './dto/element-response.dto';
 import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('element')
 @ApiExtraModels(ElementDto)
@@ -39,14 +40,7 @@ export class ElementController {
   @ApiResponse({
     status: 200,
     description: 'create element',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('ElementDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('ElementDto') }),
   })
   async create(@Body() dto: CreateElementDto, @UserId() userId: string) {
     const result = await this.elementService.create(dto, userId);
@@ -62,19 +56,12 @@ export class ElementController {
   @ApiResponse({
     status: 200,
     description: 'list elements',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: {
-            $ref: getSchemaPath('ElementDto'),
-          },
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: {
+        $ref: getSchemaPath('ElementDto'),
       },
-    },
+    }),
   })
   async list(@Query() query: GetElementDto) {
     const result = await this.elementService.findAll(query);

@@ -26,6 +26,7 @@ import { GetTagDto, GetTagsResponseDto } from './dto/get-tag.dto';
 import { TagDto } from './dto/tag-response.dto';
 import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('tag')
 @ApiExtraModels(TagDto, GetTagsResponseDto)
@@ -38,14 +39,7 @@ export class TagController {
   @ApiResponse({
     status: 200,
     description: 'create tag',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('TagDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('TagDto') }),
   })
   async create(@Body() dto: CreateTagDto, @UserId() userId: string) {
     const result = await this.tagService.create(dto, userId);
@@ -57,19 +51,12 @@ export class TagController {
   @ApiResponse({
     status: 200,
     description: 'list tags',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: {
-            $ref: getSchemaPath('GetTagsResponseDto'),
-          },
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: {
+        $ref: getSchemaPath('GetTagsResponseDto'),
       },
-    },
+    }),
   })
   async findAll(@Query() query: GetTagDto) {
     const result = await this.tagService.findAll(query);

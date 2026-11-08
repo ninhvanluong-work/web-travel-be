@@ -26,6 +26,7 @@ import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
 import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('session')
 @ApiExtraModels(SessionDto, GetSessionsResponseDto)
@@ -38,14 +39,7 @@ export class SessionController {
   @ApiResponse({
     status: 200,
     description: 'create session',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('SessionDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('SessionDto') }),
   })
   async create(@Body() dto: CreateSessionDto, @UserId() userId: string) {
     const result = await this.sessionService.create(dto, userId);
@@ -62,14 +56,10 @@ export class SessionController {
   @ApiResponse({
     status: 200,
     description: 'create sessions for 1 or multiple consecutive days',
-    schema: {
-      properties: {
-        data: { type: 'array', items: { $ref: getSchemaPath('SessionDto') } },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: { $ref: getSchemaPath('SessionDto') },
+    }),
   })
   async createRange(
     @Body() dto: CreateSessionRangeDto,
@@ -88,14 +78,9 @@ export class SessionController {
   @ApiResponse({
     status: 200,
     description: 'list sessions',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('GetSessionsResponseDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('GetSessionsResponseDto'),
+    }),
   })
   async list(@Query() query: GetSessionDto) {
     const result = await this.sessionService.findAll(query);
@@ -107,14 +92,7 @@ export class SessionController {
   @ApiResponse({
     status: 200,
     description: 'get session detail',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('SessionDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('SessionDto') }),
   })
   async findOne(@Param() param: IdDto) {
     const { id } = param;

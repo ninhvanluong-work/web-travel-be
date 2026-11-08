@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { getCACertificate } from 'src/common/utils/security';
+import { buildTypeOrmSslConfig } from 'src/common/utils/security';
 
 @Module({
   imports: [
@@ -9,15 +9,9 @@ import { getCACertificate } from 'src/common/utils/security';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const sslConfig =
-          configService.get<string>('USE_CERT') === 'true'
-            ? {
-                ssl: {
-                  rejectUnauthorized: true,
-                  ca: getCACertificate(),
-                },
-              }
-            : {};
+        const sslConfig = buildTypeOrmSslConfig(
+          configService.get<string>('USE_CERT') === 'true',
+        );
 
         return {
           type: 'postgres',

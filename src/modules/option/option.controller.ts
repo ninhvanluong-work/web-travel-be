@@ -25,6 +25,7 @@ import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
 import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('option')
 @ApiExtraModels(OptionDto, GetOptionsResponseDto)
@@ -37,14 +38,7 @@ export class OptionController {
   @ApiResponse({
     status: 200,
     description: 'create option',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('OptionDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('OptionDto') }),
   })
   async create(@Body() dto: CreateOptionDto, @UserId() userId: string) {
     const result = await this.optionService.create(dto, userId);
@@ -59,14 +53,9 @@ export class OptionController {
   @ApiResponse({
     status: 200,
     description: 'list options',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('GetOptionsResponseDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('GetOptionsResponseDto'),
+    }),
   })
   async list(@Query() query: GetOptionDto) {
     const result = await this.optionService.findAll(query);
@@ -78,14 +67,7 @@ export class OptionController {
   @ApiResponse({
     status: 200,
     description: 'get option detail',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('OptionDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('OptionDto') }),
   })
   async findOne(@Param() param: IdDto) {
     const { id } = param;

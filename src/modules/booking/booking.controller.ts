@@ -29,6 +29,7 @@ import { BookingService } from 'src/modules/booking/booking.service';
 import { formatApiResponse } from 'src/common/utils/format';
 import { Admin, OptionalAuth, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('booking')
 @ApiExtraModels(
@@ -46,14 +47,7 @@ export class BookingController {
   @ApiResponse({
     status: 200,
     description: 'create booking',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath(Booking) },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath(Booking) }),
   })
   async create(@UserId() userId: string, @Body() dto: CreateBookingDto) {
     const result = await this.bookingService.create(userId, dto);
@@ -69,14 +63,9 @@ export class BookingController {
   @ApiResponse({
     status: 200,
     description: 'get booking list',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath(GetBookingsResponseDto) },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath(GetBookingsResponseDto),
+    }),
   })
   async findAll(@Query() query: GetBookingDto) {
     const result = await this.bookingService.findAll(query);
@@ -98,14 +87,7 @@ export class BookingController {
   @ApiResponse({
     status: 200,
     description: 'cancel a pending booking (admin only)',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath(Booking) },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath(Booking) }),
   })
   @ApiResponse({
     status: 400,
@@ -138,17 +120,10 @@ export class BookingController {
   @ApiResponse({
     status: 200,
     description: 'get the list of payments belonging to a booking',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: { $ref: getSchemaPath(BookingPayment) },
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: { $ref: getSchemaPath(BookingPayment) },
+    }),
   })
   @ApiResponse({
     status: 404,

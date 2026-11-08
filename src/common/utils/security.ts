@@ -33,3 +33,14 @@ export const getCACertificate = () => {
 
   return fs.readFileSync(caPath).toString();
 };
+
+// cấu hình SSL cho TypeORM, dùng chung cho app (DatabaseModule) và migration CLI (data-source)
+export const buildTypeOrmSslConfig = (useCert: boolean) =>
+  useCert
+    ? {
+        ssl: {
+          rejectUnauthorized: true,
+          ca: getCACertificate(),
+        },
+      }
+    : {};

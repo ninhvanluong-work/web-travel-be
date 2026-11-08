@@ -1,60 +1,36 @@
-import { JwtService } from '@nestjs/jwt';
 import {
-  CanActivate,
   ExecutionContext,
   Injectable,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
 
 import { PUBLIC, TOUR_GUIDE, ADMIN, SUPER_ADMIN } from 'src/common/decorators';
 import { UserRole } from 'src/modules/user/entities/user.entity';
+import { BaseUserGuard } from './base-user.guard';
 
 @Injectable()
-export class UserGuard implements CanActivate {
-  private readonly logger = new Logger(UserGuard.name);
-
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly reflector: Reflector,
-    private readonly configService: ConfigService,
-  ) {}
+export class UserGuard extends BaseUserGuard {
+  protected readonly logger = new Logger(UserGuard.name);
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-    const isTourGuide = this.reflector.getAllAndOverride<boolean>(TOUR_GUIDE, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-    const isAdmin = this.reflector.getAllAndOverride<boolean>(ADMIN, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-    const isSuperAdmin = this.reflector.getAllAndOverride<boolean>(
-      SUPER_ADMIN,
-      [context.getHandler(), context.getClass()],
-    );
+    const isPublic = this.getFlag(context, PUBLIC);
+    const isTourGuide = this.getFlag(context, TOUR_GUIDE);
+    const isAdmin = this.getFlag(context, ADMIN);
+    const isSuperAdmin = this.getFlag(context, SUPER_ADMIN);
 
     if (isPublic) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
-    const token: string = request.headers.authorization?.split(' ')[1];
+    const token = this.extractToken(request);
 
     if (!token) {
       throw new UnauthorizedException('Token is missing');
     }
     try {
-      const secret = this.configService.get<string>('JWT_SECRET');
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret,
-      });
+      const payload = await this.verifyToken(token);
 
       // Role decorators are combined with OR semantics:
       // e.g. @TourGuide() + @Admin() => tour guide OR admin token is accepted.

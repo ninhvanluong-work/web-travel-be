@@ -61,18 +61,56 @@ export class SessionService {
     private readonly sessionUnitRepository: Repository<SessionUnit>,
   ) {}
 
+  // context: tên hàm gọi (create / createRange), dùng cho log
+  private async getProductOrThrow(
+    context: string,
+    productId: string,
+  ): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      where: { id: productId },
+    });
+    if (!product) {
+      this.logger.warn(`${context}() rejected: product ${productId} not found`);
+      throw new NotFoundException('Product Not Found');
+    }
+    return product;
+  }
+
+  // sessionUnits khi tạo session: không trùng unitId, unit phải thuộc product
+  private async validateSessionUnits(
+    context: string,
+    productId: string,
+    sessionUnits: CreateSessionDto['sessionUnits'],
+  ): Promise<void> {
+    if (!sessionUnits?.length) {
+      return;
+    }
+
+    const unitIds = sessionUnits.map((su) => su.unitId);
+    if (new Set(unitIds).size !== unitIds.length) {
+      this.logger.warn(
+        `${context}() rejected: duplicate unitId in sessionUnits for product ${productId}`,
+      );
+      throw new BadRequestException('Duplicate unitId in sessionUnits');
+    }
+
+    const units = await this.unitRepository.find({
+      where: { id: In(unitIds), productId },
+    });
+    if (units.length !== unitIds.length) {
+      this.logger.warn(
+        `${context}() rejected: one or more units not found for product ${productId}, requested=${unitIds.join(',')}`,
+      );
+      throw new NotFoundException(
+        'One or more units not found for this product',
+      );
+    }
+  }
+
   async create(payload: CreateSessionDto, userId: string) {
     this.logger.debug(`create() payload=${JSON.stringify(payload)}`);
 
-    const product = await this.productRepository.findOne({
-      where: { id: payload.productId },
-    });
-    if (!product) {
-      this.logger.warn(
-        `create() rejected: product ${payload.productId} not found`,
-      );
-      throw new NotFoundException('Product Not Found');
-    }
+    await this.getProductOrThrow('create', payload.productId);
 
     const travelDate = startOfDay(new Date(payload.travelDate));
     const existing = await this.sessionRepository.findOne({
@@ -88,27 +126,11 @@ export class SessionService {
       return this.findOneById(existing.id);
     }
 
-    if (payload.sessionUnits?.length) {
-      const unitIds = payload.sessionUnits.map((su) => su.unitId);
-      if (new Set(unitIds).size !== unitIds.length) {
-        this.logger.warn(
-          `create() rejected: duplicate unitId in sessionUnits for product ${payload.productId}`,
-        );
-        throw new BadRequestException('Duplicate unitId in sessionUnits');
-      }
-
-      const units = await this.unitRepository.find({
-        where: { id: In(unitIds), productId: payload.productId },
-      });
-      if (units.length !== unitIds.length) {
-        this.logger.warn(
-          `create() rejected: one or more units not found for product ${payload.productId}, requested=${unitIds.join(',')}`,
-        );
-        throw new NotFoundException(
-          'One or more units not found for this product',
-        );
-      }
-    }
+    await this.validateSessionUnits(
+      'create',
+      payload.productId,
+      payload.sessionUnits,
+    );
 
     const newSession = this.sessionRepository.create({
       productId: payload.productId,
@@ -141,15 +163,7 @@ export class SessionService {
   async createRange(payload: CreateSessionRangeDto, userId: string) {
     this.logger.debug(`createRange() payload=${JSON.stringify(payload)}`);
 
-    const product = await this.productRepository.findOne({
-      where: { id: payload.productId },
-    });
-    if (!product) {
-      this.logger.warn(
-        `createRange() rejected: product ${payload.productId} not found`,
-      );
-      throw new NotFoundException('Product Not Found');
-    }
+    await this.getProductOrThrow('createRange', payload.productId);
 
     const start = startOfDay(new Date(payload.fromDate));
     const end = payload.toDate ? startOfDay(new Date(payload.toDate)) : start;
@@ -174,27 +188,11 @@ export class SessionService {
       );
     }
 
-    if (payload.sessionUnits?.length) {
-      const unitIds = payload.sessionUnits.map((su) => su.unitId);
-      if (new Set(unitIds).size !== unitIds.length) {
-        this.logger.warn(
-          `createRange() rejected: duplicate unitId in sessionUnits for product ${payload.productId}`,
-        );
-        throw new BadRequestException('Duplicate unitId in sessionUnits');
-      }
-
-      const units = await this.unitRepository.find({
-        where: { id: In(unitIds), productId: payload.productId },
-      });
-      if (units.length !== unitIds.length) {
-        this.logger.warn(
-          `createRange() rejected: one or more units not found for product ${payload.productId}, requested=${unitIds.join(',')}`,
-        );
-        throw new NotFoundException(
-          'One or more units not found for this product',
-        );
-      }
-    }
+    await this.validateSessionUnits(
+      'createRange',
+      payload.productId,
+      payload.sessionUnits,
+    );
 
     const duplicateStrategy =
       payload.duplicateStrategy ?? DuplicateStrategy.SKIP;

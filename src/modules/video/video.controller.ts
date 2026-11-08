@@ -31,6 +31,7 @@ import { Video } from 'src/modules/video/entities/video.entity';
 import { SearchingService } from 'src/modules/searching/searching.service';
 import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('video')
 @ApiExtraModels(GetVideoDto, GetVideoResponseDto, Video, GetVideoAdminDto)
@@ -45,19 +46,12 @@ export class VideoController {
   @ApiResponse({
     status: 200,
     description: 'get list video',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: {
-            $ref: getSchemaPath('GetVideoResponseDto'),
-          },
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: {
+        $ref: getSchemaPath('GetVideoResponseDto'),
       },
-    },
+    }),
   })
   async findAll(@Query() queryPayload: GetVideoDto, @Req() req: any) {
     const ipAddress: string =
@@ -83,19 +77,12 @@ export class VideoController {
   @ApiResponse({
     status: 200,
     description: 'get list video for admin purpose',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: {
-            $ref: getSchemaPath('GetVideoAdminDto'),
-          },
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: {
+        $ref: getSchemaPath('GetVideoAdminDto'),
       },
-    },
+    }),
   })
   async findAllAdmin(@Query() query: GetVideoAdminDto) {
     const result = await this.videosService.getAdminVideos(query);
@@ -107,16 +94,9 @@ export class VideoController {
   @ApiResponse({
     status: 200,
     description: 'get video detail by slug',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath('GetVideoResponseDto'),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('GetVideoResponseDto'),
+    }),
   })
   async getBySlug(@Param('slug') slug: string) {
     const result = await this.videosService.findBySlug(slug);
@@ -146,16 +126,9 @@ export class VideoController {
   @ApiResponse({
     status: 200,
     description: 'get video detail by id',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath('Video'),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('Video'),
+    }),
   })
   findOne(@Param('id') id: string) {
     return this.videosService.findOne(id);
@@ -167,16 +140,9 @@ export class VideoController {
   @ApiResponse({
     status: 200,
     description: 'create video',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath('Video'),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('Video'),
+    }),
   })
   async create(@Body() body: CreateVideoDto, @UserId() userId: string) {
     const result = await this.videosService.create(body, userId);
@@ -193,16 +159,9 @@ export class VideoController {
   @ApiResponse({
     status: 200,
     description: 'update video',
-    schema: {
-      properties: {
-        data: {
-          $ref: getSchemaPath('Video'),
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('Video'),
+    }),
   })
   async update(
     @Param('id') id: string,

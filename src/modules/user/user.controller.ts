@@ -28,6 +28,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUserDto, GetUsersResponseDto } from './dto/get-user.dto';
 import { UserDto } from './dto/user-response.dto';
 import { ResetUserPasswordDto } from './dto/reset-user-password.dto';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('user')
 @ApiExtraModels(UserDto, GetUsersResponseDto)
@@ -66,14 +67,9 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'list users',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('GetUsersResponseDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('GetUsersResponseDto'),
+    }),
   })
   async findAll(@Query() query: GetUserDto) {
     const result = await this.userService.findAll(query);
@@ -84,14 +80,7 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'user detail',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('UserDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('UserDto') }),
   })
   async findOne(@Param() param: IdDto) {
     const result = await this.userService.findOneDto(param.id);

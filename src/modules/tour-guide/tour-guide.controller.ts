@@ -49,6 +49,7 @@ import {
   TourGuideId,
   UserId,
 } from 'src/common/decorators';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('tour-guide')
 @ApiExtraModels(
@@ -71,14 +72,9 @@ export class TourGuideController {
   @ApiResponse({
     status: 200,
     description: 'create tour guide',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('GetTourGuideDetailDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('GetTourGuideDetailDto'),
+    }),
   })
   async create(@Body() dto: CreateTourGuideDto, @UserId() userId: string) {
     const result = await this.tourGuideService.create(dto, userId);
@@ -94,19 +90,12 @@ export class TourGuideController {
   @ApiResponse({
     status: 200,
     description: 'get tour guide list',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: {
-            $ref: getSchemaPath('GetTourGuidesResponseDto'),
-          },
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: {
+        $ref: getSchemaPath('GetTourGuidesResponseDto'),
       },
-    },
+    }),
   })
   async findAll(@Query() query: GetTourGuidesDto) {
     const result = await this.tourGuideService.findAll(query);
@@ -122,14 +111,7 @@ export class TourGuideController {
   @ApiResponse({
     status: 200,
     description: 'get tour guide skill categories',
-    schema: {
-      properties: {
-        data: { type: 'object' },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ type: 'object' }),
   })
   getSkills() {
     return formatApiResponse(
@@ -144,14 +126,9 @@ export class TourGuideController {
   @ApiResponse({
     status: 200,
     description: 'get tour guide by id',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('GetTourGuideDetailDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      $ref: getSchemaPath('GetTourGuideDetailDto'),
+    }),
   })
   async findOne(@Param() param: IdDto) {
     const result = await this.tourGuideService.findOneById(param.id);
@@ -172,14 +149,7 @@ export class TourGuideController {
   @ApiResponse({
     status: 200,
     description: 'update tour guide',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('TourGuideDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('TourGuideDto') }),
   })
   async update(
     @Param() param: IdDto,
@@ -203,14 +173,7 @@ export class TourGuideController {
   @ApiResponse({
     status: 200,
     description: 'update tour guide onboarding status to true',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('TourGuideDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('TourGuideDto') }),
   })
   async onboarding(@TourGuideId() tourGuideId: string) {
     const result = await this.tourGuideService.onboarding(tourGuideId);
@@ -227,14 +190,7 @@ export class TourGuideController {
   @ApiResponse({
     status: 200,
     description: 'delete tour guide',
-    schema: {
-      properties: {
-        data: { type: 'null', example: null },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ type: 'null', example: null }),
   })
   async remove(@Param() param: IdDto, @UserId() userId: string) {
     await this.tourGuideService.remove(param.id, userId);
@@ -250,19 +206,12 @@ export class TourGuideController {
   @ApiResponse({
     status: 200,
     description: 'get tour guide reviews',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: {
-            $ref: getSchemaPath('GetReviewsResponseDto'),
-          },
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: {
+        $ref: getSchemaPath('GetReviewsResponseDto'),
       },
-    },
+    }),
   })
   async findTourGuideReviews(
     @Param() param: IdDto,
@@ -280,19 +229,12 @@ export class TourGuideController {
   @ApiResponse({
     status: 200,
     description: 'get video moment list by tour guide id',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: {
-            $ref: getSchemaPath('VideoDto'),
-          },
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: {
+        $ref: getSchemaPath('VideoDto'),
       },
-    },
+    }),
   })
   async findTourGuideMoments(
     @Param() param: IdDto,
@@ -312,14 +254,7 @@ export class TourGuideController {
   @ApiResponse({
     status: 200,
     description: 'create tour guide moment',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('Video') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('Video') }),
   })
   async createTourGuideMoment(
     @Param() param: IdDto,
@@ -341,14 +276,7 @@ export class TourGuideController {
   @ApiResponse({
     status: 200,
     description: 'update tour guide moment',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('Video') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('Video') }),
   })
   async updateTourGuideMoment(
     @Param() param: UpdateTourGuideMomentParamsDto,
@@ -376,14 +304,7 @@ export class TourGuideController {
   @ApiResponse({
     status: 200,
     description: 'delete tour guide moment',
-    schema: {
-      properties: {
-        data: { type: 'null', example: null },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ type: 'null', example: null }),
   })
   async deleteTourGuideMoment(
     @Param() param: UpdateTourGuideMomentParamsDto,

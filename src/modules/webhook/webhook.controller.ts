@@ -26,6 +26,15 @@ export class WebhookController {
     private readonly paypalService: PaypalService,
   ) {}
 
+  // raw body (utf8) dùng để verify chữ ký, thiếu body -> 401
+  private getRawBody(req: Request & { rawBody?: Buffer }): string {
+    const rawBody = req.rawBody?.toString('utf8');
+    if (!rawBody) {
+      throw new UnauthorizedException('Missing body');
+    }
+    return rawBody;
+  }
+
   validateWebhookSignature(
     rawBody: string,
     signatureHeader: string,
@@ -73,11 +82,7 @@ export class WebhookController {
       throw new UnauthorizedException('Missing signature headers');
     }
 
-    const rawBody = req.rawBody?.toString('utf8');
-
-    if (!rawBody) {
-      throw new UnauthorizedException('Missing body');
-    }
+    const rawBody = this.getRawBody(req);
 
     const readonlyApiKey = this.configService.get<'STRING'>(
       'BUNNY_READONLY_API_KEY',
@@ -121,10 +126,7 @@ export class WebhookController {
       throw new UnauthorizedException('Missing paypal signature headers');
     }
 
-    const rawBody = req.rawBody?.toString('utf8');
-    if (!rawBody) {
-      throw new UnauthorizedException('Missing body');
-    }
+    const rawBody = this.getRawBody(req);
 
     const event = JSON.parse(rawBody) as PaypalWebhookEvent;
 

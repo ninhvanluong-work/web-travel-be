@@ -25,6 +25,7 @@ import { IdDto } from 'src/types/common.dto';
 import { formatApiResponse } from 'src/common/utils/format';
 import { Admin, Public, UserId } from 'src/common/decorators';
 import { USER_TOKEN } from 'src/common/constants';
+import { standardResponseSchema } from 'src/common/utils/swagger';
 
 @Controller('departure-time')
 @ApiExtraModels(DepartureTimeDto)
@@ -37,14 +38,7 @@ export class DepartureTimeController {
   @ApiResponse({
     status: 200,
     description: 'create departure time',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('DepartureTimeDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('DepartureTimeDto') }),
   })
   async create(@Body() dto: CreateDepartureTimeDto, @UserId() userId: string) {
     const result = await this.departureTimeService.create(dto, userId);
@@ -60,17 +54,10 @@ export class DepartureTimeController {
   @ApiResponse({
     status: 200,
     description: 'list departure times of a product',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: { $ref: getSchemaPath('DepartureTimeDto') },
-        },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({
+      type: 'array',
+      items: { $ref: getSchemaPath('DepartureTimeDto') },
+    }),
   })
   async list(@Query() query: GetDepartureTimeDto) {
     const result = await this.departureTimeService.findByProduct(
@@ -84,14 +71,7 @@ export class DepartureTimeController {
   @ApiResponse({
     status: 200,
     description: 'get departure time detail',
-    schema: {
-      properties: {
-        data: { $ref: getSchemaPath('DepartureTimeDto') },
-        code: { type: 'number', example: 200 },
-        error: { type: 'null', example: null },
-        message: { type: 'string' },
-      },
-    },
+    schema: standardResponseSchema({ $ref: getSchemaPath('DepartureTimeDto') }),
   })
   async findOne(@Param() param: IdDto) {
     const { id } = param;

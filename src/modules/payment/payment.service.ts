@@ -81,6 +81,27 @@ export class PaymentService {
     return booking;
   }
 
+  // tạo bản ghi BookingPayment ở trạng thái PENDING sau khi đã gọi gateway
+  private async createPendingPayment(
+    data: Partial<BookingPayment>,
+  ): Promise<void> {
+    const payment = this.bookingPaymentRepository.create({
+      ...data,
+      status: BookingPaymentStatus.PENDING,
+    });
+    await this.bookingPaymentRepository.save(payment);
+  }
+
+  // tìm payment theo mã giao dịch phía gateway (PayPal orderId / VNPAY txnRef)
+  private findPaymentByIntentId(
+    intentId: string,
+  ): Promise<BookingPayment | null> {
+    return this.bookingPaymentRepository.findOne({
+      where: { providerIntentId: intentId },
+      relations: ['booking'],
+    });
+  }
+
   async createPaypalOrder(userId: string, bookingId: string) {
     const prefix = this.prefix('createPaypalOrder', bookingId);
 
@@ -97,16 +118,14 @@ export class PaymentService {
       currency,
     });
 
-    const payment = this.bookingPaymentRepository.create({
+    await this.createPendingPayment({
       booking,
-      provider: 'paypal',
+      provider: SupplierPaymentMethod.PAYPAL,
       providerIntentId: order.id,
       price: booking.totalPrice,
       currency,
-      status: BookingPaymentStatus.PENDING,
       rawResponse: order,
     });
-    await this.bookingPaymentRepository.save(payment);
 
     const approveUrl = order.links.find((link) => link.rel === 'approve')?.href;
 
@@ -175,10 +194,7 @@ export class PaymentService {
     providerTxId: string,
     rawResponse: Record<string, any>,
   ): Promise<void> {
-    const payment = await this.bookingPaymentRepository.findOne({
-      where: { providerIntentId: orderId },
-      relations: ['booking'],
-    });
+    const payment = await this.findPaymentByIntentId(orderId);
     if (!payment) {
       this.logger.warn(
         `[markPaymentSucceededByOrderId] no payment found for orderId=${orderId}`,
@@ -201,10 +217,7 @@ export class PaymentService {
     reason: string,
     rawResponse: Record<string, any>,
   ): Promise<void> {
-    const payment = await this.bookingPaymentRepository.findOne({
-      where: { providerIntentId: intentId },
-      relations: ['booking'],
-    });
+    const payment = await this.findPaymentByIntentId(intentId);
     if (!payment) {
       this.logger.warn(
         `[markPaymentFailedByIntentId] no payment found for intentId=${intentId}`,
@@ -239,15 +252,13 @@ export class PaymentService {
       ipAddr,
     });
 
-    const payment = this.bookingPaymentRepository.create({
+    await this.createPendingPayment({
       bookingId: booking.id,
       provider: SupplierPaymentMethod.VNPAY,
       providerIntentId: txnRef,
       price: booking.totalPrice,
       currency: booking.currency || 'VND',
-      status: BookingPaymentStatus.PENDING,
     });
-    await this.bookingPaymentRepository.save(payment);
 
     this.logger.log(`${prefix} txnRef=${txnRef}`);
 
@@ -270,10 +281,7 @@ export class PaymentService {
       };
     }
 
-    const payment = await this.bookingPaymentRepository.findOne({
-      where: { providerIntentId: result.txnRef },
-      relations: ['booking'],
-    });
+    const payment = await this.findPaymentByIntentId(result.txnRef);
 
     if (!payment) {
       this.logger.warn(`${prefix} no payment found`);
