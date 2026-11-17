@@ -30,12 +30,16 @@ import { SupplierModule } from './modules/supplier/supplier.module';
 import { MailModule } from 'src/common/mail/mail.module';
 import { AuthGuard, OptionalUserGuard, UserGuard } from 'src/common/guards';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { envValidationSchema } from 'src/config/env.validation';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      // thiếu/sai biến môi trường -> dừng app ngay lúc khởi động
+      validationSchema: envValidationSchema,
+      validationOptions: { abortEarly: false, allowUnknown: true },
     }),
     ScheduleModule.forRoot(),
     // Rate limit: only applied on routes that use ThrottlerGuard explicitly
